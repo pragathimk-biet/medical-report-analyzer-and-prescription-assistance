@@ -1,0 +1,3375 @@
+{
+  "patients": {
+    "default_patient": {
+      "patient_name": "Default Patient",
+      "active_medications": [
+        {
+          "name": "Rxc",
+          "dosage": null,
+          "added_at": "2026-08-14T23:18:22.949134"
+        },
+        {
+          "name": "1.Metformin500mg-1-0-1",
+          "dosage": null,
+          "added_at": "2026-08-14T23:18:31.581605"
+        },
+        {
+          "name": "Takeaftermeals",
+          "dosage": null,
+          "added_at": "2026-08-14T23:18:31.581605"
+        },
+        {
+          "name": "Metformin",
+          "dosage": {
+            "morning": 1,
+            "evening": 0,
+            "night": 1
+          },
+          "added_at": "2026-08-14T23:18:50.066052"
+        },
+        {
+          "name": "INVOICE",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.688145"
+        },
+        {
+          "name": "DAVANAGERE",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.697717"
+        },
+        {
+          "name": "KUMUDVATIRAM",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.718046"
+        },
+        {
+          "name": "5THWARD,9THASECTON,2NDMAIN,P",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.744164"
+        },
+        {
+          "name": "EXTENSION,DAVANGERE-577002",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.771358"
+        },
+        {
+          "name": "Doctor",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.800152"
+        },
+        {
+          "name": "DRDARSHANKN",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.800152"
+        },
+        {
+          "name": "Ph:9353340496",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.815446"
+        },
+        {
+          "name": "DL.No:KA-DG1-275615,KA-DG1-275616",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.818471"
+        },
+        {
+          "name": "GstNo:29AAWFD6093L1ZF",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.824391"
+        },
+        {
+          "name": "BillNo:S-17986",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.840631"
+        },
+        {
+          "name": "Date",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.844603"
+        },
+        {
+          "name": "05-03-26",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.850135"
+        },
+        {
+          "name": "S.No",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.856162"
+        },
+        {
+          "name": "Qty",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.861108"
+        },
+        {
+          "name": "Item",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.865165"
+        },
+        {
+          "name": "Mfg",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.866172"
+        },
+        {
+          "name": "Batch",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.870186"
+        },
+        {
+          "name": "Exp",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.874607"
+        },
+        {
+          "name": "HSN",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.877120"
+        },
+        {
+          "name": "RATE",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.907485"
+        },
+        {
+          "name": "GST%",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.940802"
+        },
+        {
+          "name": "Amount",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.976279"
+        },
+        {
+          "name": "DEXOLACSPECIALCAREPOWDEFWMD",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.992764"
+        },
+        {
+          "name": "2512087901",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.994778"
+        },
+        {
+          "name": "03-27",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:25.998793"
+        },
+        {
+          "name": "19011090",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.049827"
+        },
+        {
+          "name": "504.76",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.074394"
+        },
+        {
+          "name": "5.00",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.094616"
+        },
+        {
+          "name": "PARAJELY100MGDROPS",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.102653"
+        },
+        {
+          "name": "PEDIA",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.114718"
+        },
+        {
+          "name": "A21745",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.118733"
+        },
+        {
+          "name": "10-27",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.121876"
+        },
+        {
+          "name": "30049099",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.142987"
+        },
+        {
+          "name": "26.85",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.159458"
+        },
+        {
+          "name": "PERINORM",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.190846"
+        },
+        {
+          "name": "IPCA",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.214268"
+        },
+        {
+          "name": "GD1225008/",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.231580"
+        },
+        {
+          "name": "07-28",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.243859"
+        },
+        {
+          "name": "30049035",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.250433"
+        },
+        {
+          "name": "1.37",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.254956"
+        },
+        {
+          "name": "13.69",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.262503"
+        },
+        {
+          "name": "LACTARECHOCO",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.283613"
+        },
+        {
+          "name": "TLC25077",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.283613"
+        },
+        {
+          "name": "09-27",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.337387"
+        },
+        {
+          "name": "30049011",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.391004"
+        },
+        {
+          "name": "464.29",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.399054"
+        },
+        {
+          "name": "Sub",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.407371"
+        },
+        {
+          "name": "1009.59",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.418554"
+        },
+        {
+          "name": "GstAmt",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.421095"
+        },
+        {
+          "name": "50.48",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.427205"
+        },
+        {
+          "name": "For",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.434979"
+        },
+        {
+          "name": "DiscountAmt",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.440262"
+        },
+        {
+          "name": "0.00",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.443741"
+        },
+        {
+          "name": "Terms",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.474040"
+        },
+        {
+          "name": "SGST",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.536404"
+        },
+        {
+          "name": "25.24",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.543536"
+        },
+        {
+          "name": "1)Goods",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.561870"
+        },
+        {
+          "name": "CGST",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.568943"
+        },
+        {
+          "name": "2)All",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.577114"
+        },
+        {
+          "name": "User:RANJITHA",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.583149"
+        },
+        {
+          "name": "Authorised",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.592477"
+        },
+        {
+          "name": "Grand",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.597992"
+        },
+        {
+          "name": "1060.06",
+          "dosage": null,
+          "added_at": "2026-08-18T22:25:26.607239"
+        }
+      ],
+      "past_lab_results": [
+        {
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-14T23:18:35.744397"
+        },
+        {
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-14T23:18:35.744397"
+        },
+        {
+          "parameter": "Sodium",
+          "key": "sodium",
+          "value": 0.26,
+          "unit": "mmol/L",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-14T23:29:47.574235"
+        },
+        {
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 4.0,
+          "unit": "mmol/L",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-14T23:29:47.574235"
+        },
+        {
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-18T22:22:05.287303"
+        },
+        {
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-18T22:22:05.287303"
+        },
+        {
+          "parameter": "Sodium",
+          "key": "sodium",
+          "value": 0.26,
+          "unit": "mmol/L",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-18T22:22:54.790544"
+        },
+        {
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 4.0,
+          "unit": "mmol/L",
+          "status": "NORMAL",
+          "evaluated_at": "2026-08-18T22:22:54.790544"
+        },
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-18T23:25:51.595734"
+        },
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-18T23:25:51.595734"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Sodium",
+          "key": "sodium",
+          "value": 0.26,
+          "unit": "mmol/L",
+          "status": "NORMAL",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:05:09.869838"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 4.0,
+          "unit": "mmol/L",
+          "status": "NORMAL",
+          "rule_id": "POTASSIUM_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:05:09.869838"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:05:56.289327"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "AST",
+          "key": "ast",
+          "value": 6.0,
+          "unit": "U/L",
+          "status": "NORMAL",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:05:56.289327"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Sodium",
+          "key": "sodium",
+          "value": 4.0,
+          "unit": "mmol/L",
+          "status": "LOW",
+          "rule_id": "SODIUM_LOW_001",
+          "evaluated_at": "2026-08-21T23:05:56.289327"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:19:16.963219"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:19:16.963219"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:19:56.384854"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "Mean Blood Glucose",
+          "key": "mean_blood_glucose",
+          "value": 6.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:19:56.384854"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:36:16.987959"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:36:16.987959"
+        },
+        {
+          "visit_id": "VISIT-007",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:44:30.083459"
+        },
+        {
+          "visit_id": "VISIT-007",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-21T23:44:30.083459"
+        },
+        {
+          "visit_id": "VISIT-008",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:48:54.090518"
+        },
+        {
+          "visit_id": "VISIT-008",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:48:54.090518"
+        },
+        {
+          "visit_id": "VISIT-009",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:50:22.802794"
+        },
+        {
+          "visit_id": "VISIT-009",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:50:22.802794"
+        },
+        {
+          "visit_id": "VISIT-010",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:51:52.634871"
+        },
+        {
+          "visit_id": "VISIT-010",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:51:52.634871"
+        },
+        {
+          "visit_id": "VISIT-011",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:53:21.372187"
+        },
+        {
+          "visit_id": "VISIT-011",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T10:53:21.372187"
+        },
+        {
+          "visit_id": "VISIT-015",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:04:58.807629"
+        },
+        {
+          "visit_id": "VISIT-015",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:04:58.807629"
+        },
+        {
+          "visit_id": "VISIT-020",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:21:54.636827"
+        },
+        {
+          "visit_id": "VISIT-020",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:21:54.636827"
+        },
+        {
+          "visit_id": "VISIT-025",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:30:39.070153"
+        },
+        {
+          "visit_id": "VISIT-025",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:30:39.070153"
+        },
+        {
+          "visit_id": "VISIT-030",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:37:32.141607"
+        },
+        {
+          "visit_id": "VISIT-030",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:37:32.141607"
+        },
+        {
+          "visit_id": "VISIT-035",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:48:12.963313"
+        },
+        {
+          "visit_id": "VISIT-035",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:48:12.963313"
+        },
+        {
+          "visit_id": "VISIT-040",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:52:19.159538"
+        },
+        {
+          "visit_id": "VISIT-040",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:52:19.159538"
+        },
+        {
+          "visit_id": "VISIT-045",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:00:32.539838"
+        },
+        {
+          "visit_id": "VISIT-045",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:00:32.539838"
+        },
+        {
+          "visit_id": "VISIT-050",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:07:14.400892"
+        },
+        {
+          "visit_id": "VISIT-050",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:07:14.400892"
+        },
+        {
+          "visit_id": "VISIT-055",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:25:32.383290"
+        },
+        {
+          "visit_id": "VISIT-055",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:25:32.383290"
+        },
+        {
+          "visit_id": "VISIT-060",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:33:51.155421"
+        },
+        {
+          "visit_id": "VISIT-060",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:33:51.155421"
+        },
+        {
+          "visit_id": "VISIT-065",
+          "parameter": "Hemoglobin",
+          "key": "hemoglobin",
+          "value": 14.5,
+          "unit": "g/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HEMOGLOBIN_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:46:23.023948"
+        },
+        {
+          "visit_id": "VISIT-065",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 92.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:46:23.023948"
+        }
+      ],
+      "prescriptions": [
+        {
+          "visit_id": "VISIT-012",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-28T11:04:36.736490"
+        },
+        {
+          "visit_id": "VISIT-013",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-28T11:04:49.070359"
+        },
+        {
+          "visit_id": "VISIT-014",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-28T11:04:49.074441"
+        },
+        {
+          "visit_id": "VISIT-016",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-28T11:05:15.727966"
+        },
+        {
+          "visit_id": "VISIT-017",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-28T11:21:33.920418"
+        },
+        {
+          "visit_id": "VISIT-018",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-28T11:21:44.253711"
+        },
+        {
+          "visit_id": "VISIT-019",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-28T11:21:44.257723"
+        },
+        {
+          "visit_id": "VISIT-021",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-28T11:22:12.296350"
+        },
+        {
+          "visit_id": "VISIT-022",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-28T23:30:14.384074"
+        },
+        {
+          "visit_id": "VISIT-023",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-28T23:30:26.329474"
+        },
+        {
+          "visit_id": "VISIT-024",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-28T23:30:26.595522"
+        },
+        {
+          "visit_id": "VISIT-026",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-28T23:30:56.664695"
+        },
+        {
+          "visit_id": "VISIT-027",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-28T23:37:12.558937"
+        },
+        {
+          "visit_id": "VISIT-028",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-28T23:37:22.434001"
+        },
+        {
+          "visit_id": "VISIT-029",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-28T23:37:22.448048"
+        },
+        {
+          "visit_id": "VISIT-031",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-28T23:37:49.567804"
+        },
+        {
+          "visit_id": "VISIT-032",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-28T23:47:52.413681"
+        },
+        {
+          "visit_id": "VISIT-033",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-28T23:48:02.558040"
+        },
+        {
+          "visit_id": "VISIT-034",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-28T23:48:02.578211"
+        },
+        {
+          "visit_id": "VISIT-036",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-28T23:48:30.375685"
+        },
+        {
+          "visit_id": "VISIT-037",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-28T23:51:59.180582"
+        },
+        {
+          "visit_id": "VISIT-038",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-28T23:52:09.483583"
+        },
+        {
+          "visit_id": "VISIT-039",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-28T23:52:09.547725"
+        },
+        {
+          "visit_id": "VISIT-041",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-28T23:52:37.109303"
+        },
+        {
+          "visit_id": "VISIT-042",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-29T00:00:12.013468"
+        },
+        {
+          "visit_id": "VISIT-043",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-29T00:00:22.440535"
+        },
+        {
+          "visit_id": "VISIT-044",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-29T00:00:22.496690"
+        },
+        {
+          "visit_id": "VISIT-046",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-29T00:00:50.007699"
+        },
+        {
+          "visit_id": "VISIT-047",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-29T00:06:54.724450"
+        },
+        {
+          "visit_id": "VISIT-048",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-29T00:07:04.708137"
+        },
+        {
+          "visit_id": "VISIT-049",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-29T00:07:04.726186"
+        },
+        {
+          "visit_id": "VISIT-051",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-29T00:07:32.580696"
+        },
+        {
+          "visit_id": "VISIT-052",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-29T00:25:11.706939"
+        },
+        {
+          "visit_id": "VISIT-053",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-29T00:25:22.335419"
+        },
+        {
+          "visit_id": "VISIT-054",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-29T00:25:22.363786"
+        },
+        {
+          "visit_id": "VISIT-056",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-29T00:25:49.279247"
+        },
+        {
+          "visit_id": "VISIT-057",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-29T00:33:31.335818"
+        },
+        {
+          "visit_id": "VISIT-058",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-29T00:33:41.526538"
+        },
+        {
+          "visit_id": "VISIT-059",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-29T00:33:41.616987"
+        },
+        {
+          "visit_id": "VISIT-061",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-29T00:34:09.817129"
+        },
+        {
+          "visit_id": "VISIT-062",
+          "medicine_name": "Rxc",
+          "extracted_snippet": "Rxc",
+          "timestamp": "2026-08-29T00:46:03.558605"
+        },
+        {
+          "visit_id": "VISIT-063",
+          "medicine_name": "1.Metformin500mg-1-0-1",
+          "extracted_snippet": "1.Metformin500mg-1-0-1",
+          "timestamp": "2026-08-29T00:46:13.407024"
+        },
+        {
+          "visit_id": "VISIT-064",
+          "medicine_name": "Takeaftermeals",
+          "extracted_snippet": "Takeaftermeals",
+          "timestamp": "2026-08-29T00:46:13.425061"
+        },
+        {
+          "visit_id": "VISIT-066",
+          "medicine_name": "Metformin",
+          "extracted_snippet": null,
+          "timestamp": "2026-08-29T00:46:40.038133"
+        }
+      ],
+      "reports": [
+        {
+          "visit_id": "VISIT-015",
+          "timestamp": "2026-08-28T11:04:58.807629",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-020",
+          "timestamp": "2026-08-28T11:21:54.636827",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-025",
+          "timestamp": "2026-08-28T23:30:39.070153",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-030",
+          "timestamp": "2026-08-28T23:37:32.141607",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-035",
+          "timestamp": "2026-08-28T23:48:12.963313",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-040",
+          "timestamp": "2026-08-28T23:52:19.159538",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-045",
+          "timestamp": "2026-08-29T00:00:32.539838",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-050",
+          "timestamp": "2026-08-29T00:07:14.400892",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-055",
+          "timestamp": "2026-08-29T00:25:32.383290",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-060",
+          "timestamp": "2026-08-29T00:33:51.155421",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-065",
+          "timestamp": "2026-08-29T00:46:23.023948",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-18T23:25:51.595734",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-21T23:05:09.869838",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-21T23:05:56.289327",
+          "findings_count": 3
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-21T23:19:16.963219",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-21T23:19:56.384854",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-21T23:36:16.987959",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-21T23:44:30.083459",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-28T10:48:54.090518",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-28T10:50:22.802794",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-28T10:51:52.634871",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-011",
+          "timestamp": "2026-08-28T10:53:21.372187",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-012",
+          "timestamp": "2026-08-28T11:04:36.736490",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-013",
+          "timestamp": "2026-08-28T11:04:49.070359",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-014",
+          "timestamp": "2026-08-28T11:04:49.074441",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-015",
+          "timestamp": "2026-08-28T11:04:58.807629",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-016",
+          "timestamp": "2026-08-28T11:05:15.727966",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-017",
+          "timestamp": "2026-08-28T11:21:33.920418",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-018",
+          "timestamp": "2026-08-28T11:21:44.253711",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-019",
+          "timestamp": "2026-08-28T11:21:44.257723",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-020",
+          "timestamp": "2026-08-28T11:21:54.636827",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-021",
+          "timestamp": "2026-08-28T11:22:12.296350",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-022",
+          "timestamp": "2026-08-28T23:30:14.384074",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-023",
+          "timestamp": "2026-08-28T23:30:26.329474",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-024",
+          "timestamp": "2026-08-28T23:30:26.595522",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-025",
+          "timestamp": "2026-08-28T23:30:39.070153",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-026",
+          "timestamp": "2026-08-28T23:30:56.664695",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-027",
+          "timestamp": "2026-08-28T23:37:12.558937",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-028",
+          "timestamp": "2026-08-28T23:37:22.434001",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-029",
+          "timestamp": "2026-08-28T23:37:22.448048",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-030",
+          "timestamp": "2026-08-28T23:37:32.141607",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-031",
+          "timestamp": "2026-08-28T23:37:49.567804",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-032",
+          "timestamp": "2026-08-28T23:47:52.413681",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-033",
+          "timestamp": "2026-08-28T23:48:02.558040",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-034",
+          "timestamp": "2026-08-28T23:48:02.578211",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-035",
+          "timestamp": "2026-08-28T23:48:12.963313",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-036",
+          "timestamp": "2026-08-28T23:48:30.375685",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-037",
+          "timestamp": "2026-08-28T23:51:59.180582",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-038",
+          "timestamp": "2026-08-28T23:52:09.483583",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-039",
+          "timestamp": "2026-08-28T23:52:09.547725",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-040",
+          "timestamp": "2026-08-28T23:52:19.159538",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-041",
+          "timestamp": "2026-08-28T23:52:37.109303",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-042",
+          "timestamp": "2026-08-29T00:00:12.013468",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-043",
+          "timestamp": "2026-08-29T00:00:22.440535",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-044",
+          "timestamp": "2026-08-29T00:00:22.496690",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-045",
+          "timestamp": "2026-08-29T00:00:32.539838",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-046",
+          "timestamp": "2026-08-29T00:00:50.007699",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-047",
+          "timestamp": "2026-08-29T00:06:54.724450",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-048",
+          "timestamp": "2026-08-29T00:07:04.708137",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-049",
+          "timestamp": "2026-08-29T00:07:04.726186",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-050",
+          "timestamp": "2026-08-29T00:07:14.400892",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-051",
+          "timestamp": "2026-08-29T00:07:32.580696",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-052",
+          "timestamp": "2026-08-29T00:25:11.706939",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-053",
+          "timestamp": "2026-08-29T00:25:22.335419",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-054",
+          "timestamp": "2026-08-29T00:25:22.363786",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-055",
+          "timestamp": "2026-08-29T00:25:32.383290",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-056",
+          "timestamp": "2026-08-29T00:25:49.279247",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-057",
+          "timestamp": "2026-08-29T00:33:31.335818",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-058",
+          "timestamp": "2026-08-29T00:33:41.526538",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-059",
+          "timestamp": "2026-08-29T00:33:41.616987",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-060",
+          "timestamp": "2026-08-29T00:33:51.155421",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-061",
+          "timestamp": "2026-08-29T00:34:09.817129",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-062",
+          "timestamp": "2026-08-29T00:46:03.558605",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Rxc"
+        },
+        {
+          "visit_id": "VISIT-063",
+          "timestamp": "2026-08-29T00:46:13.407024",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: 1.Metformin500mg-1-0-1"
+        },
+        {
+          "visit_id": "VISIT-064",
+          "timestamp": "2026-08-29T00:46:13.425061",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Takeaftermeals"
+        },
+        {
+          "visit_id": "VISIT-065",
+          "timestamp": "2026-08-29T00:46:23.023948",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-066",
+          "timestamp": "2026-08-29T00:46:40.038133",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        }
+      ]
+    },
+    "sarah_connor": {
+      "patient_name": "Sarah Connor",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:33:30.723176"
+        },
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:33:30.723176"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:25:47.428121"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-28T23:25:47.428121"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:53:41.408186"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:53:41.408186"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:54:05.958074"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:54:05.958074"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:54:51.015696"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:54:51.015696"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:55:48.211684"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:55:48.211684"
+        },
+        {
+          "visit_id": "VISIT-007",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:56:19.144216"
+        },
+        {
+          "visit_id": "VISIT-007",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:56:19.144216"
+        },
+        {
+          "visit_id": "VISIT-008",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:56:41.899207"
+        },
+        {
+          "visit_id": "VISIT-008",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T00:56:41.899207"
+        },
+        {
+          "visit_id": "VISIT-009",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T01:08:04.050493"
+        },
+        {
+          "visit_id": "VISIT-009",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T01:08:04.050493"
+        },
+        {
+          "visit_id": "VISIT-010",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T01:12:32.587864"
+        },
+        {
+          "visit_id": "VISIT-010",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T01:12:32.587864"
+        },
+        {
+          "visit_id": "VISIT-011",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 0.9,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-29T01:16:45.846931"
+        },
+        {
+          "visit_id": "VISIT-011",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 5.6,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-08-29T01:16:45.846931"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:33:30.723176",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-28T23:25:47.428121",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-29T00:53:41.408186",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-29T00:54:05.958074",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-29T00:54:51.015696",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-29T00:55:48.211684",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-29T00:56:19.144216",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-29T00:56:41.899207",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-29T01:08:04.050493",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-29T01:12:32.587864",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-011",
+          "timestamp": "2026-08-29T01:16:45.846931",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:33:30.723176",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-28T23:25:47.428121",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-29T00:53:41.408186",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-29T00:54:05.958074",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-29T00:54:51.015696",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-29T00:55:48.211684",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-29T00:56:19.144216",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-29T00:56:41.899207",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-29T01:08:04.050493",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-29T01:12:32.587864",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-011",
+          "timestamp": "2026-08-29T01:16:45.846931",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ]
+    },
+    "robert_paulson": {
+      "patient_name": "Robert Paulson",
+      "active_medications": [
+        {
+          "name": "Metformin",
+          "dosage": null,
+          "class": "Biguanide Antidiabetic",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-28T11:39:51.203024"
+        },
+        {
+          "name": "Lisinopril",
+          "dosage": null,
+          "class": "ACE Inhibitor",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-28T11:39:51.238978"
+        }
+      ],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.1,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:39:30.036345"
+        },
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 98.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:39:30.036345"
+        }
+      ],
+      "prescriptions": [
+        {
+          "visit_id": "VISIT-002",
+          "medicine_name": "Metformin",
+          "extracted_snippet": "Metformin 500mg",
+          "timestamp": "2026-08-28T11:39:51.215514"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "medicine_name": "Lisinopril",
+          "extracted_snippet": "Lisinopril 10mg",
+          "timestamp": "2026-08-28T11:39:51.246022"
+        }
+      ],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:39:30.036345",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:39:30.036345",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-28T11:39:51.215514",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-28T11:39:51.246022",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Lisinopril"
+        }
+      ]
+    },
+    "bruce_wayne": {
+      "patient_name": "Bruce Wayne",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:42:42.937331"
+        },
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 95.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "evaluated_at": "2026-08-28T11:42:42.937331"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:42:42.937331",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:42:42.937331",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ]
+    },
+    "clark_kent": {
+      "patient_name": "Clark Kent",
+      "active_medications": [
+        {
+          "name": "Metformin",
+          "dosage": null,
+          "class": "Biguanide Antidiabetic",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-28T11:42:53.706620"
+        },
+        {
+          "name": "Lisinopril",
+          "dosage": null,
+          "class": "ACE Inhibitor",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-28T11:42:53.747158"
+        }
+      ],
+      "past_lab_results": [],
+      "prescriptions": [
+        {
+          "visit_id": "VISIT-001",
+          "medicine_name": "Metformin",
+          "extracted_snippet": "Metformin 500mg",
+          "timestamp": "2026-08-28T11:42:53.729525"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "medicine_name": "Lisinopril",
+          "extracted_snippet": "Lisinopril 10mg",
+          "timestamp": "2026-08-28T11:42:53.761317"
+        }
+      ],
+      "reports": [],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-28T11:42:53.729525",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-28T11:42:53.761317",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Lisinopril"
+        }
+      ]
+    },
+    "test_patient_11": {
+      "patient_name": "Test Patient 11",
+      "active_medications": [
+        {
+          "name": "Spironolactone",
+          "dosage": null,
+          "class": "Potassium-Sparing Diuretic",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-29T01:01:27.329958"
+        }
+      ],
+      "past_lab_results": [],
+      "prescriptions": [],
+      "reports": [],
+      "visits": []
+    },
+    "test_patient_12": {
+      "patient_name": "Test Patient 12",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_POTASSIUM_HIGH",
+          "evaluated_at": "2026-08-29T01:01:27.353280"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_POTASSIUM_HIGH",
+          "evaluated_at": "2026-08-31T21:36:14.875327"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_POTASSIUM_HIGH",
+          "evaluated_at": "2026-08-31T21:58:13.043890"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-29T01:01:27.353280",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T21:36:14.875327",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T21:58:13.043890",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-29T01:01:27.353280",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T21:36:14.875327",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T21:58:13.043890",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    },
+    "test_patient_13": {
+      "patient_name": "Test Patient 13",
+      "active_medications": [
+        {
+          "name": "Lisinopril",
+          "dosage": null,
+          "class": "ACE Inhibitor",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-29T01:01:27.408679"
+        }
+      ],
+      "past_lab_results": [],
+      "prescriptions": [],
+      "reports": [],
+      "visits": []
+    },
+    "safetypatient": {
+      "patient_name": "SafetyPatient",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-29T01:01:36.735630"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-29T01:01:36.759205"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-29T01:08:23.291984"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-29T01:08:23.313774"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-29T01:17:18.546817"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-29T01:17:18.568929"
+        },
+        {
+          "visit_id": "VISIT-007",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-31T21:44:43.466773"
+        },
+        {
+          "visit_id": "VISIT-008",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-31T21:44:43.542647"
+        },
+        {
+          "visit_id": "VISIT-009",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-31T21:57:50.555740"
+        },
+        {
+          "visit_id": "VISIT-010",
+          "parameter": "Potassium",
+          "key": "potassium",
+          "value": 6.2,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_K_HIGH",
+          "evaluated_at": "2026-08-31T21:57:50.621415"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-29T01:01:36.735630",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-29T01:01:36.759205",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-29T01:08:23.291984",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-29T01:08:23.313774",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-29T01:17:18.546817",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-29T01:17:18.568929",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-31T21:44:43.466773",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-31T21:44:43.542647",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-31T21:57:50.555740",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-31T21:57:50.621415",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-29T01:01:36.735630",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-29T01:01:36.759205",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-29T01:08:23.291984",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-29T01:08:23.313774",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-29T01:17:18.546817",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-29T01:17:18.568929",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-31T21:44:43.466773",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-31T21:44:43.542647",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-31T21:57:50.555740",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-31T21:57:50.621415",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    },
+    "test_patient_uuid": {
+      "patient_name": "test_patient_uuid",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Serum Potassium",
+          "key": "potassium",
+          "value": 6.5,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_001",
+          "evaluated_at": "2026-08-31T21:38:08.317980"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Serum Potassium",
+          "key": "potassium",
+          "value": 6.5,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_001",
+          "evaluated_at": "2026-08-31T21:39:52.703813"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Serum Potassium",
+          "key": "potassium",
+          "value": 6.5,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_001",
+          "evaluated_at": "2026-08-31T21:41:36.684560"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Serum Potassium",
+          "key": "potassium",
+          "value": 6.5,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_001",
+          "evaluated_at": "2026-08-31T21:42:45.862406"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "Serum Potassium",
+          "key": "potassium",
+          "value": 6.5,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_001",
+          "evaluated_at": "2026-08-31T21:51:00.885484"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "Serum Potassium",
+          "key": "potassium",
+          "value": 6.5,
+          "unit": "mmol/L",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "RULE_001",
+          "evaluated_at": "2026-08-31T21:56:39.809574"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-31T21:38:08.317980",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T21:39:52.703813",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T21:41:36.684560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-31T21:42:45.862406",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-31T21:51:00.885484",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-31T21:56:39.809574",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-31T21:38:08.317980",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T21:39:52.703813",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T21:41:36.684560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-31T21:42:45.862406",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-31T21:51:00.885484",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-31T21:56:39.809574",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    },
+    "rag_patient_123": {
+      "patient_name": "rag_patient_123",
+      "active_medications": [
+        {
+          "name": "Amoxicillin",
+          "dosage": "500 mg",
+          "class": "Penicillin Antibiotic",
+          "confidence_status": "TRUSTED_DB_MATCH",
+          "added_at": "2026-08-31T21:38:08.345737"
+        }
+      ],
+      "past_lab_results": [],
+      "prescriptions": [],
+      "reports": [],
+      "visits": []
+    },
+    "irani_gangadarappa": {
+      "patient_name": "Irani Gangadarappa",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.2,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-31T22:30:07.728393"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.2,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-31T22:31:03.076464"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.2,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-31T22:32:15.785117"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.2,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-31T22:41:56.949427"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.2,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-31T22:43:16.188663"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "Creatinine",
+          "key": "creatinine",
+          "value": 1.2,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "CREATININE_NORMAL_001",
+          "evaluated_at": "2026-08-31T22:44:12.846890"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-31T22:30:07.728393",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T22:31:03.076464",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T22:32:15.785117",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-31T22:41:56.949427",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-31T22:43:16.188663",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-31T22:44:12.846890",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-31T22:30:07.728393",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T22:31:03.076464",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T22:32:15.785117",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-31T22:41:56.949427",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-31T22:43:16.188663",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-31T22:44:12.846890",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    },
+    "irani_gangadharappa": {
+      "patient_name": "Irani Gangadharappa",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-09-01T00:14:10.344566"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-09-01T00:17:28.942560"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-01T12:29:38.941806"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Mean Blood Glucose",
+          "key": "mean_blood_glucose",
+          "value": 6.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-09-01T12:29:38.941806"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-09-01T00:14:10.344566",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-09-01T00:17:28.942560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-09-01T12:29:38.941806",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-09-01T00:14:10.344566",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-09-01T00:17:28.942560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-09-01T12:29:38.941806",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        }
+      ]
+    },
+    "irani_gangadharappa_lab": {
+      "patient_name": "Irani Gangadharappa Lab",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:13:07.190191"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:15:12.285463"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:16:03.602032"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:17:06.762661"
+        },
+        {
+          "visit_id": "VISIT-005",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:19:12.981463"
+        },
+        {
+          "visit_id": "VISIT-006",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:20:10.861601"
+        },
+        {
+          "visit_id": "VISIT-007",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:21:07.389710"
+        },
+        {
+          "visit_id": "VISIT-008",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:29:15.797164"
+        },
+        {
+          "visit_id": "VISIT-009",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:30:35.537864"
+        },
+        {
+          "visit_id": "VISIT-010",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:38:20.714380"
+        },
+        {
+          "visit_id": "VISIT-011",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:39:24.467358"
+        },
+        {
+          "visit_id": "VISIT-012",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:40:33.688506"
+        },
+        {
+          "visit_id": "VISIT-013",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:41:37.380005"
+        },
+        {
+          "visit_id": "VISIT-014",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:42:30.103319"
+        },
+        {
+          "visit_id": "VISIT-015",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:50:19.670404"
+        },
+        {
+          "visit_id": "VISIT-016",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:51:42.703544"
+        },
+        {
+          "visit_id": "VISIT-017",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-08-31T23:52:46.688701"
+        },
+        {
+          "visit_id": "VISIT-018",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 6.8,
+          "unit": "%",
+          "status": "HIGH",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_HIGH_001",
+          "evaluated_at": "2026-09-01T00:12:55.834560"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-31T23:13:07.190191",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T23:15:12.285463",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T23:16:03.602032",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-31T23:17:06.762661",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-31T23:19:12.981463",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-31T23:20:10.861601",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-31T23:21:07.389710",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-31T23:29:15.797164",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-31T23:30:35.537864",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-31T23:38:20.714380",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-011",
+          "timestamp": "2026-08-31T23:39:24.467358",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-012",
+          "timestamp": "2026-08-31T23:40:33.688506",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-013",
+          "timestamp": "2026-08-31T23:41:37.380005",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-014",
+          "timestamp": "2026-08-31T23:42:30.103319",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-015",
+          "timestamp": "2026-08-31T23:50:19.670404",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-016",
+          "timestamp": "2026-08-31T23:51:42.703544",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-017",
+          "timestamp": "2026-08-31T23:52:46.688701",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-018",
+          "timestamp": "2026-09-01T00:12:55.834560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-08-31T23:13:07.190191",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-08-31T23:15:12.285463",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-08-31T23:16:03.602032",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-08-31T23:17:06.762661",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-005",
+          "timestamp": "2026-08-31T23:19:12.981463",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-006",
+          "timestamp": "2026-08-31T23:20:10.861601",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-007",
+          "timestamp": "2026-08-31T23:21:07.389710",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-008",
+          "timestamp": "2026-08-31T23:29:15.797164",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-009",
+          "timestamp": "2026-08-31T23:30:35.537864",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-010",
+          "timestamp": "2026-08-31T23:38:20.714380",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-011",
+          "timestamp": "2026-08-31T23:39:24.467358",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-012",
+          "timestamp": "2026-08-31T23:40:33.688506",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-013",
+          "timestamp": "2026-08-31T23:41:37.380005",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-014",
+          "timestamp": "2026-08-31T23:42:30.103319",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-015",
+          "timestamp": "2026-08-31T23:50:19.670404",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-016",
+          "timestamp": "2026-08-31T23:51:42.703544",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-017",
+          "timestamp": "2026-08-31T23:52:46.688701",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-018",
+          "timestamp": "2026-09-01T00:12:55.834560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    }
+  }
+}

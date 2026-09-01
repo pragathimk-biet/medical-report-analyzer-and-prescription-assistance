@@ -1,0 +1,5 @@
+LIPID PROFILE
+Total Cholesterol: 175.0 mg/dL (< 200.0)
+Triglycerides: 120.0 mg/dL (< 150.0)
+HDL Cholesterol: 52.0 mg/dL (> 40.0)
+LDL Cholesterol: 98.0 mg/dL (< 100.0)

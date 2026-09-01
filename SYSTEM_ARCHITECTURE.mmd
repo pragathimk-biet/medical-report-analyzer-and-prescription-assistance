@@ -1,0 +1,52 @@
+flowchart TD
+    subgraph STAGE1 ["1. Input Routing & Context Initialization"]
+        Input[Raw Input: Image / PDF / Text] --> Router[Input Router Agent]
+        Router --> Context[Pipeline Context Payload]
+    end
+
+    subgraph STAGE2 ["2. Parallel Pipeline Extraction"]
+        Context -->|document_type: medical_report| ReportExtract[Report Extraction Agent]
+        Context -->|document_type: prescription| RxExtract[Prescription Extraction Agent]
+        
+        ReportExtract -->|biomarkers, numeric values, units, ref ranges| ReportVerifiedData[Extracted Report Payload]
+        RxExtract -->|medications, strengths, forms, frequencies, durations| RxExtractedData[Extracted Prescription Payload]
+    end
+
+    subgraph STAGE3 ["3. Handwriting Classification & Clinical Verification"]
+        RxExtractedData --> HWClass[Handwriting Drug Classifier Agent]
+        HWClass -->|candidate drug ranking & confidence| RxVerif[Prescription Verification Agent]
+        ReportVerifiedData --> ReportVerif[Report Verification Agent]
+        
+        RxVerif -->|TRUSTED_MEDICATION_DATABASE lookup & 2-way lab check| RxVerifPayload[Verified Prescription Payload]
+        ReportVerif -->|FindingValidator & biological bounds check| ReportVerifPayload[Verified Report Payload]
+    end
+
+    subgraph STAGE4 ["4. Safety Governance & ML Safety Classifier"]
+        ReportVerifPayload --> MLSafety[Tabular ML Safety Agent]
+        MLSafety -->|Decision Tree Classifier Prediction| DeterministicGate{Deterministic Safety Precedence Gate}
+        RxVerifPayload --> DeterministicGate
+        
+        DeterministicGate -->|Invalid Unit / Severe Hyperkalemia / Negative Dose / Illegible Blotch| HardStopLock[🔴 HARD STOP LOCK]
+        DeterministicGate -->|Missing Unit / Ambiguous Drug / Unverified Range| ManualReview[🟡 NEEDS MANUAL REVIEW]
+        DeterministicGate -->|All Data & Bounds Verified| SafeDisplay[🟢 SAFE TO DISPLAY]
+    end
+
+    subgraph STAGE5 ["5. Reasoning & Presentation"]
+        HardStopLock --> ZeroLLM[Zero-LLM Hard Stop Policy - 0 LLM Calls]
+        ManualReview --> ManualFallback[Deterministic Manual Review Banner]
+        SafeDisplay --> AIReasoning[Reasoning Agent - AI Explanation]
+        
+        ZeroLLM --> FinalOutput[Final Patient Presentation & Audit Details Dropdown]
+        ManualFallback --> FinalOutput
+        AIReasoning --> FinalOutput
+    end
+
+    style STAGE1 fill:#f0f9ff,stroke:#0284c7,stroke-width:2px
+    style STAGE2 fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px
+    style STAGE3 fill:#fffbeb,stroke:#d97706,stroke-width:2px
+    style STAGE4 fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style STAGE5 fill:#faf5ff,stroke:#9333ea,stroke-width:2px
+
+    style HardStopLock fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    style ManualReview fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    style SafeDisplay fill:#d1fae5,stroke:#059669,stroke-width:2px

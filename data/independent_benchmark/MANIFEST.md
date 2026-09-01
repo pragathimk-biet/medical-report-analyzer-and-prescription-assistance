@@ -1,0 +1,54 @@
+# Independent Benchmark Source Document Manifest
+
+| Case ID | Document Type | Source File | Source Type | Annotation Method | Expected Safety Status | Difficulty Category | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REPORT_001** | `medical_report` | `report_001.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `easy_normal` | Standard clean normal lab report with two biomarkers. |
+| **REPORT_002** | `medical_report` | `report_002.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_elevated` | Elevated glucose and HbA1c requiring clinical review. |
+| **REPORT_003** | `medical_report` | `report_003.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_implausible` | Negative numerical creatinine value constitutes a critical OCR/extraction artifact. |
+| **REPORT_004** | `medical_report` | `report_004.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `missing_ref_range` | Missing reference range requires manual review flag. |
+| **REPORT_005** | `medical_report` | `report_005.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `unregistered_analyte` | Unregistered analyte not present in clinical registry. |
+| **REPORT_006** | `medical_report` | `report_006.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_hyperkalemia` | Severe hyperkalemia finding. |
+| **REPORT_007** | `medical_report` | `report_007.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_extreme_value` | Biological implausibility triggers hard stop. |
+| **REPORT_008** | `medical_report` | `report_008.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `missing_unit` | Missing unit requires manual review. |
+| **REPORT_009** | `medical_report` | `report_009.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `normal_lft_panel` | Standard clean normal liver panel. |
+| **REPORT_010** | `medical_report` | `report_010.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_renal_failure` | Elevated renal markers. |
+| **REPORT_011** | `medical_report` | `report_011.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_corrupted_ocr` | Severe OCR corruption triggers hard stop. |
+| **REPORT_012** | `medical_report` | `report_012.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_anemia` | Low hemoglobin finding. |
+| **REPORT_013** | `medical_report` | `report_013.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `normal_lipid_panel` | Clean lipid panel. |
+| **REPORT_014** | `medical_report` | `report_014.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_hyperuricemia` | Elevated uric acid. |
+| **REPORT_015** | `medical_report` | `report_015.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_invalid_unit` | Invalid unit (kg instead of mg/dL) triggers hard stop. |
+| **REPORT_016** | `medical_report` | `report_016.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `normal_tsh` | Normal TSH assay. |
+| **REPORT_017** | `medical_report` | `report_017.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_tsh` | Elevated TSH. |
+| **REPORT_018** | `medical_report` | `report_018.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `normal_wbc` | Normal WBC count. |
+| **REPORT_019** | `medical_report` | `report_019.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_wbc` | Elevated WBC count. |
+| **REPORT_020** | `medical_report` | `report_020.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_hypokalemia` | Low serum potassium. |
+| **REPORT_021** | `medical_report` | `report_021.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `malformed_value` | Non-numeric result value for numeric analyte requires manual review. |
+| **REPORT_022** | `medical_report` | `report_022.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `multipage_panel` | Multi-page clean panel. |
+| **REPORT_023** | `medical_report` | `report_023.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_hypocalcemia` | Borderline low serum calcium. |
+| **REPORT_024** | `medical_report` | `report_024.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `abnormal_thrombocytopenia` | Low platelet count. |
+| **REPORT_025** | `medical_report` | `report_025.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `normal_crp` | Normal CRP value. |
+| **PRESCRIPTION_001** | `prescription` | `prescription_001.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `easy_printed` | Clean printed prescription with two medications. |
+| **PRESCRIPTION_002** | `prescription` | `prescription_002.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `printed_antidiabetic` | Standard diabetes medication. |
+| **PRESCRIPTION_003** | `prescription` | `prescription_003.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `handwriting_ocr_ambiguity` | OCR misspelling requires handwriting drug classifier disambiguation. |
+| **PRESCRIPTION_004** | `prescription` | `prescription_004.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_overdose` | Extreme overdose strength triggers structural validation hard stop. |
+| **PRESCRIPTION_005** | `prescription` | `prescription_005.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `missing_strength` | Missing strength value. |
+| **PRESCRIPTION_006** | `prescription` | `prescription_006.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `antihypertensive` | Standard blood pressure medication. |
+| **PRESCRIPTION_007** | `prescription` | `prescription_007.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `unknown_medication` | Unregistered drug name not in database. |
+| **PRESCRIPTION_008** | `prescription` | `prescription_008.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `printed_ace_inhibitor` | ACE inhibitor prescription. |
+| **PRESCRIPTION_009** | `prescription` | `prescription_009.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `ppi_antacid` | PPI antacid prescribed before food. |
+| **PRESCRIPTION_010** | `prescription` | `prescription_010.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_negative_dose` | Negative strength artifact triggers hard stop. |
+| **PRESCRIPTION_011** | `prescription` | `prescription_011.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `medication_lab_conflict` | Potassium-sparing diuretic prescribed during hyperkalemia triggers safety hard stop. |
+| **PRESCRIPTION_012** | `prescription` | `prescription_012.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `short_course_macrolide` | 3-day antibiotic course. |
+| **PRESCRIPTION_013** | `prescription` | `prescription_013.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `fluoroquinolone` | Fluoroquinolone antibiotic. |
+| **PRESCRIPTION_014** | `prescription` | `prescription_014.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `thyroid_hormone` | Thyroid hormone replacement. |
+| **PRESCRIPTION_015** | `prescription` | `prescription_015.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `ppi_gastro` | Proton pump inhibitor. |
+| **PRESCRIPTION_016** | `prescription` | `prescription_016.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `arb_antihypertensive` | ARB blood pressure medication. |
+| **PRESCRIPTION_017** | `prescription` | `prescription_017.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `thiazide_diuretic` | Thiazide diuretic. |
+| **PRESCRIPTION_018** | `prescription` | `prescription_018.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `sulfonylurea_diabetes` | Sulfonylurea diabetes drug. |
+| **PRESCRIPTION_019** | `prescription` | `prescription_019.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `lipid_lowering_statin` | Statin lipid-lowering medication. |
+| **PRESCRIPTION_020** | `prescription` | `prescription_020.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `combination_antibiotic` | Broad spectrum combination antibiotic. |
+| **PRESCRIPTION_021** | `prescription` | `prescription_021.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `needs_manual_review` | `handwriting_misspelled` | Low OCR confidence misspelling requires drug candidate ranking. |
+| **PRESCRIPTION_022** | `prescription` | `prescription_022.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `multidrug_regimen` | Three-medication chronic care regimen. |
+| **PRESCRIPTION_023** | `prescription` | `prescription_023.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `antihistamine` | Antihistamine for allergy symptoms. |
+| **PRESCRIPTION_024** | `prescription` | `prescription_024.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `safe_to_display` | `tetracycline_antibiotic` | Tetracycline antibiotic. |
+| **PRESCRIPTION_025** | `prescription` | `prescription_025.txt` | `synthetic_anonymized_layout` | `independent_manual_annotation` | `hard_stop` | `hard_stop_unreadable_rx` | Unreadable handwriting blotch triggers hard stop. |
