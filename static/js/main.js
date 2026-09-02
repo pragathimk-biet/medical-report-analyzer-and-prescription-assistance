@@ -620,31 +620,42 @@ document.addEventListener('DOMContentLoaded', function() {
         englishBtn.classList.remove('bg-gray-200', 'text-gray-700');
     }
 
-    // Patient Follow-up RAG Chatbot Integration & Toggle
-    const toggleChatBtn = document.getElementById('toggle-chat-btn');
-    const chatCollapsibleBody = document.getElementById('chat-collapsible-body');
-    const chatChevron = document.getElementById('chat-chevron');
-    const chatToggleLabel = document.getElementById('chat-toggle-label');
-    const chatInput = document.getElementById('patient-chat-input');
-    const chatSendBtn = document.getElementById('patient-chat-send-btn');
-    const chatMessages = document.getElementById('chat-messages');
+    // ─── Floating Action Button (FAB) RAG Chatbot ───────────────────────────
+    const toggleChatBtn  = document.getElementById('toggle-chat-btn');
+    const chatPopup      = document.getElementById('chat-popup');
+    const chatCloseBtn   = document.getElementById('chat-close-btn');
+    const chatFabIconOpen  = document.getElementById('chat-fab-icon-open');
+    const chatFabIconClose = document.getElementById('chat-fab-icon-close');
+    const chatFabBadge   = document.getElementById('chat-fab-badge');
+    const chatInput      = document.getElementById('patient-chat-input');
+    const chatSendBtn    = document.getElementById('patient-chat-send-btn');
+    const chatMessages   = document.getElementById('chat-messages');
 
-    if (toggleChatBtn && chatCollapsibleBody) {
+    function openChatPopup() {
+        if (!chatPopup) return;
+        chatPopup.classList.remove('hidden');
+        if (chatFabIconOpen)  chatFabIconOpen.classList.add('hidden');
+        if (chatFabIconClose) chatFabIconClose.classList.remove('hidden');
+        if (chatFabBadge)     chatFabBadge.style.display = 'none';
+        setTimeout(() => { if (chatInput) chatInput.focus(); }, 120);
+    }
+
+    function closeChatPopup() {
+        if (!chatPopup) return;
+        chatPopup.classList.add('hidden');
+        if (chatFabIconOpen)  chatFabIconOpen.classList.remove('hidden');
+        if (chatFabIconClose) chatFabIconClose.classList.add('hidden');
+    }
+
+    if (toggleChatBtn) {
         toggleChatBtn.addEventListener('click', () => {
-            const isHidden = chatCollapsibleBody.classList.contains('hidden');
-            if (isHidden) {
-                chatCollapsibleBody.classList.remove('hidden');
-                if (chatChevron) chatChevron.classList.add('transform', 'rotate-180');
-                if (chatToggleLabel) chatToggleLabel.textContent = 'Collapse Chat';
-                setTimeout(() => {
-                    if (chatInput) chatInput.focus();
-                }, 100);
-            } else {
-                chatCollapsibleBody.classList.add('hidden');
-                if (chatChevron) chatChevron.classList.remove('transform', 'rotate-180');
-                if (chatToggleLabel) chatToggleLabel.textContent = 'Open Chat';
-            }
+            const isOpen = !chatPopup.classList.contains('hidden');
+            isOpen ? closeChatPopup() : openChatPopup();
         });
+    }
+
+    if (chatCloseBtn) {
+        chatCloseBtn.addEventListener('click', closeChatPopup);
     }
 
     if (chatSendBtn && chatInput && chatMessages) {
@@ -652,12 +663,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const query = chatInput.value.trim();
             if (!query) return;
 
-            // Ensure collapsible body is open if closed
-            if (chatCollapsibleBody && chatCollapsibleBody.classList.contains('hidden')) {
-                chatCollapsibleBody.classList.remove('hidden');
-                if (chatChevron) chatChevron.classList.add('transform', 'rotate-180');
-                if (chatToggleLabel) chatToggleLabel.textContent = 'Collapse Chat';
-            }
+            // Open chat if somehow closed
+            openChatPopup();
 
             // Append user message
             const userBubble = document.createElement('div');
@@ -670,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Append typing indicator
             const aiBubble = document.createElement('div');
             aiBubble.className = 'chat-message-bubble chat-ai';
-            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> Retrieving & analyzing patient report context...</span>';
+            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> Retrieving &amp; analyzing patient report context...</span>';
             chatMessages.appendChild(aiBubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 

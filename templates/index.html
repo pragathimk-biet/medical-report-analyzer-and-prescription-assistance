@@ -280,59 +280,7 @@
                 <div id="english-content" class="prose max-w-none"></div>
                 <div id="bangla-content" class="prose max-w-none hidden"></div>
 
-                <!-- Interactive Patient RAG Follow-up Chat Widget (Toggleable Below) -->
-                <div id="rag-chat-section" class="chat-container">
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50/70 border border-blue-200 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
-                        <!-- Toggle Header Button -->
-                        <button id="toggle-chat-btn" type="button" class="w-full px-4 sm:px-5 py-3.5 flex items-center justify-between text-left hover:bg-blue-100/50 transition cursor-pointer focus:outline-none">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm shadow flex-shrink-0">
-                                    🤖
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <h4 class="font-bold text-gray-900 text-sm sm:text-base">
-                                            Patient RAG Assistant Chatbot
-                                        </h4>
-                                        <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-blue-200">
-                                            Click to Toggle
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-gray-500 hidden sm:block mt-0.5">
-                                        Ask follow-up questions regarding your medical report, diet, or medications
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 flex-shrink-0">
-                                <span id="chat-toggle-label" class="text-xs font-bold text-blue-600 hidden sm:inline">Open Chat</span>
-                                <div id="chat-chevron" class="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm border border-blue-200 text-blue-600 transition-transform duration-300">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                </div>
-                            </div>
-                        </button>
-
-                        <!-- Collapsible Chat Body -->
-                        <div id="chat-collapsible-body" class="hidden border-t border-blue-100 p-4 sm:p-5 bg-white/95 transition-all">
-                            <p class="text-xs text-gray-600 mb-3 leading-relaxed">
-                                Ask clarifying questions regarding your laboratory biomarkers, diet recommendations, or prescribed medication safety.
-                            </p>
-
-                            <div id="chat-messages" class="space-y-3 mb-3 max-h-60 overflow-y-auto pr-1">
-                                <div class="chat-message-bubble chat-ai">
-                                    👋 <strong>Hello!</strong> I am your Patient RAG Assistant. Ask me anything about your analyzed medical report or active medications.
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="patient-chat-input" class="flex-grow px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Type your medical report question (e.g. What should I eat for high blood sugar?)...">
-                                <button id="patient-chat-send-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                                    Send Question
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- RAG Chatbot is now a floating FAB button — see bottom of page -->
 
             </div>
 
@@ -403,6 +351,74 @@
             </div>
         </div>
     </footer>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         FLOATING MEDICAL RAG CHATBOT — Circular FAB + Popup Panel
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Floating Chat Panel -->
+    <div id="chat-popup" class="chat-fab-popup hidden">
+        <!-- Panel Header -->
+        <div class="chat-fab-header">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-sm leading-tight">Patient RAG Assistant</p>
+                    <p class="text-blue-100 text-[11px] font-medium">Report-Grounded Medical AI</p>
+                </div>
+            </div>
+            <button id="chat-close-btn" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition text-white" aria-label="Close chat">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages" class="chat-fab-messages">
+            <div class="chat-message-bubble chat-ai">
+                👋 <strong>Hello!</strong> I'm your Patient RAG Assistant. Upload a report and ask me anything — diet, biomarkers, medications.
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-fab-input-area">
+            <input
+                type="text"
+                id="patient-chat-input"
+                class="chat-fab-input"
+                placeholder="Ask about your report, diet, meds…"
+                autocomplete="off"
+            />
+            <button id="patient-chat-send-btn" class="chat-fab-send-btn" aria-label="Send">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Action Button (Circular Medical Icon) -->
+    <button id="toggle-chat-btn" class="chat-fab-btn" aria-label="Open Patient Assistant">
+        <!-- Medical Cross / Stethoscope Icon -->
+        <svg id="chat-fab-icon-open" class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Stethoscope-style icon -->
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 3H7a2 2 0 00-2 2v5a6 6 0 006 6 6 6 0 006-6V5a2 2 0 00-2-2h-2m-2 0V1m0 2v2m0 0h2m-2 0H9" />
+            <circle cx="12" cy="19" r="2" fill="currentColor" stroke="none"/>
+        </svg>
+        <svg id="chat-fab-icon-close" class="w-6 h-6 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        <!-- Notification badge -->
+        <span id="chat-fab-badge" class="chat-fab-badge"></span>
+    </button>
 
     <!-- Client Script -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
