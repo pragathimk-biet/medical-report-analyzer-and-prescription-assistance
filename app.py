@@ -1197,7 +1197,7 @@ def upload_prescription():
                 p_name_form = request.form.get('patient_name')
 
                 # Create standardized Prescription Pipeline Context
-                pipeline_ctx = InputRouter.create_pipeline_context(
+                pipeline_ctx = create_pipeline_context(
                     document_type="prescription",
                     raw_input=filepath,
                     metadata={
