@@ -346,6 +346,39 @@
           "name": "1060.06",
           "dosage": null,
           "added_at": "2026-08-18T22:25:26.607239"
+        },
+        {
+          "name": "Citerezin",
+          "dosage": {
+            "morning": 1,
+            "evening": 0,
+            "night": 1
+          },
+          "class": "Unclassified",
+          "confidence_status": "UNCLASSIFIED",
+          "added_at": "2026-09-02T14:06:06.087843"
+        },
+        {
+          "name": "cetirizine",
+          "dosage": {
+            "morning": 1,
+            "evening": 0,
+            "night": 1
+          },
+          "class": "Unclassified",
+          "confidence_status": "UNCLASSIFIED",
+          "added_at": "2026-09-02T14:08:50.911949"
+        },
+        {
+          "name": "amoxici...",
+          "dosage": {
+            "morning": 1,
+            "evening": 0,
+            "night": 1
+          },
+          "class": "Unclassified",
+          "confidence_status": "UNCLASSIFIED",
+          "added_at": "2026-09-02T14:20:55.113728"
         }
       ],
       "past_lab_results": [
@@ -900,6 +933,94 @@
           "validation_status": "VALIDATED",
           "rule_id": "FASTING_GLUCOSE_NORMAL_001",
           "evaluated_at": "2026-08-29T00:46:23.023948"
+        },
+        {
+          "visit_id": "VISIT-067",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 0.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T00:28:55.370547"
+        },
+        {
+          "visit_id": "VISIT-068",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 0.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T10:44:19.076636"
+        },
+        {
+          "visit_id": "VISIT-069",
+          "parameter": "Calcium",
+          "key": "calcium",
+          "value": 125.0,
+          "unit": "mg/dL",
+          "status": "HIGH",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "CALCIUM_HIGH_001",
+          "evaluated_at": "2026-09-02T13:45:02.110242"
+        },
+        {
+          "visit_id": "VISIT-069",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T13:45:02.110242"
+        },
+        {
+          "visit_id": "VISIT-072",
+          "parameter": "Calcium",
+          "key": "calcium",
+          "value": 125.0,
+          "unit": "mg/dL",
+          "status": "HIGH",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "CALCIUM_HIGH_001",
+          "evaluated_at": "2026-09-02T14:12:26.105197"
+        },
+        {
+          "visit_id": "VISIT-072",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T14:12:26.105197"
+        },
+        {
+          "visit_id": "VISIT-073",
+          "parameter": "Calcium",
+          "key": "calcium",
+          "value": 125.0,
+          "unit": "mg/dL",
+          "status": "HIGH",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "CALCIUM_HIGH_001",
+          "evaluated_at": "2026-09-02T14:12:34.971007"
+        },
+        {
+          "visit_id": "VISIT-073",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T14:12:34.971007"
         }
       ],
       "prescriptions": [
@@ -1166,6 +1287,24 @@
           "medicine_name": "Metformin",
           "extracted_snippet": null,
           "timestamp": "2026-08-29T00:46:40.038133"
+        },
+        {
+          "visit_id": "VISIT-070",
+          "medicine_name": "Citerezin",
+          "extracted_snippet": null,
+          "timestamp": "2026-09-02T14:06:06.112744"
+        },
+        {
+          "visit_id": "VISIT-071",
+          "medicine_name": "cetirizine",
+          "extracted_snippet": null,
+          "timestamp": "2026-09-02T14:08:50.932357"
+        },
+        {
+          "visit_id": "VISIT-074",
+          "medicine_name": "amoxici...",
+          "extracted_snippet": null,
+          "timestamp": "2026-09-02T14:20:55.129180"
         }
       ],
       "reports": [
@@ -1232,6 +1371,36 @@
         {
           "visit_id": "VISIT-065",
           "timestamp": "2026-08-29T00:46:23.023948",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-067",
+          "timestamp": "2026-09-02T00:28:55.370547",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-068",
+          "timestamp": "2026-09-02T10:44:19.076636",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-069",
+          "timestamp": "2026-09-02T13:45:02.110242",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-072",
+          "timestamp": "2026-09-02T14:12:26.105197",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-073",
+          "timestamp": "2026-09-02T14:12:34.971007",
           "type": "LAB_REPORT",
           "findings_count": 2
         }
@@ -1621,6 +1790,54 @@
           "timestamp": "2026-08-29T00:46:40.038133",
           "type": "PRESCRIPTION",
           "details": "Prescription uploaded: Metformin"
+        },
+        {
+          "visit_id": "VISIT-067",
+          "timestamp": "2026-09-02T00:28:55.370547",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-068",
+          "timestamp": "2026-09-02T10:44:19.076636",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-069",
+          "timestamp": "2026-09-02T13:45:02.110242",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-070",
+          "timestamp": "2026-09-02T14:06:06.112744",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: Citerezin"
+        },
+        {
+          "visit_id": "VISIT-071",
+          "timestamp": "2026-09-02T14:08:50.932357",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: cetirizine"
+        },
+        {
+          "visit_id": "VISIT-072",
+          "timestamp": "2026-09-02T14:12:26.105197",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-073",
+          "timestamp": "2026-09-02T14:12:34.971007",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-074",
+          "timestamp": "2026-09-02T14:20:55.129180",
+          "type": "PRESCRIPTION",
+          "details": "Prescription uploaded: amoxici..."
         }
       ]
     },
@@ -2902,6 +3119,28 @@
           "validation_status": "PARTIALLY_VALIDATED",
           "rule_id": "REPORT_INLINE_NORMAL_001",
           "evaluated_at": "2026-09-01T12:29:38.941806"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T00:08:35.072968"
+        },
+        {
+          "visit_id": "VISIT-004",
+          "parameter": "Mean Blood Glucose",
+          "key": "mean_blood_glucose",
+          "value": 6.0,
+          "unit": "mg/dL",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-09-02T00:08:35.072968"
         }
       ],
       "prescriptions": [],
@@ -2923,6 +3162,12 @@
           "timestamp": "2026-09-01T12:29:38.941806",
           "type": "LAB_REPORT",
           "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-09-02T00:08:35.072968",
+          "type": "LAB_REPORT",
+          "findings_count": 2
         }
       ],
       "visits": [
@@ -2941,6 +3186,12 @@
         {
           "visit_id": "VISIT-003",
           "timestamp": "2026-09-01T12:29:38.941806",
+          "type": "LAB_REPORT",
+          "findings_count": 2
+        },
+        {
+          "visit_id": "VISIT-004",
+          "timestamp": "2026-09-02T00:08:35.072968",
           "type": "LAB_REPORT",
           "findings_count": 2
         }
@@ -3366,6 +3617,120 @@
         {
           "visit_id": "VISIT-018",
           "timestamp": "2026-09-01T00:12:55.834560",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    },
+    "ravi": {
+      "patient_name": "Ravi",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "HbA1c",
+          "key": "hba1c",
+          "value": 1.0,
+          "unit": "%",
+          "status": "NORMAL",
+          "validation_status": "PARTIALLY_VALIDATED",
+          "rule_id": "HBA1C_NORMAL_001",
+          "evaluated_at": "2026-09-02T00:28:45.020260"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-09-02T00:28:45.020260",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-09-02T00:28:45.020260",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ]
+    },
+    "kiran_kumar_somappa": {
+      "patient_name": "Kiran Kumar Somappa",
+      "active_medications": [],
+      "past_lab_results": [
+        {
+          "visit_id": "VISIT-001",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 102.0,
+          "unit": "mg/dl",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-09-02T13:41:17.761738"
+        },
+        {
+          "visit_id": "VISIT-002",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 102.0,
+          "unit": "mg/dl",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-09-02T13:41:29.385758"
+        },
+        {
+          "visit_id": "VISIT-003",
+          "parameter": "Fasting Glucose",
+          "key": "fasting_glucose",
+          "value": 102.0,
+          "unit": "mg/dl",
+          "status": "NORMAL",
+          "validation_status": "VALIDATED",
+          "rule_id": "REPORT_INLINE_NORMAL_001",
+          "evaluated_at": "2026-09-02T13:43:43.442234"
+        }
+      ],
+      "prescriptions": [],
+      "reports": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-09-02T13:41:17.761738",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-09-02T13:41:29.385758",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-09-02T13:43:43.442234",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        }
+      ],
+      "visits": [
+        {
+          "visit_id": "VISIT-001",
+          "timestamp": "2026-09-02T13:41:17.761738",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-002",
+          "timestamp": "2026-09-02T13:41:29.385758",
+          "type": "LAB_REPORT",
+          "findings_count": 1
+        },
+        {
+          "visit_id": "VISIT-003",
+          "timestamp": "2026-09-02T13:43:43.442234",
           "type": "LAB_REPORT",
           "findings_count": 1
         }

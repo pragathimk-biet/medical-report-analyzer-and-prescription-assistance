@@ -1,57 +1,318 @@
-.prose {
-    line-height: 1.6;
-    color: #374151;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --primary-glow: rgba(37, 99, 235, 0.15);
+    --surface-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --shadow-hover: 0 10px 25px -3px rgba(37, 99, 235, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
 }
 
-.prose p {
-    margin-bottom: 1.5em;
+/* Base & Typography */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-#drop-zone {
-    transition: all 0.3s ease;
+html {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
 }
 
-#drop-zone:hover {
-    background-color: #f8fafc;
+body {
+    background: radial-gradient(circle at 50% 0%, #f1f5f9 0%, #e2e8f0 100%);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
 }
 
+/* Glassmorphism & Modern Containers */
+.glass-header {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: var(--shadow-soft);
+}
+
+.main-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    transition: box-shadow 0.2s ease;
+}
+
+/* Interactive Tabs */
+.tab-button {
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    outline: none;
+}
+
+.tab-button.active {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+/* Drag & Drop Areas */
+.drop-zone-interactive {
+    border: 2px dashed #cbd5e1;
+    background: #f8fafc;
+    transition: all 0.25s ease;
+}
+
+.drop-zone-interactive:hover,
+.drop-zone-interactive.dragover {
+    border-color: var(--primary);
+    background: #eff6ff;
+    box-shadow: 0 0 0 4px var(--primary-glow);
+}
+
+/* Button & Touch Target Optimizations */
+button, select, input, label[for], label.cursor-pointer {
+    min-height: 40px;
+    touch-action: manipulation;
+}
+
+@media (max-width: 640px) {
+    button, select, input, label.cursor-pointer {
+        min-height: 44px; /* Apple & Android standard minimum touch target */
+    }
+}
+
+/* Animations */
 .animate-spin {
-    animation: spin 1s linear infinite;
+    animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.08); }
+}
+
+.status-pulse {
+    animation: pulseGlow 2s infinite ease-in-out;
 }
 
 /* Highlighted Patient-Friendly Summary & Finding Cards */
 .overall-summary-card {
     background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
     border-left: 4px solid #2563eb;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    margin: 1.5rem 0;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.08);
+    padding: 1.15rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin: 1.25rem 0;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
 }
 
 .possible-finding-card {
     background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
     border-left: 4px solid #d97706;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    margin: 1.5rem 0;
-    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.08);
+    padding: 1.15rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin: 1.25rem 0;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.08);
 }
 
 .safety-alert-card {
     background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     border-left: 4px solid #dc2626;
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    margin: 1.5rem 0;
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.08);
+    padding: 1.15rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin: 1.25rem 0;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+}
+
+/* Markdown & Rendered Content Styling (Prose) */
+.prose {
+    line-height: 1.7;
+    color: #1e293b;
+    font-size: 0.975rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+    color: #0f172a;
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+    line-height: 1.3;
+}
+
+.prose h1 { font-size: 1.5rem; }
+.prose h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.35rem; }
+.prose h3 { font-size: 1.1rem; }
+
+.prose p {
+    margin-bottom: 1rem;
+}
+
+.prose ul, .prose ol {
+    margin: 0.75rem 0 1rem 1.25rem;
+    padding-left: 0.5rem;
+}
+
+.prose li {
+    margin-bottom: 0.35rem;
+}
+
+.prose blockquote {
+    border-left: 3px solid #94a3b8;
+    background: #f8fafc;
+    padding: 0.75rem 1rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 1rem 0;
+    color: #475569;
+    font-style: italic;
+}
+
+/* Responsive Table Wrapper & Markdown Tables */
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 1.25rem 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.prose table {
+    width: 100%;
+    min-width: 520px; /* Ensures clean column display on scroll */
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.prose th {
+    background-color: #f1f5f9;
+    color: #1e293b;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.prose td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.prose tr:last-child td {
+    border-bottom: none;
+}
+
+.prose tr:nth-child(even) td {
+    background-color: #fafbfc;
+}
+
+.prose tr:hover td {
+    background-color: #f0f7ff;
+}
+
+/* Code & Badges */
+.prose code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: #f1f5f9;
+    color: #0369a1;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Chatbot Section Styling */
+.chat-container {
+    border-top: 1px solid var(--border-color);
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+}
+
+.chat-message-bubble {
+    max-width: 88%;
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.chat-user {
+    background: var(--primary);
+    color: #ffffff;
+    border-bottom-right-radius: 0.25rem;
+    margin-left: auto;
+}
+
+.chat-ai {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-bottom-left-radius: 0.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Responsive Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Device-Specific Tweaks */
+@media (max-width: 480px) {
+    /* iPhone & Pixel portrait styles */
+    .prose h1 { font-size: 1.25rem; }
+    .prose h2 { font-size: 1.1rem; }
+    .prose h3 { font-size: 1rem; }
+    .overall-summary-card,
+    .possible-finding-card,
+    .safety-alert-card {
+        padding: 0.875rem 1rem;
+    }
 }
