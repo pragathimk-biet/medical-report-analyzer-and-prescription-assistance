@@ -1535,7 +1535,7 @@ class PatientHistoryRAGChatbot:
     """
 
     @classmethod
-    def answer_patient_query(cls, patient_id, query_text, report_context=None):
+    def answer_patient_query(cls, patient_id, query_text, report_context=None, context_type='report'):
         if not query_text or not isinstance(query_text, str):
             return "Please enter a valid follow-up question regarding your medical report or medications."
 
@@ -1549,7 +1549,10 @@ class PatientHistoryRAGChatbot:
         retrieval_context.append(f"PATIENT IDENTIFIER: {p_id}")
 
         if report_context and isinstance(report_context, str) and report_context.strip():
-            retrieval_context.append(f"CURRENT ATTACHED MEDICAL REPORT & VERIFIED FINDINGS:\n{report_context.strip()}")
+            if context_type == 'prescription':
+                retrieval_context.append(f"CURRENT ATTACHED PRESCRIPTION ANALYSIS:\n{report_context.strip()}")
+            else:
+                retrieval_context.append(f"CURRENT ATTACHED MEDICAL REPORT & VERIFIED FINDINGS:\n{report_context.strip()}")
 
         if active_meds:
             med_lines = [f"- {m.get('medication', m.get('name'))} ({m.get('strength', 'N/A')}, {m.get('frequency', 'N/A')})" for m in active_meds]
@@ -1568,14 +1571,35 @@ class PatientHistoryRAGChatbot:
 
         context_str = "\n\n".join(retrieval_context)
 
-        system_prompt = """You are an empathetic, expert Clinical Patient Assistant AI.
+        # ── Choose system prompt based on context type ─────────────────────────
+        if context_type == 'prescription':
+            system_prompt = """You are an expert Clinical Pharmacist and Patient Education AI.
+Your role is to help patients understand their prescription in plain language — what each drug is for, how and when to take it, important side effects, food/drug interactions, and lifestyle advice around their medications.
+Rules:
+1. Always ground your answers strictly on the CURRENT ATTACHED PRESCRIPTION ANALYSIS provided in the context.
+2. For every drug mentioned in the prescription, explain: (a) what it treats, (b) how/when to take it (with or without food, morning/night), (c) common side effects to watch for, (d) critical interactions (food, alcohol, other drugs), and (e) when to call a doctor.
+3. If the patient asks a dosage or drug interaction question, answer directly from the prescription context. Do NOT invent doses or drug names.
+4. Highlight any important safety warnings (e.g. avoid grapefruit with statins, avoid alcohol with metronidazole).
+5. NEVER confirm a final clinical diagnosis. Use language like "this medication is commonly prescribed for...".
+6. Always close with: consult your prescribing doctor or pharmacist for personalized guidance and any medication changes."""
+        elif context_type == 'symptoms':
+            system_prompt = """You are an empathetic Clinical Triage AI assistant.
+Your role is to discuss the patient's described symptoms, possible next steps, and when to seek urgent care.
+Rules:
+1. Base your answers on the CURRENT SYMPTOM ANALYSIS provided in the context.
+2. Explain which body system might be involved, possible common causes (without diagnosing), and red flag symptoms requiring urgent ER visit.
+3. Provide general comfort care and self-monitoring advice where safe.
+4. Always direct the patient to consult a doctor for formal diagnosis — NEVER make a definitive diagnosis.
+5. Be empathetic and calm in tone."""
+        else:
+            system_prompt = """You are an empathetic, expert Clinical Patient Assistant AI.
 Your role is to directly answer the patient's questions about their current attached medical report, specific test findings, dietary guidelines, and medications.
 Rules:
 1. Always ground your answer strictly in the CURRENT ATTACHED MEDICAL REPORT and retrieved patient context.
 2. Directly reference the specific test names, observed values, units, and status from the attached report (for example, if Post Prandial Blood Sugar is 262 mg/dl, cite 262 mg/dl specifically).
 3. If the patient asks "What should I do to get normal" or asks for dietary advice, provide clear, actionable, evidence-based lifestyle guidance (e.g. low glycemic index foods, complex carbohydrates, fiber-rich vegetables, portion control, regular post-meal walking, hydration) and advise consulting the recommended specialist doctor (e.g. Endocrinologist / Diabetologist).
 4. NEVER hallucinate test values from unrelated files.
-5. NEVER confirm a final clinical diagnosis as an absolute guarantee (e.g. do not say "you have severe diabetes"). Use patient-friendly language like "suggests elevated blood sugar after meals".
+5. NEVER confirm a final clinical diagnosis as an absolute guarantee. Use patient-friendly language.
 6. Always conclude with a recommendation to consult their primary care doctor or specialist for diagnostic confirmation and personalized medical care."""
 
         user_prompt = f"Patient Question: {query_text}\n\nRetrieved Structured Patient & Report Context:\n{context_str}"
@@ -1587,7 +1611,8 @@ Rules:
         except Exception as e:
             logger.warning(f"RAG Chatbot AI fallback: {e}")
             if report_context:
-                return f"Based on your attached report for {p_id}, please review the test parameters listed above. We recommend discussing diet, lifestyle adjustments, and follow-up testing with your primary care physician or specialist."
+                label = "prescription" if context_type == 'prescription' else "attached report"
+                return f"Based on your {label} for {p_id}, please review the findings listed above. We recommend discussing any questions with your prescribing doctor or pharmacist."
             if active_meds:
                 med_names = ", ".join([m.get("name", m.get("medication", "Medication")) for m in active_meds])
                 return f"Based on your recorded patient history, active medications include: {med_names}. Please consult your primary care doctor for personalized medical guidance."
@@ -1600,11 +1625,16 @@ def patient_chat_endpoint():
         patient_id = data.get('patient_id', 'default_patient')
         query_text = data.get('query', '').strip()
         report_context = data.get('report_context', '')
+        context_type = data.get('context_type', 'report')  # 'report' | 'prescription' | 'symptoms'
 
         if not query_text:
             return jsonify({'success': False, 'error': 'Query text cannot be empty.'}), 400
 
-        reply = PatientHistoryRAGChatbot.answer_patient_query(patient_id, query_text, report_context=report_context)
+        reply = PatientHistoryRAGChatbot.answer_patient_query(
+            patient_id, query_text,
+            report_context=report_context,
+            context_type=context_type
+        )
         return jsonify({
             'success': True,
             'patient_id': patient_id,

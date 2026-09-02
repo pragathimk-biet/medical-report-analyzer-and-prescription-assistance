@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+﻿document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
     const reportTab = document.getElementById('report-tab');
     const symptomsTab = document.getElementById('symptoms-tab');
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
         englishBtn.classList.remove('bg-gray-200', 'text-gray-700');
     }
 
-    // ─── Floating Action Button (FAB) RAG Chatbot ───────────────────────────
+    // === Floating Action Button (FAB) RAG Chatbot ===
     const toggleChatBtn  = document.getElementById('toggle-chat-btn');
     const chatPopup      = document.getElementById('chat-popup');
     const chatCloseBtn   = document.getElementById('chat-close-btn');
@@ -630,6 +630,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatInput      = document.getElementById('patient-chat-input');
     const chatSendBtn    = document.getElementById('patient-chat-send-btn');
     const chatMessages   = document.getElementById('chat-messages');
+    const chatSubtitle   = document.getElementById('chat-fab-subtitle');
+
+    // Context config for each tab
+    const chatContextConfig = {
+        report: {
+            subtitle: 'Lab Report Grounded AI',
+            placeholder: 'Ask about your lab results, diet, normal ranges...',
+            typingMsg: 'Retrieving &amp; analyzing your lab report context...'
+        },
+        medicine: {
+            subtitle: 'Prescription Pharmacist AI',
+            placeholder: 'Ask about your medications, side effects, interactions...',
+            typingMsg: 'Retrieving &amp; analyzing your prescription context...'
+        },
+        symptoms: {
+            subtitle: 'Symptom Triage AI',
+            placeholder: 'Ask about your symptoms, urgency, or next steps...',
+            typingMsg: 'Analyzing your symptom context...'
+        }
+    };
+
+    function updateChatContext() {
+        const cfg = chatContextConfig[activeTab] || chatContextConfig.report;
+        if (chatInput)    chatInput.placeholder = cfg.placeholder;
+        if (chatSubtitle) chatSubtitle.textContent = cfg.subtitle;
+    }
 
     function openChatPopup() {
         if (!chatPopup) return;
@@ -637,6 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chatFabIconOpen)  chatFabIconOpen.classList.add('hidden');
         if (chatFabIconClose) chatFabIconClose.classList.remove('hidden');
         if (chatFabBadge)     chatFabBadge.style.display = 'none';
+        updateChatContext();
         setTimeout(() => { if (chatInput) chatInput.focus(); }, 120);
     }
 
@@ -663,10 +690,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const query = chatInput.value.trim();
             if (!query) return;
 
-            // Open chat if somehow closed
             openChatPopup();
 
-            // Append user message
+            // Map tab -> context_type for backend
+            const contextTypeMap = { report: 'report', medicine: 'prescription', symptoms: 'symptoms' };
+            const contextType = contextTypeMap[activeTab] || 'report';
+            const cfg = chatContextConfig[activeTab] || chatContextConfig.report;
+
             const userBubble = document.createElement('div');
             userBubble.className = 'chat-message-bubble chat-user';
             userBubble.textContent = query;
@@ -674,10 +704,9 @@ document.addEventListener('DOMContentLoaded', function() {
             chatInput.value = '';
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // Append typing indicator
             const aiBubble = document.createElement('div');
             aiBubble.className = 'chat-message-bubble chat-ai';
-            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> Retrieving &amp; analyzing patient report context...</span>';
+            aiBubble.innerHTML = `<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> ${cfg.typingMsg}</span>`;
             chatMessages.appendChild(aiBubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -692,7 +721,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({
                         query: query,
                         patient_id: patientIdToSend,
-                        report_context: reportContextToSend
+                        report_context: reportContextToSend,
+                        context_type: contextType
                     })
                 });
                 const data = await res.json();
@@ -713,6 +743,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') handleSendQuery();
         });
     }
+
+    // Update chat context dynamically when user switches tabs
+    [reportTab, symptomsTab, medicineTab].forEach(btn => {
+        if (btn) btn.addEventListener('click', () => setTimeout(updateChatContext, 50));
+    });
 
 
 
