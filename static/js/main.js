@@ -610,15 +610,44 @@ document.addEventListener('DOMContentLoaded', function() {
         englishBtn.classList.remove('bg-gray-200', 'text-gray-700');
     }
 
-    // Patient Follow-up RAG Chatbot Integration
+    // Patient Follow-up RAG Chatbot Integration & Toggle
+    const toggleChatBtn = document.getElementById('toggle-chat-btn');
+    const chatCollapsibleBody = document.getElementById('chat-collapsible-body');
+    const chatChevron = document.getElementById('chat-chevron');
+    const chatToggleLabel = document.getElementById('chat-toggle-label');
     const chatInput = document.getElementById('patient-chat-input');
     const chatSendBtn = document.getElementById('patient-chat-send-btn');
     const chatMessages = document.getElementById('chat-messages');
+
+    if (toggleChatBtn && chatCollapsibleBody) {
+        toggleChatBtn.addEventListener('click', () => {
+            const isHidden = chatCollapsibleBody.classList.contains('hidden');
+            if (isHidden) {
+                chatCollapsibleBody.classList.remove('hidden');
+                if (chatChevron) chatChevron.classList.add('transform', 'rotate-180');
+                if (chatToggleLabel) chatToggleLabel.textContent = 'Collapse Chat';
+                setTimeout(() => {
+                    if (chatInput) chatInput.focus();
+                }, 100);
+            } else {
+                chatCollapsibleBody.classList.add('hidden');
+                if (chatChevron) chatChevron.classList.remove('transform', 'rotate-180');
+                if (chatToggleLabel) chatToggleLabel.textContent = 'Open Chat';
+            }
+        });
+    }
 
     if (chatSendBtn && chatInput && chatMessages) {
         async function handleSendQuery() {
             const query = chatInput.value.trim();
             if (!query) return;
+
+            // Ensure collapsible body is open if closed
+            if (chatCollapsibleBody && chatCollapsibleBody.classList.contains('hidden')) {
+                chatCollapsibleBody.classList.remove('hidden');
+                if (chatChevron) chatChevron.classList.add('transform', 'rotate-180');
+                if (chatToggleLabel) chatToggleLabel.textContent = 'Collapse Chat';
+            }
 
             // Append user message
             const userBubble = document.createElement('div');
@@ -631,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Append typing indicator
             const aiBubble = document.createElement('div');
             aiBubble.className = 'chat-message-bubble chat-ai';
-            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce"></span> Thinking...</span>';
+            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> Retrieving & analyzing patient history...</span>';
             chatMessages.appendChild(aiBubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -659,6 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') handleSendQuery();
         });
     }
+
 
     function handleError(err) {
         console.error('Error details:', err);
