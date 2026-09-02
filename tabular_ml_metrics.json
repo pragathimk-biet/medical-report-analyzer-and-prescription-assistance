@@ -1,0 +1,328 @@
+{
+  "best_model": "DecisionTree",
+  "dataset": {
+    "total_samples": 3000,
+    "class_distribution": {
+      "safe_to_display": 1500,
+      "needs_manual_review": 900,
+      "hard_stop": 600
+    },
+    "features": [
+      "value",
+      "unit_validity",
+      "ref_range_validity",
+      "ocr_confidence",
+      "extraction_confidence",
+      "evidence_availability",
+      "rule_conflict",
+      "analyte_validity"
+    ],
+    "source": "UCI CKD + UCI HCV Clinical Distributions + Derived Document Extraction Metadata"
+  },
+  "split": {
+    "train_percent": 70,
+    "val_percent": 15,
+    "test_percent": 15,
+    "test_samples": 450,
+    "stratified": true
+  },
+  "label_definition": {
+    "safe_to_display (0)": "High OCR confidence (>=0.85), valid units, plausible values, zero rule conflicts.",
+    "needs_manual_review (1)": "Borderline OCR confidence (0.50-0.84), missing ref range, or unregistered analyte.",
+    "hard_stop (2)": "Critical rule conflict, implausible value, low OCR (<0.50), or invalid unit."
+  },
+  "leakage_analysis": {
+    "derived_label_explanation": "The target safety labels are generated from extraction metadata rules (e.g. OCR confidence, unit validity, rule conflict). While clinical value distributions derive from UCI CKD/HCV datasets, the safety governance targets reflect document quality rules. Consequently, tree-based models achieve high accuracy by learning these rule boundaries. This performance evaluates rule-boundary separation rather than unconstrained real-world clinical generalization.",
+    "label_leakage_present": true
+  },
+  "models": {
+    "DecisionTree": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 1.0,
+      "cross_validation_std": 0.0,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    },
+    "RandomForest": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 1.0,
+      "cross_validation_std": 0.0,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    },
+    "LogisticRegression": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 0.997,
+      "cross_validation_std": 0.0018,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    },
+    "SVM": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 0.9974,
+      "cross_validation_std": 0.0021,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    },
+    "GradientBoosting": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 1.0,
+      "cross_validation_std": 0.0,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    }
+  },
+  "evaluation_summary": {
+    "Decision Tree": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 1.0,
+      "cross_validation_std": 0.0,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    },
+    "Random Forest": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 1.0,
+      "cross_validation_std": 0.0,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    },
+    "Logistic Regression": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "hard_stop_recall": 1.0,
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "cross_validation_mean": 0.997,
+      "cross_validation_std": 0.0018,
+      "confusion_matrix": [
+        [
+          225,
+          0,
+          0
+        ],
+        [
+          0,
+          135,
+          0
+        ],
+        [
+          0,
+          0,
+          90
+        ]
+      ]
+    }
+  },
+  "selected_model": {
+    "model_name": "DecisionTree",
+    "selection_priority": "Lowest false_safe_rate -> Highest hard_stop_recall -> Highest macro_f1 -> Highest accuracy",
+    "accuracy": 1.0,
+    "macro_precision": 1.0,
+    "macro_recall": 1.0,
+    "macro_f1": 1.0,
+    "hard_stop_recall": 1.0,
+    "false_safe_rate": 0.0,
+    "cross_validation_mean": 1.0,
+    "cross_validation_std": 0.0
+  },
+  "final_test_metrics": {
+    "accuracy": 1.0,
+    "macro_precision": 1.0,
+    "macro_recall": 1.0,
+    "macro_f1": 1.0,
+    "hard_stop_recall": 1.0,
+    "false_safe_count": 0,
+    "false_safe_rate": 0.0,
+    "cross_validation_mean": 1.0,
+    "cross_validation_std": 0.0,
+    "confusion_matrix": [
+      [
+        225,
+        0,
+        0
+      ],
+      [
+        0,
+        135,
+        0
+      ],
+      [
+        0,
+        0,
+        90
+      ]
+    ]
+  },
+  "confusion_matrix": [
+    [
+      225,
+      0,
+      0
+    ],
+    [
+      0,
+      135,
+      0
+    ],
+    [
+      0,
+      0,
+      90
+    ]
+  ],
+  "limitations": [
+    "Synthetic document extraction metadata combined with real UCI lab value distributions.",
+    "High test accuracy reflects clear separation in extraction quality rule boundaries.",
+    "ML remains an secondary safety layer; deterministic biological and clinical rules maintain final authority."
+  ]
+}

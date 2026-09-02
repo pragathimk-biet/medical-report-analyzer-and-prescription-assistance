@@ -1,0 +1,855 @@
+{
+  "metadata": {
+    "name": "Medical Laboratory Reference Rules",
+    "version": "2.0",
+    "purpose": "Deterministic rule-engine evaluation with provenance and rule auditability",
+    "warning": "Generic reference values are for software testing and educational use. When a patient report provides its own reference range, use that range first."
+  },
+
+  "diabetes": {
+    "hba1c": {
+      "aliases": [
+        "HbA1c",
+        "HbA1",
+        "Hemoglobin A1c",
+        "Glycated Hemoglobin",
+        "Glycosylated Hemoglobin",
+        "Glycosylated Haemoglobin"
+      ],
+      "unit": "%",
+      "type": "category",
+      "source": "ADA 2024 Standards of Care",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "HBA1C_NORMAL_001",
+          "category": "diabetes",
+          "condition": "value < 5.7",
+          "max_exclusive": 5.7,
+          "status": "NORMAL",
+          "explanation": "HbA1c below 5.7% is within the normal glycemic reference range."
+        },
+        {
+          "rule_id": "HBA1C_PREDIABETES_001",
+          "category": "diabetes",
+          "condition": "5.7 <= value < 6.5",
+          "min_inclusive": 5.7,
+          "max_exclusive": 6.5,
+          "status": "PREDIABETES",
+          "explanation": "HbA1c between 5.7% and 6.4% indicates prediabetes glycemic range."
+        },
+        {
+          "rule_id": "HBA1C_DIABETES_RANGE_001",
+          "category": "diabetes",
+          "condition": "value >= 6.5",
+          "min_inclusive": 6.5,
+          "status": "DIABETES_RANGE",
+          "explanation": "HbA1c 6.5% or higher is within the diabetes diagnostic threshold range."
+        }
+      ]
+    },
+
+    "mean_blood_glucose": {
+      "aliases": [
+        "Mean Blood Glucose",
+        "Average Blood Glucose",
+        "eAG",
+        "MBG",
+        "Estimated Average Glucose"
+      ],
+      "unit": "mg/dL",
+      "type": "reference_range",
+      "source": "ADA 2024 Standards of Care (eAG Formula)",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "MBG_LOW_001",
+      "rule_id_normal": "MBG_NORMAL_001",
+      "rule_id_high": "MBG_HIGH_001",
+      "reference": {
+        "min": 70,
+        "max": 154
+      }
+    },
+
+    "fasting_glucose": {
+      "aliases": [
+        "Fasting Glucose",
+        "Fasting Blood Sugar",
+        "FBS",
+        "FPG",
+        "Fasting Plasma Glucose"
+      ],
+      "unit": "mg/dL",
+      "type": "category",
+      "source": "ADA 2024 Standards of Care",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "FASTING_GLUCOSE_NORMAL_001",
+          "category": "diabetes",
+          "condition": "value <= 99",
+          "max_inclusive": 99,
+          "status": "NORMAL",
+          "explanation": "Fasting blood glucose up to 99 mg/dL is normal."
+        },
+        {
+          "rule_id": "FASTING_GLUCOSE_PREDIABETES_001",
+          "category": "diabetes",
+          "condition": "100 <= value <= 125",
+          "min_inclusive": 100,
+          "max_inclusive": 125,
+          "status": "PREDIABETES_RANGE",
+          "explanation": "Fasting blood glucose 100 to 125 mg/dL indicates impaired fasting glucose (prediabetes range)."
+        },
+        {
+          "rule_id": "FASTING_GLUCOSE_DIABETES_RANGE_001",
+          "category": "diabetes",
+          "condition": "value >= 126",
+          "min_inclusive": 126,
+          "status": "DIABETES_RANGE",
+          "explanation": "Fasting blood glucose 126 mg/dL or higher is within the diabetes threshold range."
+        }
+      ]
+    },
+
+    "ogtt_2_hour": {
+      "aliases": [
+        "2 Hour Glucose",
+        "2h Glucose",
+        "OGTT",
+        "Oral Glucose Tolerance Test"
+      ],
+      "unit": "mg/dL",
+      "type": "category",
+      "source": "ADA 2024 Standards of Care",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "OGTT_NORMAL_001",
+          "category": "diabetes",
+          "condition": "value <= 139",
+          "max_inclusive": 139,
+          "status": "NORMAL",
+          "explanation": "2-hour OGTT below 140 mg/dL is normal."
+        },
+        {
+          "rule_id": "OGTT_PREDIABETES_001",
+          "category": "diabetes",
+          "condition": "140 <= value <= 199",
+          "min_inclusive": 140,
+          "max_inclusive": 199,
+          "status": "PREDIABETES_RANGE",
+          "explanation": "2-hour OGTT 140 to 199 mg/dL indicates impaired glucose tolerance."
+        },
+        {
+          "rule_id": "OGTT_DIABETES_RANGE_001",
+          "category": "diabetes",
+          "condition": "value >= 200",
+          "min_inclusive": 200,
+          "status": "DIABETES_RANGE",
+          "explanation": "2-hour OGTT 200 mg/dL or higher is within the diabetes threshold range."
+        }
+      ]
+    },
+
+    "random_glucose": {
+      "aliases": [
+        "Random Glucose",
+        "Random Blood Sugar",
+        "RBS",
+        "Random Plasma Glucose"
+      ],
+      "unit": "mg/dL",
+      "type": "clinical_threshold",
+      "source": "ADA 2024 Standards of Care",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "RANDOM_GLUCOSE_HIGH_001",
+          "category": "diabetes",
+          "condition": "value >= 200",
+          "min_inclusive": 200,
+          "status": "DIABETES_RANGE_IF_SYMPTOMS",
+          "explanation": "Random glucose >= 200 mg/dL in presence of hyperglycemia symptoms warrants clinical evaluation."
+        }
+      ]
+    }
+  },
+
+  "lipid_profile": {
+    "total_cholesterol": {
+      "aliases": [
+        "Total Cholesterol",
+        "Cholesterol"
+      ],
+      "unit": "mg/dL",
+      "type": "category",
+      "source": "NCEP ATP III Guidelines",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "CHOLESTEROL_DESIRABLE_001",
+          "category": "lipid_profile",
+          "condition": "value < 200",
+          "max_exclusive": 200,
+          "status": "DESIRABLE",
+          "explanation": "Total cholesterol under 200 mg/dL is desirable."
+        },
+        {
+          "rule_id": "CHOLESTEROL_BORDERLINE_001",
+          "category": "lipid_profile",
+          "condition": "200 <= value <= 239",
+          "min_inclusive": 200,
+          "max_inclusive": 239,
+          "status": "BORDERLINE_HIGH",
+          "explanation": "Total cholesterol 200 to 239 mg/dL is borderline high."
+        },
+        {
+          "rule_id": "CHOLESTEROL_HIGH_001",
+          "category": "lipid_profile",
+          "condition": "value >= 240",
+          "min_inclusive": 240,
+          "status": "HIGH",
+          "explanation": "Total cholesterol 240 mg/dL or higher is high."
+        }
+      ]
+    },
+
+    "ldl_cholesterol": {
+      "aliases": [
+        "LDL",
+        "LDL-C",
+        "Low Density Lipoprotein"
+      ],
+      "unit": "mg/dL",
+      "type": "category",
+      "source": "NCEP ATP III Guidelines",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "LDL_OPTIMAL_001",
+          "category": "lipid_profile",
+          "condition": "value < 100",
+          "max_exclusive": 100,
+          "status": "OPTIMAL",
+          "explanation": "LDL cholesterol below 100 mg/dL is optimal."
+        },
+        {
+          "rule_id": "LDL_NEAR_OPTIMAL_001",
+          "category": "lipid_profile",
+          "condition": "100 <= value <= 130",
+          "min_inclusive": 100,
+          "max_inclusive": 130,
+          "status": "NEAR_OPTIMAL",
+          "explanation": "LDL cholesterol 100 to 130 mg/dL is near optimal."
+        },
+        {
+          "rule_id": "LDL_BORDERLINE_001",
+          "category": "lipid_profile",
+          "condition": "130 <= value <= 160",
+          "min_inclusive": 130,
+          "max_inclusive": 160,
+          "status": "BORDERLINE_HIGH",
+          "explanation": "LDL cholesterol 130 to 160 mg/dL is borderline high."
+        },
+        {
+          "rule_id": "LDL_HIGH_001",
+          "category": "lipid_profile",
+          "condition": "160 <= value <= 190",
+          "min_inclusive": 160,
+          "max_inclusive": 190,
+          "status": "HIGH",
+          "explanation": "LDL cholesterol 160 to 190 mg/dL is high."
+        },
+        {
+          "rule_id": "LDL_VERY_HIGH_001",
+          "category": "lipid_profile",
+          "condition": "value >= 190",
+          "min_inclusive": 190,
+          "status": "VERY_HIGH",
+          "explanation": "LDL cholesterol 190 mg/dL or higher is very high."
+        }
+      ]
+    },
+
+    "hdl_cholesterol": {
+      "aliases": [
+        "HDL",
+        "HDL-C",
+        "High Density Lipoprotein"
+      ],
+      "unit": "mg/dL",
+      "type": "category",
+      "source": "NCEP ATP III Guidelines",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "HDL_LOW_001",
+          "category": "lipid_profile",
+          "condition": "value < 40",
+          "max_exclusive": 40,
+          "status": "LOW",
+          "explanation": "HDL cholesterol below 40 mg/dL is low."
+        },
+        {
+          "rule_id": "HDL_ACCEPTABLE_001",
+          "category": "lipid_profile",
+          "condition": "value >= 40",
+          "min_inclusive": 40,
+          "status": "ACCEPTABLE",
+          "explanation": "HDL cholesterol 40 mg/dL or higher is acceptable."
+        }
+      ]
+    },
+
+    "triglycerides": {
+      "aliases": [
+        "Triglycerides",
+        "TG"
+      ],
+      "unit": "mg/dL",
+      "type": "category",
+      "source": "NCEP ATP III Guidelines",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "TRIGLYCERIDES_NORMAL_001",
+          "category": "lipid_profile",
+          "condition": "value < 150",
+          "max_exclusive": 150,
+          "status": "NORMAL",
+          "explanation": "Triglycerides below 150 mg/dL is normal."
+        },
+        {
+          "rule_id": "TRIGLYCERIDES_BORDERLINE_001",
+          "category": "lipid_profile",
+          "condition": "150 <= value < 200",
+          "min_inclusive": 150,
+          "max_exclusive": 200,
+          "status": "BORDERLINE_HIGH",
+          "explanation": "Triglycerides 150 to 199 mg/dL is borderline high."
+        },
+        {
+          "rule_id": "TRIGLYCERIDES_HIGH_001",
+          "category": "lipid_profile",
+          "condition": "200 <= value < 500",
+          "min_inclusive": 200,
+          "max_exclusive": 500,
+          "status": "HIGH",
+          "explanation": "Triglycerides 200 to 499 mg/dL is high."
+        },
+        {
+          "rule_id": "TRIGLYCERIDES_VERY_HIGH_001",
+          "category": "lipid_profile",
+          "condition": "value >= 500",
+          "min_inclusive": 500,
+          "status": "VERY_HIGH",
+          "explanation": "Triglycerides 500 mg/dL or higher is very high."
+        }
+      ]
+    }
+  },
+
+  "kidney": {
+    "urea": {
+      "aliases": [
+        "Urea",
+        "Blood Urea",
+        "Serum Urea",
+        "Urea Nitrogen"
+      ],
+      "unit": "mg/dL",
+      "type": "reference_range",
+      "source": "AACC Clinical Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "UREA_LOW_001",
+      "rule_id_normal": "UREA_NORMAL_001",
+      "rule_id_high": "UREA_HIGH_001",
+      "reference": {
+        "min": 15,
+        "max": 45
+      }
+    },
+
+    "creatinine": {
+      "aliases": [
+        "Creatinine",
+        "Serum Creatinine",
+        "Creatinin",
+        "Serum Creatinin",
+        "Creatin",
+        "Serum Creatin"
+      ],
+      "unit": "mg/dL",
+      "type": "reference_range",
+      "source": "NKDEP / AACC Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "CREATININE_LOW_001",
+      "rule_id_normal": "CREATININE_NORMAL_001",
+      "rule_id_high": "CREATININE_HIGH_001",
+      "reference": {
+        "male": {
+          "min": 0.70,
+          "max": 1.30
+        },
+        "female": {
+          "min": 0.59,
+          "max": 1.04
+        }
+      }
+    },
+
+    "bun": {
+      "aliases": [
+        "BUN",
+        "Blood Urea Nitrogen"
+      ],
+      "unit": "mg/dL",
+      "type": "reference_range",
+      "source": "AACC Clinical Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "BUN_LOW_001",
+      "rule_id_normal": "BUN_NORMAL_001",
+      "rule_id_high": "BUN_HIGH_001",
+      "reference": {
+        "min": 7,
+        "max": 20
+      }
+    },
+
+    "egfr": {
+      "aliases": [
+        "eGFR",
+        "Estimated GFR",
+        "Estimated Glomerular Filtration Rate"
+      ],
+      "unit": "mL/min/1.73m2",
+      "type": "category",
+      "source": "KDIGO 2023 Clinical Practice Guideline",
+      "provenance_status": "VERIFIED",
+      "rules": [
+        {
+          "rule_id": "EGFR_NORMAL_001",
+          "category": "kidney",
+          "condition": "value >= 90",
+          "min_inclusive": 90,
+          "status": "NORMAL_OR_HIGH",
+          "explanation": "eGFR >= 90 is normal or high."
+        },
+        {
+          "rule_id": "EGFR_MILD_001",
+          "category": "kidney",
+          "condition": "60 <= value < 90",
+          "min_inclusive": 60,
+          "max_exclusive": 90,
+          "status": "MILDLY_DECREASED",
+          "explanation": "eGFR 60-89 indicates mildly decreased GFR."
+        },
+        {
+          "rule_id": "EGFR_MODERATE_001",
+          "category": "kidney",
+          "condition": "30 <= value < 60",
+          "min_inclusive": 30,
+          "max_exclusive": 60,
+          "status": "MODERATELY_DECREASED",
+          "explanation": "eGFR 30-59 indicates moderately decreased GFR."
+        },
+        {
+          "rule_id": "EGFR_SEVERE_001",
+          "category": "kidney",
+          "condition": "15 <= value < 30",
+          "min_inclusive": 15,
+          "max_exclusive": 30,
+          "status": "SEVERELY_DECREASED",
+          "explanation": "eGFR 15-29 indicates severely decreased GFR."
+        },
+        {
+          "rule_id": "EGFR_FAILURE_001",
+          "category": "kidney",
+          "condition": "value < 15",
+          "max_exclusive": 15,
+          "status": "KIDNEY_FAILURE_RANGE",
+          "explanation": "eGFR < 15 is within kidney failure range."
+        }
+      ]
+    }
+  },
+
+  "electrolytes": {
+    "sodium": {
+      "aliases": [
+        "Sodium",
+        "Na"
+      ],
+      "unit": "mmol/L",
+      "type": "reference_range",
+      "source": "AACC Electrolyte Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "SODIUM_LOW_001",
+      "rule_id_normal": "SODIUM_NORMAL_001",
+      "rule_id_high": "SODIUM_HIGH_001",
+      "reference": {
+        "min": 135,
+        "max": 145
+      }
+    },
+
+    "potassium": {
+      "aliases": [
+        "Potassium",
+        "K"
+      ],
+      "unit": "mmol/L",
+      "type": "reference_range",
+      "source": "AACC Electrolyte Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "POTASSIUM_LOW_001",
+      "rule_id_normal": "POTASSIUM_NORMAL_001",
+      "rule_id_high": "POTASSIUM_HIGH_001",
+      "reference": {
+        "min": 3.5,
+        "max": 5.2
+      }
+    },
+
+    "chloride": {
+      "aliases": [
+        "Chloride",
+        "Cl"
+      ],
+      "unit": "mmol/L",
+      "type": "reference_range",
+      "source": "AACC Electrolyte Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "CHLORIDE_LOW_001",
+      "rule_id_normal": "CHLORIDE_NORMAL_001",
+      "rule_id_high": "CHLORIDE_HIGH_001",
+      "reference": {
+        "min": 98,
+        "max": 107
+      }
+    },
+
+    "calcium": {
+      "aliases": [
+        "Calcium",
+        "Ca"
+      ],
+      "unit": "mg/dL",
+      "type": "reference_range",
+      "source": "AACC Electrolyte Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "CALCIUM_LOW_001",
+      "rule_id_normal": "CALCIUM_NORMAL_001",
+      "rule_id_high": "CALCIUM_HIGH_001",
+      "reference": {
+        "min": 8.5,
+        "max": 10.5
+      }
+    }
+  },
+
+  "thyroid": {
+    "tsh": {
+      "aliases": [
+        "TSH",
+        "Thyroid Stimulating Hormone",
+        "Thyrotropin"
+      ],
+      "unit": "mIU/L",
+      "type": "reference_range",
+      "source": "ATA (American Thyroid Association) Reference Range",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "TSH_LOW_001",
+      "rule_id_normal": "TSH_NORMAL_001",
+      "rule_id_high": "TSH_HIGH_001",
+      "reference": {
+        "min": 0.4,
+        "max": 4.0
+      }
+    },
+
+    "free_t4": {
+      "aliases": [
+        "Free T4",
+        "FT4",
+        "Free Thyroxine"
+      ],
+      "unit": "ng/dL",
+      "type": "reference_range",
+      "source": "ATA (American Thyroid Association) Reference Range",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "FREE_T4_LOW_001",
+      "rule_id_normal": "FREE_T4_NORMAL_001",
+      "rule_id_high": "FREE_T4_HIGH_001",
+      "reference": {
+        "min": 0.8,
+        "max": 1.8
+      }
+    }
+  },
+
+  "cbc": {
+    "hemoglobin": {
+      "aliases": [
+        "Hemoglobin",
+        "Hb",
+        "HGB"
+      ],
+      "unit": "g/dL",
+      "type": "reference_range",
+      "source": "WHO Hemoglobin Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "HEMOGLOBIN_LOW_001",
+      "rule_id_normal": "HEMOGLOBIN_NORMAL_001",
+      "rule_id_high": "HEMOGLOBIN_HIGH_001",
+      "reference": {
+        "male": {
+          "min": 13.8,
+          "max": 17.2
+        },
+        "female": {
+          "min": 12.1,
+          "max": 15.1
+        }
+      }
+    },
+
+    "hematocrit": {
+      "aliases": [
+        "Hematocrit",
+        "HCT"
+      ],
+      "unit": "%",
+      "type": "reference_range",
+      "source": "AACC Hematology Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "HEMATOCRIT_LOW_001",
+      "rule_id_normal": "HEMATOCRIT_NORMAL_001",
+      "rule_id_high": "HEMATOCRIT_HIGH_001",
+      "reference": {
+        "male": {
+          "min": 41,
+          "max": 50
+        },
+        "female": {
+          "min": 36,
+          "max": 44
+        }
+      }
+    },
+
+    "wbc": {
+      "aliases": [
+        "WBC",
+        "White Blood Cell Count",
+        "Leukocyte Count"
+      ],
+      "unit": "cells/mcL",
+      "type": "reference_range",
+      "source": "AACC Hematology Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "WBC_LOW_001",
+      "rule_id_normal": "WBC_NORMAL_001",
+      "rule_id_high": "WBC_HIGH_001",
+      "reference": {
+        "min": 4000,
+        "max": 11000
+      }
+    },
+
+    "platelets": {
+      "aliases": [
+        "Platelets",
+        "Platelet Count",
+        "PLT"
+      ],
+      "unit": "cells/mcL",
+      "type": "reference_range",
+      "source": "AACC Hematology Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "PLATELETS_LOW_001",
+      "rule_id_normal": "PLATELETS_NORMAL_001",
+      "rule_id_high": "PLATELETS_HIGH_001",
+      "reference": {
+        "min": 150000,
+        "max": 400000
+      }
+    },
+
+    "mcv": {
+      "aliases": [
+        "MCV",
+        "Mean Corpuscular Volume"
+      ],
+      "unit": "fL",
+      "type": "reference_range",
+      "source": "AACC Hematology Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "MCV_LOW_001",
+      "rule_id_normal": "MCV_NORMAL_001",
+      "rule_id_high": "MCV_HIGH_001",
+      "reference": {
+        "min": 80,
+        "max": 100
+      }
+    }
+  },
+
+  "liver": {
+    "alt": {
+      "aliases": [
+        "ALT",
+        "SGPT",
+        "Alanine Aminotransferase"
+      ],
+      "unit": "U/L",
+      "type": "reference_range",
+      "source": "ACG (American College of Gastroenterology) Guidelines",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "ALT_LOW_001",
+      "rule_id_normal": "ALT_NORMAL_001",
+      "rule_id_high": "ALT_HIGH_001",
+      "reference": {
+        "min": 7,
+        "max": 56
+      }
+    },
+
+    "ast": {
+      "aliases": [
+        "AST",
+        "SGOT",
+        "Aspartate Aminotransferase"
+      ],
+      "unit": "U/L",
+      "type": "reference_range",
+      "source": "ACG (American College of Gastroenterology) Guidelines",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "AST_LOW_001",
+      "rule_id_normal": "AST_NORMAL_001",
+      "rule_id_high": "AST_HIGH_001",
+      "reference": {
+        "min": 10,
+        "max": 40
+      }
+    },
+
+    "bilirubin_total": {
+      "aliases": [
+        "Total Bilirubin",
+        "Bilirubin Total"
+      ],
+      "unit": "mg/dL",
+      "type": "reference_range",
+      "source": "ACG Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "BILIRUBIN_LOW_001",
+      "rule_id_normal": "BILIRUBIN_NORMAL_001",
+      "rule_id_high": "BILIRUBIN_HIGH_001",
+      "reference": {
+        "min": 0.1,
+        "max": 1.2
+      }
+    },
+
+    "albumin": {
+      "aliases": [
+        "Albumin",
+        "Serum Albumin"
+      ],
+      "unit": "g/dL",
+      "type": "reference_range",
+      "source": "AACC Clinical Reference Standard",
+      "provenance_status": "VERIFIED",
+      "rule_id_low": "ALBUMIN_LOW_001",
+      "rule_id_normal": "ALBUMIN_NORMAL_001",
+      "rule_id_high": "ALBUMIN_HIGH_001",
+      "reference": {
+        "min": 3.4,
+        "max": 5.4
+      }
+    }
+  },
+
+  "widal": {
+    "typhi_o": {
+      "aliases": [
+        "Salmonella Typhi O",
+        "S. Typhi O",
+        "Typhi O",
+        "S.Typhi 'O'",
+        "ST 'O'",
+        "S. Typhi 'O'"
+      ],
+      "unit": "titer",
+      "type": "titer_threshold",
+      "source": "Standard Serology Titer Threshold (Endemic Baseline)",
+      "provenance_status": "VERIFIED",
+      "rule_id_positive": "WIDAL_TYPHI_O_POS_001",
+      "rule_id_negative": "WIDAL_TYPHI_O_NEG_001",
+      "threshold": 160,
+      "positive_status": "POSITIVE",
+      "negative_status": "NEGATIVE"
+    },
+
+    "typhi_h": {
+      "aliases": [
+        "Salmonella Typhi H",
+        "S. Typhi H",
+        "Typhi H",
+        "S.Typhi 'H'",
+        "ST 'H'",
+        "S. Typhi 'H'"
+      ],
+      "unit": "titer",
+      "type": "titer_threshold",
+      "source": "Standard Serology Titer Threshold (Endemic Baseline)",
+      "provenance_status": "VERIFIED",
+      "rule_id_positive": "WIDAL_TYPHI_H_POS_001",
+      "rule_id_negative": "WIDAL_TYPHI_H_NEG_001",
+      "threshold": 160,
+      "positive_status": "POSITIVE",
+      "negative_status": "NEGATIVE"
+    },
+
+    "paratyphi_ah": {
+      "aliases": [
+        "Salmonella Paratyphi AH",
+        "S. Paratyphi AH",
+        "Paratyphi AH",
+        "S.Paratyphi 'AH'",
+        "AH",
+        "S. Paratyphi 'AH'"
+      ],
+      "unit": "titer",
+      "type": "titer_threshold",
+      "source": "Standard Serology Titer Threshold (Endemic Baseline)",
+      "provenance_status": "VERIFIED",
+      "rule_id_positive": "WIDAL_PARATYPHI_AH_POS_001",
+      "rule_id_negative": "WIDAL_PARATYPHI_AH_NEG_001",
+      "threshold": 80,
+      "positive_status": "POSITIVE",
+      "negative_status": "NEGATIVE"
+    },
+
+    "paratyphi_bh": {
+      "aliases": [
+        "Salmonella Paratyphi BH",
+        "S. Paratyphi BH",
+        "Paratyphi BH",
+        "S.Paratyphi 'BH'",
+        "BH",
+        "S. Paratyphi 'BH'"
+      ],
+      "unit": "titer",
+      "type": "titer_threshold",
+      "source": "Standard Serology Titer Threshold (Endemic Baseline)",
+      "provenance_status": "VERIFIED",
+      "rule_id_positive": "WIDAL_PARATYPHI_BH_POS_001",
+      "rule_id_negative": "WIDAL_PARATYPHI_BH_NEG_001",
+      "threshold": 80,
+      "positive_status": "POSITIVE",
+      "negative_status": "NEGATIVE"
+    }
+  }
+}
