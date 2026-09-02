@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Medical Report Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header Navbar matching Homepage -->
+    <header class="bg-white shadow-md rounded-xl p-6 my-6 max-w-5xl mx-auto border border-gray-100 w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <a href="/" class="flex items-center space-x-3 mb-4 md:mb-0">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center">
+                        Medical Report Analyzer
+                        <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Agentic AI v2.0</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 font-medium">AI-Powered Clinical Diagnostics & Health Insights System</p>
+                </div>
+            </a>
+            <div class="flex items-center space-x-2 text-xs">
+                <a href="/" class="px-3.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold border border-gray-300 transition-colors flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span>Home</span>
+                </a>
+                <a href="/register" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition-colors">
+                    Register
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Login Container -->
+    <div class="w-full max-w-md mx-auto px-4 flex-grow my-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold mb-3 border border-blue-100 shadow-sm">
+                    🔐
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Welcome Back</h2>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Log in to access your pseudonymous health records & patient dashboard.</p>
+            </div>
+
+            {% if error %}
+            <div class="bg-red-50 border border-red-200 text-red-700 text-xs px-4 py-3 rounded-xl mb-4 flex items-center space-x-2">
+                <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 9 0 0118 0z"></path></svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login" class="space-y-4">
+                <div>
+                    <label for="email" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Email Address</label>
+                    <input type="email" id="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-gray-50/50" placeholder="patient@example.com">
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider">Password</label>
+                        <a href="#" class="text-xs text-blue-600 hover:underline font-medium">Forgot?</a>
+                    </div>
+                    <input type="password" id="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-gray-50/50" placeholder="••••••••">
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-gray-600">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" name="remember" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4">
+                        <span class="font-medium">Remember me</span>
+                    </label>
+                    <span class="text-green-700 font-semibold flex items-center gap-1 bg-green-50 px-2 py-0.5 rounded border border-green-200">
+                        🔒 Encrypted PII
+                    </span>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-colors flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <span>Log In to Account</span>
+                </button>
+            </form>
+
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-3 text-gray-400 font-semibold">Or continue with</span></div>
+            </div>
+
+            <!-- Social / Supabase Auth Button -->
+            <button type="button" onclick="alert('Google OAuth / Supabase Auth redirect active in presentation mode.')" class="w-full py-3 px-4 border border-gray-300 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 shadow-sm bg-white">
+                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span>Sign in with Google (Supabase Auth)</span>
+            </button>
+
+            <div class="mt-6 text-center text-xs text-gray-500">
+                Don't have an account yet? 
+                <a href="/register" class="text-blue-600 font-bold hover:underline">Register here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer matching Homepage -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-6 text-center text-xs text-gray-500 w-full">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+            <span>© 2026 Medical Report Analyzer. Agentic AI Clinical Diagnostics.</span>
+            <span class="text-gray-400">Supabase / Neon Cloud Postgres + Local SQLite Fallback</span>
+        </div>
+    </footer>
+</body>
+</html>

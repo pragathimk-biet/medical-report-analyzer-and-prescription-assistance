@@ -1,0 +1,197 @@
+{
+  "status": "evaluated",
+  "benchmark_type": "independent_human_annotated",
+  "total_cases": 50,
+  "report_cases": 25,
+  "prescription_cases": 25,
+  "safety_metrics": {
+    "accuracy": 0.64,
+    "macro_precision": 0.6091,
+    "macro_recall": 0.6961,
+    "macro_f1": 0.6265,
+    "hard_stop_recall": 1.0,
+    "false_safe_count": 0,
+    "false_safe_rate": 0.0,
+    "confusion_matrix": [
+      [
+        20,
+        11,
+        3
+      ],
+      [
+        4,
+        4,
+        0
+      ],
+      [
+        0,
+        0,
+        8
+      ]
+    ]
+  },
+  "report_extraction_metrics": {
+    "analyte_name_accuracy": 1.0,
+    "numeric_value_accuracy": 0.8919,
+    "unit_accuracy": 0.7838,
+    "reference_range_accuracy": 0.7838
+  },
+  "prescription_extraction_metrics": {
+    "medication_name_accuracy": 0.8889,
+    "strength_accuracy": 0.8889,
+    "frequency_accuracy": 0.8889,
+    "timing_accuracy": 0.8148,
+    "duration_accuracy": 0.8889
+  },
+  "failure_cases": [
+    {
+      "case_id": "REPORT_001",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "REPORT_002",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "REPORT_004",
+      "document_type": "medical_report",
+      "expected_status": "needs_manual_review",
+      "predicted_status": "safe_to_display",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'needs_manual_review' and predicted 'safe_to_display'"
+    },
+    {
+      "case_id": "REPORT_012",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "REPORT_014",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "REPORT_018",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "REPORT_019",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "hard_stop",
+      "responsible_stage": "Verification/Governance",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'hard_stop'"
+    },
+    {
+      "case_id": "REPORT_022",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "REPORT_024",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "hard_stop",
+      "responsible_stage": "Verification/Governance",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'hard_stop'"
+    },
+    {
+      "case_id": "REPORT_025",
+      "document_type": "medical_report",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "PRESCRIPTION_003",
+      "document_type": "prescription",
+      "expected_status": "needs_manual_review",
+      "predicted_status": "safe_to_display",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'needs_manual_review' and predicted 'safe_to_display'"
+    },
+    {
+      "case_id": "PRESCRIPTION_005",
+      "document_type": "prescription",
+      "expected_status": "needs_manual_review",
+      "predicted_status": "safe_to_display",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'needs_manual_review' and predicted 'safe_to_display'"
+    },
+    {
+      "case_id": "PRESCRIPTION_017",
+      "document_type": "prescription",
+      "expected_status": "safe_to_display",
+      "predicted_status": "hard_stop",
+      "responsible_stage": "Verification/Governance",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'hard_stop'"
+    },
+    {
+      "case_id": "PRESCRIPTION_018",
+      "document_type": "prescription",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "PRESCRIPTION_020",
+      "document_type": "prescription",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "PRESCRIPTION_021",
+      "document_type": "prescription",
+      "expected_status": "needs_manual_review",
+      "predicted_status": "safe_to_display",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'needs_manual_review' and predicted 'safe_to_display'"
+    },
+    {
+      "case_id": "PRESCRIPTION_023",
+      "document_type": "prescription",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    },
+    {
+      "case_id": "PRESCRIPTION_024",
+      "document_type": "prescription",
+      "expected_status": "safe_to_display",
+      "predicted_status": "needs_manual_review",
+      "responsible_stage": "Extraction/Verification",
+      "likely_cause": "Discrepancy between expected 'safe_to_display' and predicted 'needs_manual_review'"
+    }
+  ],
+  "limitations": [
+    "Evaluated on 50 synthetic anonymized realistic document layouts.",
+    "Manual annotation methodology establishes independent ground truth.",
+    "Deterministic clinical safety rules enforce hard_stop precedence."
+  ]
+}

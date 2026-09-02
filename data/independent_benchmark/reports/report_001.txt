@@ -1,0 +1,8 @@
+PATIENT: John Doe
+AGE: 45
+TEST: Fasting Blood Glucose
+RESULT: 92.0 mg/dL
+REFERENCE RANGE: 70.0 - 99.0 mg/dL
+TEST: Serum Creatinine
+RESULT: 0.9 mg/dL
+REFERENCE RANGE: 0.7 - 1.3 mg/dL

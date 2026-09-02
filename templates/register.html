@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Medical Report Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header Navbar matching Homepage -->
+    <header class="bg-white shadow-md rounded-xl p-6 my-6 max-w-5xl mx-auto border border-gray-100 w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <a href="/" class="flex items-center space-x-3 mb-4 md:mb-0">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center">
+                        Medical Report Analyzer
+                        <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Agentic AI v2.0</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 font-medium">AI-Powered Clinical Diagnostics & Health Insights System</p>
+                </div>
+            </a>
+            <div class="flex items-center space-x-2 text-xs">
+                <a href="/" class="px-3.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold border border-gray-300 transition-colors flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span>Home</span>
+                </a>
+                <a href="/login" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition-colors">
+                    Login
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Registration Container -->
+    <div class="w-full max-w-md mx-auto px-4 flex-grow my-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold mb-3 border border-blue-100 shadow-sm">
+                    👤
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Create Patient Account</h2>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Register for secure cross-visit report history & RAG AI health tracking.</p>
+            </div>
+
+            {% if error %}
+            <div class="bg-red-50 border border-red-200 text-red-700 text-xs px-4 py-3 rounded-xl mb-4 flex items-center space-x-2">
+                <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 9 0 0118 0z"></path></svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/register" class="space-y-4">
+                <div>
+                    <label for="full_name" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Full Patient Name</label>
+                    <input type="text" id="full_name" name="full_name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-gray-50/50" placeholder="e.g. Mr. Ayush">
+                </div>
+
+                <div>
+                    <label for="email" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Email Address</label>
+                    <input type="email" id="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-gray-50/50" placeholder="ayush@example.com">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="age" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Age</label>
+                        <input type="number" id="age" name="age" placeholder="e.g. 23" class="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50/50">
+                    </div>
+                    <div>
+                        <label for="gender" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Gender</label>
+                        <select id="gender" name="gender" class="w-full px-3 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50/50">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Create Password</label>
+                    <input type="password" id="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-gray-50/50" placeholder="••••••••">
+                </div>
+
+                <div class="bg-blue-50/60 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-800 space-y-1">
+                    <div class="font-bold flex items-center gap-1.5 text-blue-900">
+                        🛡️ Automated Data Privacy Protection
+                    </div>
+                    <p class="text-[11px] text-blue-700 leading-relaxed">
+                        Your account is automatically assigned a pseudonymous ID (<code class="bg-blue-100 px-1 py-0.5 rounded font-mono">Patient_a8f9</code>). PII is encrypted with AES-256 before saving to Neon Cloud DB.
+                    </p>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-colors flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    <span>Create Secure Account</span>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-xs text-gray-500">
+                Already have an account? 
+                <a href="/login" class="text-blue-600 font-bold hover:underline">Log in here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer matching Homepage -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-6 text-center text-xs text-gray-500 w-full">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+            <span>© 2026 Medical Report Analyzer. Agentic AI Clinical Diagnostics.</span>
+            <span class="text-gray-400">Supabase / Neon Cloud Postgres + Local SQLite Fallback</span>
+        </div>
+    </footer>
+</body>
+</html>

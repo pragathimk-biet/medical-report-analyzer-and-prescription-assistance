@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header Navbar -->
+    <header class="bg-white shadow-md rounded-xl p-6 my-6 max-w-5xl mx-auto border border-gray-100 w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center">
+                        Medical Report Analyzer
+                        <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Agentic AI v2.0</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 font-medium">AI-Powered Clinical Diagnostics & Health Insights System</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-xs">
+                <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 font-medium">
+                    <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    NVIDIA NIM / RapidOCR Active
+                </span>
+
+                {% if session.get('user') %}
+                <div class="flex items-center space-x-2 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg text-blue-800 font-semibold">
+                    <span>👤 {{ session['user']['name'] }}</span>
+                    <a href="/logout" class="text-xs text-red-600 hover:underline ml-1">Logout</a>
+                </div>
+                {% else %}
+                <a href="/login" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition-colors flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <span>Login</span>
+                </a>
+                <a href="/register" class="px-3.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold border border-gray-300 transition-colors">
+                    Register
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="w-full max-w-5xl mx-auto px-4 flex-grow">
+        <!-- Tab Navigation -->
+        <div class="w-full mb-6">
+            <div class="flex border-b border-gray-200">
+                <button id="report-tab" class="px-6 py-2.5 font-semibold text-blue-600 border-b-2 border-blue-600 text-sm">Report Analysis</button>
+                <button id="symptoms-tab" class="px-6 py-2.5 font-semibold text-gray-500 hover:text-blue-600 text-sm">AI Analysis</button>
+                <button id="medicine-tab" class="px-6 py-2.5 font-semibold text-gray-500 hover:text-blue-600 text-sm">Medicine Info</button>
+            </div>
+        </div>
+
+        <div class="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <!-- Report Analysis Section -->
+            <div id="report-section">
+                <div class="upload-container mb-6">
+                    <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition-colors">
+                        <div class="mb-3">
+                            <svg class="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 mb-2">Drag and drop your report file here or</p>
+                        <label class="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors inline-block">
+                            Browse Files
+                            <input type="file" id="file-input" class="hidden" accept=".jpg,.jpeg,.png,.pdf">
+                        </label>
+                        <p class="text-sm text-gray-500 mt-2">Supported formats: JPG, PNG, PDF</p>
+                    </div>
+                </div>
+
+                <div class="relative flex py-2 items-center mb-4">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 font-medium text-xs tracking-wider">OR PASTE REPORT TEXT DIRECTLY</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <div class="mb-4">
+                    <textarea id="report-text-input" rows="4" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Paste your medical test report text here (e.g. Hemoglobin: 14.2 g/dL, Fasting Blood Sugar: 95 mg/dL)..."></textarea>
+                </div>
+                <button id="analyze-report-text-btn" class="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium transition-colors mb-4">
+                    Analyze Report Text
+                </button>
+            </div>
+
+            <!-- Symptoms Analysis Section -->
+            <div id="symptoms-section" class="hidden">
+                <div class="mb-6">
+                    <label for="symptoms-input" class="block text-gray-700 text-sm font-bold mb-2">Describe Your Symptoms</label>
+                    <textarea id="symptoms-input" rows="6" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Please describe your symptoms in detail. For example: I've been experiencing severe headache for the past 3 days, along with fever and fatigue..."></textarea>
+                </div>
+                <button id="analyze-symptoms" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    Analyze Symptoms
+                </button>
+            </div>
+
+            <!-- Medicine Information Section -->
+            <div id="medicine-section" class="hidden">
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Prescription Assistance & Medicine Info</label>
+                    
+                    <div class="space-y-4">
+                        <!-- Patient Information -->
+                        <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3.5 rounded-lg border border-gray-100 mb-4">
+                            <div>
+                                <label class="block text-gray-600 text-xs font-semibold mb-1">Patient Age (Optional)</label>
+                                <input type="number" id="patient-age" min="0" max="150" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white" placeholder="Enter age (e.g. 45)">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 text-xs font-semibold mb-1">Patient Gender (Optional)</label>
+                                <select id="patient-gender" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                                    <option value="">Select gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Option A: Upload Prescription Document -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-xs font-bold uppercase tracking-wider mb-2 text-blue-700 flex items-center">
+                                <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Option A: Upload Prescription Document (JPG, PNG, PDF)
+                            </label>
+                            <div id="prescription-drop-zone" class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg p-5 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-100 transition-colors">
+                                <div class="mb-2">
+                                    <svg class="mx-auto h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-700 font-medium mb-1">Drag and drop your prescription image/PDF here or</p>
+                                <label class="bg-blue-600 text-white px-3.5 py-1.5 rounded-md text-xs cursor-pointer hover:bg-blue-700 transition-colors inline-block font-medium shadow-sm">
+                                    Browse Prescription File
+                                    <input type="file" id="prescription-file-input" class="hidden" accept=".jpg,.jpeg,.png,.pdf">
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1.5">Supported formats: JPG, PNG, PDF</p>
+                            </div>
+                        </div>
+
+                        <!-- OR Divider -->
+                        <div class="relative flex py-1 items-center my-3">
+                            <div class="flex-grow border-t border-gray-200"></div>
+                            <span class="flex-shrink mx-4 text-gray-400 font-medium text-xs tracking-wider">OR ENTER MEDICINE & DOSAGE MANUALLY</span>
+                            <div class="flex-grow border-t border-gray-200"></div>
+                        </div>
+                        
+                        <!-- Option B: Manual Medicine Entry -->
+                        <div>
+                            <label class="block text-gray-600 text-sm mb-1 font-medium">Medicine Name</label>
+                            <input type="text" id="medicine-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Enter medicine name (e.g. Paracetamol, Metformin)">
+                        </div>
+
+                        <!-- Dosage Schedule -->
+                        <div>
+                            <label class="block text-gray-600 text-sm mb-1 font-medium">Dosage Schedule</label>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-gray-500 text-xs mb-1">Morning (M)</label>
+                                    <input type="number" id="dosage-morning" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-500 text-xs mb-1">Evening (E)</label>
+                                    <input type="number" id="dosage-evening" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-500 text-xs mb-1">Night (N)</label>
+                                    <input type="number" id="dosage-night" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="analyze-medicine" class="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium transition-colors">
+                    Analyze Manual Medicine Entry
+                </button>
+            </div>
+
+            <div id="loading" class="hidden">
+                <div class="flex items-center justify-center py-6">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                    <p class="ml-3 text-gray-600 font-medium">Analyzing with NVIDIA Nemotron AI...</p>
+                </div>
+            </div>
+
+            <div id="result" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">Analysis Results</h2>
+                    <div class="flex items-center space-x-2">
+                        <button id="download-pdf-btn" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center shadow font-medium text-xs">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Download PDF
+                        </button>
+                        <select id="language-select" class="px-2 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                            <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+                            <option value="Hindi">हिंदी (Hindi)</option>
+                            <option value="Bengali">বাংলা (Bengali)</option>
+                            <option value="Spanish">Español (Spanish)</option>
+                            <option value="French">Français (French)</option>
+                            <option value="German">Deutsch (German)</option>
+                        </select>
+                        <button id="translate-btn" class="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-xs font-medium shadow flex items-center">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                            Translate
+                        </button>
+                        <button id="english-btn" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-xs font-medium shadow">English</button>
+                        <button id="bangla-btn" class="px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors hidden text-xs font-medium">Translated</button>
+                    </div>
+                </div>
+                <div id="english-content" class="prose max-w-none">
+                    <!-- English analysis content will be inserted here -->
+                </div>
+                <div id="bangla-content" class="prose max-w-none hidden">
+                    <!-- Bangla analysis content will be inserted here -->
+                </div>
+
+                <!-- Ask Follow-Up Questions (Patient RAG Assistant) Inline Chatbot -->
+                <div id="patient-rag-chatbot-card" class="bg-white border border-blue-200 rounded-2xl p-5 shadow-sm mt-8 mb-4 w-full">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-base shadow-sm">
+                            🤖
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                                Ask Follow-Up Questions (Patient RAG Assistant)
+                            </h3>
+                            <p class="text-xs text-gray-500 font-medium">Ask questions regarding your lab findings, dietary guidelines, or prescribed medicine interactions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages Scroll Container -->
+                    <div id="chat-history" class="max-h-80 overflow-y-auto space-y-3 p-3.5 bg-gray-50/70 rounded-xl mb-4 border border-gray-100 min-h-[120px]">
+                        <div class="bg-blue-50 border border-blue-100 text-blue-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm font-medium">
+                            👋 Hello! I am your Patient AI Assistant. I have loaded your report findings and active medication history. Ask me any questions!
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Form -->
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="chat-input" class="flex-grow px-4 py-3 border-2 border-blue-400 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white placeholder-gray-400 shadow-sm" placeholder="Type your medical report question (e.g. What should I eat for high blood sugar?)...">
+                        <button id="send-chat-btn" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl text-sm transition-colors flex items-center justify-center shadow-md min-w-[140px] space-x-1.5 flex-shrink-0">
+                            <svg class="w-4 h-4 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+                            </svg>
+                            <span>Send Question</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="error" class="hidden mt-4">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                    <p id="error-message"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16 py-10 shadow-inner w-full">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <!-- Column 1: Brand & Purpose -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-3">
+                        <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <span class="font-bold text-gray-900 text-sm">Medical Report Analyzer</span>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        An intelligent Agentic AI diagnostic engine designed to convert complex lab report parameters into clear health summaries, clinical benchmarks, and actionable dietary guidelines.
+                    </p>
+                </div>
+
+                <!-- Column 2: Core Capabilities -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Core Capabilities</h4>
+                    <ul class="space-y-1.5 text-xs text-gray-600">
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> Multi-Engine OCR (PyPDF & RapidOCR)</li>
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> Reference Benchmark Mapping</li>
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> Symptoms & Medication Analysis</li>
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> PDF Export & Multilingual Output</li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Tech Stack & System Status -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Tech Stack</h4>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">Python 3.13</span>
+                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">Flask 2.3</span>
+                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">Llama 3.1 8B</span>
+                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">RapidOCR</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer & Copyright Bar -->
+            <div class="border-t border-gray-100 pt-6 text-center">
+                <p class="text-xs text-gray-400 mb-2">
+                    <strong>Medical Disclaimer:</strong> This application is an AI-assisted analytical system intended solely for educational and informational purposes. It is not a substitute for professional clinical advice or diagnosis. Always consult a certified physician for official health decisions.
+                </p>
+                <p class="text-xs text-gray-500 font-medium">
+                    © 2026 Medical Report Analyzer AI System • Agentic Architecture v2.0 • All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 

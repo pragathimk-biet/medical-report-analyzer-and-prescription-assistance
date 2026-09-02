@@ -1,0 +1,1314 @@
+{
+  "version": "1.0",
+  "benchmark_type": "independent_human_annotated",
+  "description": "Independent real-document benchmark ground truth populated with 25 medical reports and 25 prescriptions.",
+  "total_cases": 50,
+  "report_cases": 25,
+  "prescription_cases": 25,
+  "cases": [
+    {
+      "case_id": "REPORT_001",
+      "document_type": "medical_report",
+      "source_file": "reports/report_001.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Fasting Blood Glucose",
+            "value": 92.0,
+            "unit": "mg/dL",
+            "reference_range": "70.0 - 99.0 mg/dL",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "Serum Creatinine",
+            "value": 0.9,
+            "unit": "mg/dL",
+            "reference_range": "0.7 - 1.3 mg/dL",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Standard clean normal lab report with two biomarkers."
+    },
+    {
+      "case_id": "REPORT_002",
+      "document_type": "medical_report",
+      "source_file": "reports/report_002.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Fasting Blood Glucose",
+            "value": 185.0,
+            "unit": "mg/dL",
+            "reference_range": "70.0 - 99.0",
+            "expected_verification_status": "HIGH"
+          },
+          {
+            "name": "HbA1c",
+            "value": 8.2,
+            "unit": "%",
+            "reference_range": "4.0 - 5.6",
+            "expected_verification_status": "HIGH"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Elevated glucose and HbA1c requiring clinical review."
+    },
+    {
+      "case_id": "REPORT_003",
+      "document_type": "medical_report",
+      "source_file": "reports/report_003.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Creatinine",
+            "value": -2.5,
+            "unit": "mg/dL",
+            "reference_range": "0.7 - 1.3 mg/dL",
+            "expected_verification_status": "REJECTED_IMPLAUSIBLE"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Negative numerical creatinine value constitutes a critical OCR/extraction artifact."
+    },
+    {
+      "case_id": "REPORT_004",
+      "document_type": "medical_report",
+      "source_file": "reports/report_004.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [
+          {
+            "name": "Total Bilirubin",
+            "value": 1.1,
+            "unit": "mg/dL",
+            "reference_range": null,
+            "expected_verification_status": "UNVERIFIED_MISSING_RANGE"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Missing reference range requires manual review flag."
+    },
+    {
+      "case_id": "REPORT_005",
+      "document_type": "medical_report",
+      "source_file": "reports/report_005.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [
+          {
+            "name": "Experimental Biomarker X9",
+            "value": 42.0,
+            "unit": "ng/mL",
+            "reference_range": "10.0 - 50.0 ng/mL",
+            "expected_verification_status": "UNKNOWN_ANALYTE"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Unregistered analyte not present in clinical registry."
+    },
+    {
+      "case_id": "REPORT_006",
+      "document_type": "medical_report",
+      "source_file": "reports/report_006.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Sodium",
+            "value": 140.0,
+            "unit": "mmol/L",
+            "reference_range": "135.0 - 145.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "Serum Potassium",
+            "value": 6.8,
+            "unit": "mmol/L",
+            "reference_range": "3.5 - 5.1",
+            "expected_verification_status": "HIGH"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Severe hyperkalemia finding."
+    },
+    {
+      "case_id": "REPORT_007",
+      "document_type": "medical_report",
+      "source_file": "reports/report_007.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [
+          {
+            "name": "Fasting Blood Glucose",
+            "value": 99999.0,
+            "unit": "mg/dL",
+            "reference_range": null,
+            "expected_verification_status": "REJECTED_IMPLAUSIBLE"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Biological implausibility triggers hard stop."
+    },
+    {
+      "case_id": "REPORT_008",
+      "document_type": "medical_report",
+      "source_file": "reports/report_008.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [
+          {
+            "name": "Hemoglobin",
+            "value": 14.2,
+            "unit": null,
+            "reference_range": "13.0 - 17.0 g/dL",
+            "expected_verification_status": "MISSING_UNIT"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Missing unit requires manual review."
+    },
+    {
+      "case_id": "REPORT_009",
+      "document_type": "medical_report",
+      "source_file": "reports/report_009.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "ALT",
+            "value": 22.0,
+            "unit": "U/L",
+            "reference_range": "7.0 - 56.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "AST",
+            "value": 25.0,
+            "unit": "U/L",
+            "reference_range": "10.0 - 40.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "Serum Albumin",
+            "value": 4.2,
+            "unit": "g/dL",
+            "reference_range": "3.5 - 5.0",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Standard clean normal liver panel."
+    },
+    {
+      "case_id": "REPORT_010",
+      "document_type": "medical_report",
+      "source_file": "reports/report_010.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Creatinine",
+            "value": 3.4,
+            "unit": "mg/dL",
+            "reference_range": "0.7 - 1.3",
+            "expected_verification_status": "HIGH"
+          },
+          {
+            "name": "Blood Urea",
+            "value": 85.0,
+            "unit": "mg/dL",
+            "reference_range": "15.0 - 45.0",
+            "expected_verification_status": "HIGH"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Elevated renal markers."
+    },
+    {
+      "case_id": "REPORT_011",
+      "document_type": "medical_report",
+      "source_file": "reports/report_011.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [],
+        "expected_medications": []
+      },
+      "annotation_notes": "Severe OCR corruption triggers hard stop."
+    },
+    {
+      "case_id": "REPORT_012",
+      "document_type": "medical_report",
+      "source_file": "reports/report_012.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Hemoglobin",
+            "value": 8.5,
+            "unit": "g/dL",
+            "reference_range": "12.0 - 15.5",
+            "expected_verification_status": "LOW"
+          },
+          {
+            "name": "RBC Count",
+            "value": 3.2,
+            "unit": "millions/uL",
+            "reference_range": "4.0 - 5.2",
+            "expected_verification_status": "LOW"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Low hemoglobin finding."
+    },
+    {
+      "case_id": "REPORT_013",
+      "document_type": "medical_report",
+      "source_file": "reports/report_013.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Total Cholesterol",
+            "value": 175.0,
+            "unit": "mg/dL",
+            "reference_range": "< 200.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "Triglycerides",
+            "value": 120.0,
+            "unit": "mg/dL",
+            "reference_range": "< 150.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "HDL Cholesterol",
+            "value": 52.0,
+            "unit": "mg/dL",
+            "reference_range": "> 40.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "LDL Cholesterol",
+            "value": 98.0,
+            "unit": "mg/dL",
+            "reference_range": "< 100.0",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Clean lipid panel."
+    },
+    {
+      "case_id": "REPORT_014",
+      "document_type": "medical_report",
+      "source_file": "reports/report_014.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Uric Acid",
+            "value": 8.9,
+            "unit": "mg/dL",
+            "reference_range": "3.5 - 7.2",
+            "expected_verification_status": "HIGH"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Elevated uric acid."
+    },
+    {
+      "case_id": "REPORT_015",
+      "document_type": "medical_report",
+      "source_file": "reports/report_015.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Creatinine",
+            "value": 1.2,
+            "unit": "kg",
+            "reference_range": "0.7 - 1.3 mg/dL",
+            "expected_verification_status": "REJECTED_INVALID_UNIT"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Invalid unit (kg instead of mg/dL) triggers hard stop."
+    },
+    {
+      "case_id": "REPORT_016",
+      "document_type": "medical_report",
+      "source_file": "reports/report_016.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "TSH",
+            "value": 2.1,
+            "unit": "uIU/mL",
+            "reference_range": "0.4 - 4.2",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Normal TSH assay."
+    },
+    {
+      "case_id": "REPORT_017",
+      "document_type": "medical_report",
+      "source_file": "reports/report_017.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "TSH",
+            "value": 12.5,
+            "unit": "uIU/mL",
+            "reference_range": "0.4 - 4.2",
+            "expected_verification_status": "HIGH"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Elevated TSH."
+    },
+    {
+      "case_id": "REPORT_018",
+      "document_type": "medical_report",
+      "source_file": "reports/report_018.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "WBC Count",
+            "value": 6800.0,
+            "unit": "/uL",
+            "reference_range": "4000.0 - 11000.0",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Normal WBC count."
+    },
+    {
+      "case_id": "REPORT_019",
+      "document_type": "medical_report",
+      "source_file": "reports/report_019.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "WBC Count",
+            "value": 18500.0,
+            "unit": "/uL",
+            "reference_range": "4000.0 - 11000.0",
+            "expected_verification_status": "HIGH"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Elevated WBC count."
+    },
+    {
+      "case_id": "REPORT_020",
+      "document_type": "medical_report",
+      "source_file": "reports/report_020.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Potassium",
+            "value": 2.8,
+            "unit": "mmol/L",
+            "reference_range": "3.5 - 5.1",
+            "expected_verification_status": "LOW"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Low serum potassium."
+    },
+    {
+      "case_id": "REPORT_021",
+      "document_type": "medical_report",
+      "source_file": "reports/report_021.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [
+          {
+            "name": "Fasting Blood Glucose",
+            "value": null,
+            "unit": null,
+            "reference_range": null,
+            "expected_verification_status": "MALFORMED_VALUE"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Non-numeric result value for numeric analyte requires manual review."
+    },
+    {
+      "case_id": "REPORT_022",
+      "document_type": "medical_report",
+      "source_file": "reports/report_022.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Fasting Blood Glucose",
+            "value": 90.0,
+            "unit": "mg/dL",
+            "reference_range": "70.0 - 99.0",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "Serum Creatinine",
+            "value": 0.85,
+            "unit": "mg/dL",
+            "reference_range": "0.7 - 1.3",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "HbA1c",
+            "value": 5.4,
+            "unit": "%",
+            "reference_range": "4.0 - 5.6",
+            "expected_verification_status": "VALIDATED"
+          },
+          {
+            "name": "Serum Sodium",
+            "value": 139.0,
+            "unit": "mmol/L",
+            "reference_range": "135.0 - 145.0",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Multi-page clean panel."
+    },
+    {
+      "case_id": "REPORT_023",
+      "document_type": "medical_report",
+      "source_file": "reports/report_023.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Serum Calcium",
+            "value": 8.1,
+            "unit": "mg/dL",
+            "reference_range": "8.5 - 10.2",
+            "expected_verification_status": "LOW"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Borderline low serum calcium."
+    },
+    {
+      "case_id": "REPORT_024",
+      "document_type": "medical_report",
+      "source_file": "reports/report_024.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "Platelet Count",
+            "value": 85000.0,
+            "unit": "/uL",
+            "reference_range": "150000.0 - 450000.0",
+            "expected_verification_status": "LOW"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Low platelet count."
+    },
+    {
+      "case_id": "REPORT_025",
+      "document_type": "medical_report",
+      "source_file": "reports/report_025.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "medical_report",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [
+          {
+            "name": "C-Reactive Protein",
+            "value": 1.5,
+            "unit": "mg/L",
+            "reference_range": "< 5.0",
+            "expected_verification_status": "VALIDATED"
+          }
+        ],
+        "expected_medications": []
+      },
+      "annotation_notes": "Normal CRP value."
+    },
+    {
+      "case_id": "PRESCRIPTION_001",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_001.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Amoxicillin 500 mg",
+            "name": "Amoxicillin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "Twice Daily (BD/1-0-1)",
+            "timing": "After Food",
+            "duration": "7 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          },
+          {
+            "raw_name": "Tab Paracetamol 650 mg",
+            "name": "Paracetamol",
+            "strength": "650 mg",
+            "dosage_form": "Tab",
+            "frequency": "Three Times Daily (TDS/1-1-1)",
+            "timing": "As Needed",
+            "duration": null,
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Clean printed prescription with two medications."
+    },
+    {
+      "case_id": "PRESCRIPTION_002",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_002.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Metformin 500 mg",
+            "name": "Metformin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "Twice Daily (BD/1-0-1)",
+            "timing": "Before Food",
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Standard diabetes medication."
+    },
+    {
+      "case_id": "PRESCRIPTION_003",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_003.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Metf0rm1n 500 mg",
+            "name": "Metformin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "1-0-1",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "proposed",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "OCR misspelling requires handwriting drug classifier disambiguation."
+    },
+    {
+      "case_id": "PRESCRIPTION_004",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_004.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Amoxicillin 50000 mg",
+            "name": "Amoxicillin",
+            "strength": "50000 mg",
+            "dosage_form": "Tab",
+            "frequency": "1-0-1",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "rejected_overdose",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "Extreme overdose strength triggers structural validation hard stop."
+    },
+    {
+      "case_id": "PRESCRIPTION_005",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_005.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Atorvastatin",
+            "name": "Atorvastatin",
+            "strength": null,
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/0-0-1)",
+            "timing": "After Food",
+            "duration": null,
+            "expected_verification_status": "missing_strength",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "Missing strength value."
+    },
+    {
+      "case_id": "PRESCRIPTION_006",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_006.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Amlodipine 5 mg",
+            "name": "Amlodipine",
+            "strength": "5 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "After Food",
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Standard blood pressure medication."
+    },
+    {
+      "case_id": "PRESCRIPTION_007",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_007.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab MysteryCure 100 mg",
+            "name": "MysteryCure",
+            "strength": "100 mg",
+            "dosage_form": "Tab",
+            "frequency": "1-0-1",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "unknown_drug",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "Unregistered drug name not in database."
+    },
+    {
+      "case_id": "PRESCRIPTION_008",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_008.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Lisinopril 10 mg",
+            "name": "Lisinopril",
+            "strength": "10 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "After Food",
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "ACE inhibitor prescription."
+    },
+    {
+      "case_id": "PRESCRIPTION_009",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_009.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Cap Omeprazole 20 mg",
+            "name": "Omeprazole",
+            "strength": "20 mg",
+            "dosage_form": "Cap",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "Before Food",
+            "duration": "14 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "PPI antacid prescribed before food."
+    },
+    {
+      "case_id": "PRESCRIPTION_010",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_010.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Ibuprofen -400 mg",
+            "name": "Ibuprofen",
+            "strength": "-400 mg",
+            "dosage_form": "Tab",
+            "frequency": "1-0-1",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "rejected_negative_dose",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "Negative strength artifact triggers hard stop."
+    },
+    {
+      "case_id": "PRESCRIPTION_011",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_011.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Spironolactone 25 mg",
+            "name": "Spironolactone",
+            "strength": "25 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "contraindicated_hyperkalemia",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "Potassium-sparing diuretic prescribed during hyperkalemia triggers safety hard stop."
+    },
+    {
+      "case_id": "PRESCRIPTION_012",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_012.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Azithromycin 500 mg",
+            "name": "Azithromycin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "After Food",
+            "duration": "3 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "3-day antibiotic course."
+    },
+    {
+      "case_id": "PRESCRIPTION_013",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_013.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Ciprofloxacin 500 mg",
+            "name": "Ciprofloxacin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "Twice Daily (BD/1-0-1)",
+            "timing": "After Food",
+            "duration": "5 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Fluoroquinolone antibiotic."
+    },
+    {
+      "case_id": "PRESCRIPTION_014",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_014.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Levothyroxine 50 mcg",
+            "name": "Levothyroxine",
+            "strength": "50 mcg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "Before Food",
+            "duration": "90 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Thyroid hormone replacement."
+    },
+    {
+      "case_id": "PRESCRIPTION_015",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_015.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Pantoprazole 40 mg",
+            "name": "Pantoprazole",
+            "strength": "40 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "Before Food",
+            "duration": "14 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Proton pump inhibitor."
+    },
+    {
+      "case_id": "PRESCRIPTION_016",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_016.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Losartan 50 mg",
+            "name": "Losartan",
+            "strength": "50 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "After Food",
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "ARB blood pressure medication."
+    },
+    {
+      "case_id": "PRESCRIPTION_017",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_017.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Hydrochlorothiazide 12.5 mg",
+            "name": "Hydrochlorothiazide",
+            "strength": "12.5 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": null,
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Thiazide diuretic."
+    },
+    {
+      "case_id": "PRESCRIPTION_018",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_018.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Glimepiride 1 mg",
+            "name": "Glimepiride",
+            "strength": "1 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": "Before Food",
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Sulfonylurea diabetes drug."
+    },
+    {
+      "case_id": "PRESCRIPTION_019",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_019.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Rosuvastatin 10 mg",
+            "name": "Rosuvastatin",
+            "strength": "10 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/0-0-1)",
+            "timing": "After Food",
+            "duration": "30 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Statin lipid-lowering medication."
+    },
+    {
+      "case_id": "PRESCRIPTION_020",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_020.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Augmentin 625 mg",
+            "name": "Amoxicillin and Clavulanate Potassium",
+            "strength": "625 mg",
+            "dosage_form": "Tab",
+            "frequency": "Twice Daily (BD/1-0-1)",
+            "timing": "After Food",
+            "duration": "5 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Broad spectrum combination antibiotic."
+    },
+    {
+      "case_id": "PRESCRIPTION_021",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_021.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "needs_manual_review",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Amoxxcill1n 500 mg",
+            "name": "Amoxicillin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "1-0-1",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "proposed",
+            "expected_review_status": true
+          }
+        ]
+      },
+      "annotation_notes": "Low OCR confidence misspelling requires drug candidate ranking."
+    },
+    {
+      "case_id": "PRESCRIPTION_022",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_022.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Metformin 500 mg",
+            "name": "Metformin",
+            "strength": "500 mg",
+            "dosage_form": "Tab",
+            "frequency": "Twice Daily (BD/1-0-1)",
+            "timing": "Before Food",
+            "duration": null,
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          },
+          {
+            "raw_name": "Tab Atorvastatin 10 mg",
+            "name": "Atorvastatin",
+            "strength": "10 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/0-0-1)",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          },
+          {
+            "raw_name": "Tab Amlodipine 5 mg",
+            "name": "Amlodipine",
+            "strength": "5 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/1-0-0)",
+            "timing": null,
+            "duration": null,
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Three-medication chronic care regimen."
+    },
+    {
+      "case_id": "PRESCRIPTION_023",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_023.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Tab Cetirizine 10 mg",
+            "name": "Cetirizine",
+            "strength": "10 mg",
+            "dosage_form": "Tab",
+            "frequency": "Once Daily (OD/0-0-1)",
+            "timing": null,
+            "duration": "7 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Antihistamine for allergy symptoms."
+    },
+    {
+      "case_id": "PRESCRIPTION_024",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_024.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "safe_to_display",
+        "expected_biomarkers": [],
+        "expected_medications": [
+          {
+            "raw_name": "Cap Doxycycline 100 mg",
+            "name": "Doxycycline",
+            "strength": "100 mg",
+            "dosage_form": "Cap",
+            "frequency": "Twice Daily (BD/1-0-1)",
+            "timing": "After Food",
+            "duration": "7 days",
+            "expected_verification_status": "verified",
+            "expected_review_status": false
+          }
+        ]
+      },
+      "annotation_notes": "Tetracycline antibiotic."
+    },
+    {
+      "case_id": "PRESCRIPTION_025",
+      "document_type": "prescription",
+      "source_file": "prescriptions/prescription_025.txt",
+      "annotation_status": "annotated",
+      "annotation_method": "independent_manual_annotation",
+      "ground_truth": {
+        "expected_document_type": "prescription",
+        "expected_safety_status": "hard_stop",
+        "expected_biomarkers": [],
+        "expected_medications": []
+      },
+      "annotation_notes": "Unreadable handwriting blotch triggers hard stop."
+    }
+  ]
+}
