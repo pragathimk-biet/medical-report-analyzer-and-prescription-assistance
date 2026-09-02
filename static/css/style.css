@@ -583,3 +583,93 @@ button, select, input, label[for], label.cursor-pointer {
         height: 54px;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CLINICAL STATUS BADGE PILLS — Table Cell Post-Processing
+   ═══════════════════════════════════════════════════════════════ */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+/* Normal / Validated — green */
+.status-normal,
+.status-validated {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+
+/* High — red */
+.status-high,
+.status-invalid {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+
+/* Low — blue */
+.status-low {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #93c5fd;
+}
+
+/* Borderline — amber */
+.status-borderline {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+/* Critical — deep red */
+.status-critical {
+    background: #7f1d1d;
+    color: #fef2f2;
+    border: 1px solid #991b1b;
+}
+
+/* Unknown — gray */
+.status-unknown {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+/* Rule ID / provenance code chips inside table cells */
+.rule-id-chip {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: #f1f5f9;
+    color: #0369a1;
+    padding: 0.15rem 0.45rem;
+    border-radius: 0.3rem;
+    border: 1px solid #bae6fd;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+/* On mobile, chip can wrap a bit */
+@media (max-width: 640px) {
+    .rule-id-chip {
+        font-size: 0.6rem;
+        max-width: 120px;
+    }
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+    }
+}

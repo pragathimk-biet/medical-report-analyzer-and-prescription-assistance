@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
     const reportTab = document.getElementById('report-tab');
     const symptomsTab = document.getElementById('symptoms-tab');
@@ -581,6 +581,41 @@
         rawHtml = rawHtml.replace(
             /<table([\s\S]*?)<\/table>/gi,
             '<div class="table-responsive-wrapper"><table$1</table></div>'
+        );
+
+        // === Status Badge Post-Processing ===
+        // Convert emoji+status text in <td> cells into styled pill badges
+
+        // Clinical status badges
+        rawHtml = rawHtml.replace(/🟢\s*NORMAL/g,
+            '<span class="status-badge status-normal">✓ Normal</span>');
+        rawHtml = rawHtml.replace(/🔴\s*HIGH/g,
+            '<span class="status-badge status-high">↑ High</span>');
+        rawHtml = rawHtml.replace(/🔵\s*LOW/g,
+            '<span class="status-badge status-low">↓ Low</span>');
+        rawHtml = rawHtml.replace(/🟡\s*BORDERLINE/g,
+            '<span class="status-badge status-borderline">~ Borderline</span>');
+        rawHtml = rawHtml.replace(/⚠️\s*BORDERLINE/g,
+            '<span class="status-badge status-borderline">⚠ Borderline</span>');
+        rawHtml = rawHtml.replace(/🟠\s*CRITICAL/g,
+            '<span class="status-badge status-critical">!! Critical</span>');
+        rawHtml = rawHtml.replace(/❌\s*CRITICAL/g,
+            '<span class="status-badge status-critical">!! Critical</span>');
+        rawHtml = rawHtml.replace(/❓\s*UNKNOWN/g,
+            '<span class="status-badge status-unknown">? Unknown</span>');
+
+        // Validation status badges
+        rawHtml = rawHtml.replace(/🟢\s*VALIDATED/g,
+            '<span class="status-badge status-validated">✓ Validated</span>');
+        rawHtml = rawHtml.replace(/🔴\s*INVALID/g,
+            '<span class="status-badge status-invalid">✗ Invalid</span>');
+        rawHtml = rawHtml.replace(/🟡\s*NEEDS REVIEW/g,
+            '<span class="status-badge status-borderline">⚠ Review</span>');
+
+        // Rule ID code chips — wrap REPORT_INLINE_* or any all-caps_underscored token in <td>
+        rawHtml = rawHtml.replace(
+            /(<td[^>]*>)\s*([A-Z][A-Z0-9_]{5,})\s*(<\/td>)/g,
+            '$1<code class="rule-id-chip">$2</code>$3'
         );
 
         return rawHtml;
