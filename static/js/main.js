@@ -509,12 +509,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // State tracking for active patient and report context
+    let currentPatientName = 'default_patient';
+    let currentReportMarkdown = '';
+
     function handleResponse(data) {
         loading.classList.add('hidden');
         console.log('Handling response for active tab:', activeTab, data);
         
         if (data.success && data.analysis) {
             tabResults[activeTab] = data.analysis;
+            if (data.analysis.patient_name) {
+                currentPatientName = data.analysis.patient_name;
+            }
+            if (data.analysis.english) {
+                currentReportMarkdown = data.analysis.english;
+            }
             renderTabResult();
         } else {
             showError(data.error || 'An unexpected error occurred while processing.');
@@ -660,15 +670,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // Append typing indicator
             const aiBubble = document.createElement('div');
             aiBubble.className = 'chat-message-bubble chat-ai';
-            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> Retrieving & analyzing patient history...</span>';
+            aiBubble.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span> Retrieving & analyzing patient report context...</span>';
             chatMessages.appendChild(aiBubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
+                const activeAnalysis = tabResults[activeTab];
+                const reportContextToSend = (activeAnalysis && activeAnalysis.english) ? activeAnalysis.english : currentReportMarkdown;
+                const patientIdToSend = (activeAnalysis && activeAnalysis.patient_name) ? activeAnalysis.patient_name : currentPatientName;
+
                 const res = await fetch('/api/patient-chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query, patient_id: 'default_patient' })
+                    body: JSON.stringify({
+                        query: query,
+                        patient_id: patientIdToSend,
+                        report_context: reportContextToSend
+                    })
                 });
                 const data = await res.json();
                 if (data.success && data.response) {
@@ -688,6 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') handleSendQuery();
         });
     }
+
 
 
     function handleError(err) {

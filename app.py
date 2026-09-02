@@ -1535,20 +1535,24 @@ class PatientHistoryRAGChatbot:
     """
 
     @classmethod
-    def answer_patient_query(cls, patient_id, query_text):
+    def answer_patient_query(cls, patient_id, query_text, report_context=None):
         if not query_text or not isinstance(query_text, str):
             return "Please enter a valid follow-up question regarding your medical report or medications."
 
-        patient_record = patient_history.get_patient_record(patient_id or "default_patient")
+        p_id = patient_id or "default_patient"
+        patient_record = patient_history.get_patient_record(p_id)
         active_meds = patient_record.get("active_medications", [])
         past_labs = patient_record.get("past_lab_history", [])
-        trends = patient_history.analyze_parameter_trends([], patient_name=patient_id or "default_patient")
+        trends = patient_history.analyze_parameter_trends([], patient_name=p_id)
 
         retrieval_context = []
-        retrieval_context.append(f"Patient ID: {patient_id or 'default_patient'}")
+        retrieval_context.append(f"PATIENT IDENTIFIER: {p_id}")
+
+        if report_context and isinstance(report_context, str) and report_context.strip():
+            retrieval_context.append(f"CURRENT ATTACHED MEDICAL REPORT & VERIFIED FINDINGS:\n{report_context.strip()}")
 
         if active_meds:
-            med_lines = [f"- {m.get('medication')} ({m.get('strength', 'N/A')}, {m.get('frequency', 'N/A')})" for m in active_meds]
+            med_lines = [f"- {m.get('medication', m.get('name'))} ({m.get('strength', 'N/A')}, {m.get('frequency', 'N/A')})" for m in active_meds]
             retrieval_context.append("Active Prescribed Medications:\n" + "\n".join(med_lines))
         else:
             retrieval_context.append("Active Prescribed Medications: None recorded")
@@ -1564,14 +1568,17 @@ class PatientHistoryRAGChatbot:
 
         context_str = "\n\n".join(retrieval_context)
 
-        system_prompt = """You are an empathetic, expert patient assistant AI. Answer the patient's question using ONLY the provided verified patient history context.
+        system_prompt = """You are an empathetic, expert Clinical Patient Assistant AI.
+Your role is to directly answer the patient's questions about their current attached medical report, specific test findings, dietary guidelines, and medications.
 Rules:
-1. NEVER confirm a medical diagnosis or use forbidden diagnostic phrases like "you have kidney failure" or "active infection".
-2. DO NOT prescribe new medications or advise stopping prescribed drugs without doctor consultation.
-3. Keep your response patient-friendly, factual, clear, and reassuring.
-4. Always conclude with a recommendation to consult their primary care physician."""
+1. Always ground your answer strictly in the CURRENT ATTACHED MEDICAL REPORT and retrieved patient context.
+2. Directly reference the specific test names, observed values, units, and status from the attached report (for example, if Post Prandial Blood Sugar is 262 mg/dl, cite 262 mg/dl specifically).
+3. If the patient asks "What should I do to get normal" or asks for dietary advice, provide clear, actionable, evidence-based lifestyle guidance (e.g. low glycemic index foods, complex carbohydrates, fiber-rich vegetables, portion control, regular post-meal walking, hydration) and advise consulting the recommended specialist doctor (e.g. Endocrinologist / Diabetologist).
+4. NEVER hallucinate test values from unrelated files.
+5. NEVER confirm a final clinical diagnosis as an absolute guarantee (e.g. do not say "you have severe diabetes"). Use patient-friendly language like "suggests elevated blood sugar after meals".
+6. Always conclude with a recommendation to consult their primary care doctor or specialist for diagnostic confirmation and personalized medical care."""
 
-        user_prompt = f"Patient Question: {query_text}\n\nRetrieved Structured Patient History:\n{context_str}"
+        user_prompt = f"Patient Question: {query_text}\n\nRetrieved Structured Patient & Report Context:\n{context_str}"
 
         try:
             ai_reply = generate_ai_analysis(user_prompt, system_prompt)
@@ -1579,6 +1586,8 @@ Rules:
             return guarded_reply
         except Exception as e:
             logger.warning(f"RAG Chatbot AI fallback: {e}")
+            if report_context:
+                return f"Based on your attached report for {p_id}, please review the test parameters listed above. We recommend discussing diet, lifestyle adjustments, and follow-up testing with your primary care physician or specialist."
             if active_meds:
                 med_names = ", ".join([m.get("name", m.get("medication", "Medication")) for m in active_meds])
                 return f"Based on your recorded patient history, active medications include: {med_names}. Please consult your primary care doctor for personalized medical guidance."
@@ -1590,11 +1599,12 @@ def patient_chat_endpoint():
         data = request.get_json() or {}
         patient_id = data.get('patient_id', 'default_patient')
         query_text = data.get('query', '').strip()
+        report_context = data.get('report_context', '')
 
         if not query_text:
             return jsonify({'success': False, 'error': 'Query text cannot be empty.'}), 400
 
-        reply = PatientHistoryRAGChatbot.answer_patient_query(patient_id, query_text)
+        reply = PatientHistoryRAGChatbot.answer_patient_query(patient_id, query_text, report_context=report_context)
         return jsonify({
             'success': True,
             'patient_id': patient_id,
@@ -1604,6 +1614,7 @@ def patient_chat_endpoint():
     except Exception as e:
         logger.error(f"Error in patient_chat_endpoint: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)
