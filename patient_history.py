@@ -4,6 +4,7 @@ import logging
 import re
 import sqlite3
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 logger = logging.getLogger(__name__)
 
@@ -763,8 +764,177 @@ class PatientHistoryManager:
                 json.dump(self.db, f, indent=2)
             # Sync to SQLite relational tables (rows and columns)
             self.sqlite_db.sync_from_dict(self.db)
+            # Sync to Neon Serverless PostgreSQL Cloud
+            self.sync_to_neon()
         except Exception as e:
             logger.warning(f"Failed to save patient history: {e}")
+
+    def sync_to_neon(self):
+        """Syncs patient store data into Neon Serverless PostgreSQL Cloud tables."""
+        neon_url = os.getenv('NEON_DATABASE_URL', '')
+        if not neon_url:
+            return
+        try:
+            import psycopg2
+            conn = psycopg2.connect(neon_url)
+            cur = conn.cursor()
+
+            for slug, pdata in self.db.get("patients", {}).items():
+                p_name = pdata.get("patient_name", slug)
+                cur.execute("""
+                    INSERT INTO patients (slug, patient_name)
+                    VALUES (%s, %s)
+                    ON CONFLICT(slug) DO UPDATE SET patient_name=EXCLUDED.patient_name, updated_at=CURRENT_TIMESTAMP
+                """, (slug, p_name))
+
+                cur.execute("DELETE FROM active_medications WHERE patient_slug=%s;", (slug,))
+                cur.execute("DELETE FROM lab_results WHERE patient_slug=%s;", (slug,))
+                cur.execute("DELETE FROM prescriptions WHERE patient_slug=%s;", (slug,))
+                cur.execute("DELETE FROM visits WHERE patient_slug=%s;", (slug,))
+
+                for med in pdata.get("active_medications", []):
+                    dos_str = json.dumps(med.get("dosage")) if isinstance(med.get("dosage"), dict) else (str(med.get("dosage")) if med.get("dosage") else None)
+                    cur.execute("""
+                        INSERT INTO active_medications (patient_slug, medicine_name, dosage, med_class, confidence_status)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (slug, med.get("name", ""), dos_str, med.get("class", ""), med.get("confidence_status", "")))
+
+                for res in pdata.get("past_lab_results", []):
+                    cur.execute("""
+                        INSERT INTO lab_results (patient_slug, visit_id, parameter, key, value, unit, status, validation_status, rule_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        slug,
+                        res.get("visit_id"),
+                        res.get("parameter", res.get("test_name", "")),
+                        res.get("key", res.get("normalized_test_name", "")),
+                        float(res.get("value", res.get("result_value", 0))),
+                        res.get("unit", ""),
+                        res.get("status", "NORMAL"),
+                        res.get("validation_status", "VALIDATED"),
+                        res.get("rule_id", "")
+                    ))
+
+                for visit in pdata.get("visits", []):
+                    cur.execute("""
+                        INSERT INTO visits (patient_slug, visit_id, visit_type, details, findings_count)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (slug, visit.get("visit_id", ""), visit.get("visit_type", "REPORT_ANALYSIS"), json.dumps(visit.get("details", {})), visit.get("findings_count", 0)))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            logger.info("Successfully synced patient history to Neon Serverless Postgres Cloud!")
+        except Exception as e:
+            logger.warning(f"Failed to sync patient history to Neon Postgres: {e}")
+
+    def create_user_account(self, email, password, full_name, age=None, gender=None):
+        """Creates a registered user account and links it to a patient profile in DB."""
+        slug, display_name = normalize_patient_name(full_name)
+        pw_hash = generate_password_hash(password)
+        clean_email = email.strip().lower()
+
+        # 1. Store in Neon Cloud Postgres if available
+        neon_url = os.getenv('NEON_DATABASE_URL', '')
+        if neon_url:
+            try:
+                import psycopg2
+                conn = psycopg2.connect(neon_url)
+                cur = conn.cursor()
+                cur.execute("SELECT id FROM users WHERE email=%s;", (clean_email,))
+                if cur.fetchone():
+                    cur.close()
+                    conn.close()
+                    return False, "An account with this email address already exists."
+
+                cur.execute("""
+                    INSERT INTO patients (slug, patient_name, age, gender)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT(slug) DO UPDATE SET patient_name=EXCLUDED.patient_name, age=EXCLUDED.age, gender=EXCLUDED.gender, updated_at=CURRENT_TIMESTAMP
+                """, (slug, display_name, str(age) if age else None, gender))
+
+                cur.execute("""
+                    INSERT INTO users (email, password_hash, full_name, patient_slug)
+                    VALUES (%s, %s, %s, %s)
+                """, (clean_email, pw_hash, display_name, slug))
+
+                conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.warning(f"Error registering user in Neon Cloud DB: {e}")
+
+        # 2. Store in local SQLite DB
+        try:
+            with self.sqlite_db._get_connection() as conn_sq:
+                cur_sq = conn_sq.cursor()
+                cur_sq.execute("SELECT id FROM users WHERE email=?;", (clean_email,))
+                if cur_sq.fetchone() and not neon_url:
+                    return False, "An account with this email address already exists."
+
+                cur_sq.execute("""
+                    INSERT OR REPLACE INTO patients (slug, patient_name, age, gender)
+                    VALUES (?, ?, ?, ?)
+                """, (slug, display_name, str(age) if age else None, gender))
+
+                cur_sq.execute("""
+                    INSERT OR REPLACE INTO users (email, password_hash, full_name, patient_slug)
+                    VALUES (?, ?, ?, ?)
+                """, (clean_email, pw_hash, display_name, slug))
+                conn_sq.commit()
+        except Exception as e:
+            logger.warning(f"Error registering user in local SQLite DB: {e}")
+
+        user_data = {
+            "email": clean_email,
+            "full_name": display_name,
+            "patient_slug": slug
+        }
+        return True, user_data
+
+    def authenticate_user(self, email, password):
+        """Authenticates user against Neon Postgres or SQLite DB credentials."""
+        clean_email = email.strip().lower()
+
+        # Try Neon Cloud DB first
+        neon_url = os.getenv('NEON_DATABASE_URL', '')
+        if neon_url:
+            try:
+                import psycopg2
+                conn = psycopg2.connect(neon_url)
+                cur = conn.cursor()
+                cur.execute("SELECT email, password_hash, full_name, patient_slug FROM users WHERE email=%s;", (clean_email,))
+                row = cur.fetchone()
+                cur.close()
+                conn.close()
+
+                if row and check_password_hash(row[1], password):
+                    return {
+                        "email": row[0],
+                        "full_name": row[2],
+                        "patient_slug": row[3]
+                    }
+                elif row:
+                    return None  # Invalid password
+            except Exception as e:
+                logger.warning(f"Error authenticating user in Neon Cloud DB: {e}")
+
+        # Fallback to local SQLite DB
+        try:
+            with self.sqlite_db._get_connection() as conn_sq:
+                cur_sq = conn_sq.cursor()
+                cur_sq.execute("SELECT email, password_hash, full_name, patient_slug FROM users WHERE email=?;", (clean_email,))
+                row = cur_sq.fetchone()
+                if row and check_password_hash(row[1], password):
+                    return {
+                        "email": row[0],
+                        "full_name": row[2],
+                        "patient_slug": row[3]
+                    }
+        except Exception as e:
+            logger.warning(f"Error authenticating user in local SQLite DB: {e}")
+
+        return None
 
     def _get_patient_store(self, patient_name="Default Patient"):
         slug, display_name = normalize_patient_name(patient_name)
