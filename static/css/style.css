@@ -52,6 +52,13 @@ body {
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-soft);
     transition: box-shadow 0.2s ease;
+    /* Allow table scroll wrappers and sticky columns to work */
+    overflow: visible;
+}
+
+/* Prose containers must NOT clip table overflow */
+.prose {
+    overflow: visible;
 }
 
 /* Interactive Tabs */
@@ -206,30 +213,77 @@ button, select, input, label[for], label.cursor-pointer {
     border-radius: var(--radius-md);
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    /* Always show scrollbar so user knows table is scrollable */
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+/* Scroll hint shadow on right edge when table overflows */
+.table-responsive-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 28px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.85));
+    pointer-events: none;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.table-responsive-wrapper {
+    position: relative;
 }
 
 .prose table {
     width: 100%;
-    min-width: 520px; /* Ensures clean column display on scroll */
+    /* Wide enough for the 9-column Clinical Evaluation table */
+    min-width: 820px;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 0.82rem;
     text-align: left;
+    table-layout: auto;
 }
 
 .prose th {
-    background-color: #f1f5f9;
-    color: #1e293b;
+    background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+    color: #0f172a;
     font-weight: 700;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border-color);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 2px solid #cbd5e1;
     white-space: nowrap;
+    vertical-align: middle;
 }
 
 .prose td {
-    padding: 0.65rem 1rem;
+    padding: 0.55rem 0.85rem;
     border-bottom: 1px solid #f1f5f9;
     color: #334155;
     vertical-align: middle;
+    font-size: 0.82rem;
+    /* Allow long text to wrap inside cells */
+    word-break: break-word;
+    max-width: 260px;
+}
+
+/* First column (Finding ID / Parameter label) sticky for context while scrolling */
+.prose th:first-child,
+.prose td:first-child {
+    position: sticky;
+    left: 0;
+    background: #f8fafc;
+    z-index: 2;
+    border-right: 1px solid #e2e8f0;
+    min-width: 80px;
+}
+
+.prose th:first-child {
+    background: linear-gradient(to bottom, #eff6ff, #dbeafe);
+    color: #1d4ed8;
+    z-index: 3;
 }
 
 .prose tr:last-child td {
@@ -240,8 +294,17 @@ button, select, input, label[for], label.cursor-pointer {
     background-color: #fafbfc;
 }
 
-.prose tr:hover td {
+.prose tr:nth-child(even) td:first-child {
     background-color: #f0f7ff;
+}
+
+.prose tr:hover td {
+    background-color: #f0f9ff;
+    transition: background-color 0.15s;
+}
+
+.prose tr:hover td:first-child {
+    background-color: #dbeafe;
 }
 
 /* Code & Badges */
@@ -307,13 +370,43 @@ button, select, input, label[for], label.cursor-pointer {
 /* Device-Specific Tweaks */
 @media (max-width: 480px) {
     /* iPhone & Pixel portrait styles */
-    .prose h1 { font-size: 1.25rem; }
-    .prose h2 { font-size: 1.1rem; }
-    .prose h3 { font-size: 1rem; }
+    .prose h1 { font-size: 1.15rem; }
+    .prose h2 { font-size: 1rem; }
+    .prose h3 { font-size: 0.95rem; }
     .overall-summary-card,
     .possible-finding-card,
     .safety-alert-card {
-        padding: 0.875rem 1rem;
+        padding: 0.75rem 0.875rem;
+    }
+    /* Compact table cells on very small screens */
+    .prose th {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.68rem;
+    }
+    .prose td {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+        max-width: 160px;
+    }
+    /* Table wrapper: add scroll indicator text */
+    .table-responsive-wrapper::before {
+        content: 'Scroll horizontally to see all columns →';
+        display: block;
+        font-size: 0.65rem;
+        color: #64748b;
+        padding: 0.35rem 0.75rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        font-style: italic;
+    }
+}
+
+@media (max-width: 640px) {
+    .prose table {
+        min-width: 640px;
+    }
+    .prose th, .prose td {
+        white-space: normal;
     }
 }
 /* ═══════════════════════════════════════════════════════════════
