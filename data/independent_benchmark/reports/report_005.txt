@@ -1,0 +1,3 @@
+SPECIALIZED ASSAY
+Experimental Biomarker X9: 42.0 ng/mL
+Reference Range: 10.0 - 50.0 ng/mL

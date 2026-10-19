@@ -1,0 +1,17 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-9.0.2, pluggy-1.6.0
+rootdir: E:\Progress 2\medical-report-analyzer-and-prescription-assistance-main
+plugins: anyio-4.12.1
+collected 238 items
+
+tests\test_ddi_checker.py .............................................. [ 19%]
+................................................                         [ 39%]
+tests\test_ddi_real_dataset.py ..............                            [ 45%]
+tests\test_dlti_checker.py ............................................. [ 64%]
+.....................................                                    [ 79%]
+tests\test_medication_lab_schema.py .................................... [ 94%]
+...                                                                      [ 96%]
+tests\test_prescription_route_integration.py .........                   [100%]
+
+============================= 238 passed in 8.22s =============================
+Process exit code: 0

@@ -1,0 +1,4 @@
+LIVER FUNCTION TEST
+ALT (SGPT): 22.0 U/L (7.0 - 56.0)
+AST (SGOT): 25.0 U/L (10.0 - 40.0)
+Serum Albumin: 4.2 g/dL (3.5 - 5.0)
