@@ -1,0 +1,174 @@
+{
+  "manifest_version": "1.1.0",
+  "dataset_name": "DDInter 2.0 (Downloaded Snapshot)",
+  "source_url": "https://ddinter2.scbdd.com/download/",
+  "download_timestamp_utc": "2026-10-15T18:30:00Z",
+  "download_method": "HTTPS (Official DDInter 2.0 Offered Download Files)",
+  "scope_description": "Measured counts of the locally downloaded snapshot, NOT the full publication database totals.",
+  "files": {
+    "ddinter_downloads_code_A.csv": {
+      "size_bytes": 3343434,
+      "sha256": "a22ca451d2b755ca2331886f7e00540c86f555f9f55704a59a19c691251f52e0",
+      "row_count": 56367,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_B.csv": {
+      "size_bytes": 867726,
+      "sha256": "76de5115a55587f0e822e1096b684fd3ddde058fbefcbb19896df58820ace130",
+      "row_count": 15140,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_D.csv": {
+      "size_bytes": 1520704,
+      "sha256": "c0627ec39965dbe27829e4934cd20d71eb079f4e373287678737bba9423a306a",
+      "row_count": 25681,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_H.csv": {
+      "size_bytes": 705088,
+      "sha256": "f0f925f0ba1ee68c4668d3e7a6732719b34623b22a0f5d017f9090e59f63c88e",
+      "row_count": 11727,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_L.csv": {
+      "size_bytes": 3885702,
+      "sha256": "f54f4486cc00344f8c86508c31c2ca3fad6d1d37ec3af5bcf609b4bbda5507ef",
+      "row_count": 65389,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_P.csv": {
+      "size_bytes": 317460,
+      "sha256": "83f8c0edb20d09ef29b8500b48f9623e208379525688ade9e70a7df2d8749d55",
+      "row_count": 5492,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_R.csv": {
+      "size_bytes": 1793766,
+      "sha256": "1c39c3d4a6e41659b7a988538d7f363867592abc6f41a815de8746f6e2150574",
+      "row_count": 30563,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    },
+    "ddinter_downloads_code_V.csv": {
+      "size_bytes": 700777,
+      "sha256": "353973fb300453946aea95733e8fb52338e4b59426d2ce6ca318363d4f84f10a",
+      "row_count": 12024,
+      "columns": [
+        "DDInterID_A",
+        "Drug_A",
+        "DDInterID_B",
+        "Drug_B",
+        "Level"
+      ]
+    }
+  },
+  "measured_import_statistics": {
+    "file_count": 8,
+    "total_file_size_bytes": 13134657,
+    "total_csv_rows": 222383,
+    "unique_unordered_pairs": 160235,
+    "unique_drug_names_exact": 1939,
+    "unique_drug_names_normalized_lower": 1939,
+    "severity_distribution_raw_rows": {
+      "denominator": 222383,
+      "description": "Severity distribution across all raw CSV rows (denominator = 222,383)",
+      "counts": {
+        "Moderate": 130367,
+        "Major": 33896,
+        "Minor": 10938,
+        "Unknown": 47182
+      },
+      "percentages": {
+        "Moderate": {
+          "percent": 58.62,
+          "formatted": "58.62% (of 222,383 raw rows)"
+        },
+        "Major": {
+          "percent": 15.24,
+          "formatted": "15.24% (of 222,383 raw rows)"
+        },
+        "Minor": {
+          "percent": 4.92,
+          "formatted": "4.92% (of 222,383 raw rows)"
+        },
+        "Unknown": {
+          "percent": 21.22,
+          "formatted": "21.22% (of 222,383 raw rows)"
+        }
+      },
+      "sum_of_counts": 222383,
+      "sums_to_denominator": true
+    },
+    "severity_distribution_unique_pairs": {
+      "denominator": 160235,
+      "description": "Severity distribution across unique unordered drug pairs (denominator = 160,235)",
+      "counts": {
+        "Moderate": 96675,
+        "Major": 26914,
+        "Minor": 6833,
+        "Unknown": 29813
+      },
+      "percentages": {
+        "Moderate": {
+          "percent": 60.33,
+          "formatted": "60.33% (of 160,235 unique pairs)"
+        },
+        "Major": {
+          "percent": 16.8,
+          "formatted": "16.80% (of 160,235 unique pairs)"
+        },
+        "Minor": {
+          "percent": 4.26,
+          "formatted": "4.26% (of 160,235 unique pairs)"
+        },
+        "Unknown": {
+          "percent": 18.61,
+          "formatted": "18.61% (of 160,235 unique pairs)"
+        }
+      },
+      "sum_of_counts": 160235,
+      "sums_to_denominator": true
+    }
+  }
+}

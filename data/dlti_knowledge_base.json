@@ -1,0 +1,314 @@
+{
+  "_metadata": {
+    "schema_version": "1.0.0",
+    "knowledge_base_id": "DLTI_KB_001",
+    "knowledge_base_version": "0.2.0",
+    "label": "Drug–Laboratory Test Interaction (DLTI) Research Knowledge Base",
+    "status": "RESEARCH_PREVIEW",
+    "governance_note": "Research preview — not clinically validated. All rules are TIER_2_RESEARCH_CANDIDATE with release_approved=false. No rules in this file may be used for clinical decision-making without independent expert review and formal release approval. Version 0.2.0: removed all synthetic numeric thresholds from evidence-backed rules; replaced with document-supported qualitative STATUS_MATCH evaluations. CRP rule retained as structurally valid but evaluation-disabled (no defensible evaluable rule established).",
+    "created_date": "2026-10-16",
+    "last_modified_date": "2026-10-16",
+    "rule_count": 3
+  },
+
+  "rules": [
+    {
+      "rule_id": "DLTI_PD_PREDNISONE_GLUCOSE_V1",
+      "rule_version": "0.2.0",
+      "tier": "TIER_2_RESEARCH_CANDIDATE",
+      "relationship_category": "PHARMACODYNAMIC_EFFECT",
+      "is_superseded": false,
+      "superseded_by": null,
+      "superseded_reason": null,
+      "governance": {
+        "review_status": "DRAFT",
+        "clinical_reviewer_name": null,
+        "clinical_reviewer_credential": null,
+        "review_date": null,
+        "release_approved": false,
+        "approval_hash": null,
+        "governance_notes": "Research candidate. RAYOS (prednisone) NDA 202020 prescribing information retrieved. Section 6.1 Adverse Reactions documents 'Metabolic: hyperglycemia' as a known adverse reaction for corticosteroid therapy. No document-local numeric fasting glucose threshold is cited. The evaluable relationship is: prednisone therapy + an ABNORMAL_HIGH glucose status finding = corticosteroid-associated hyperglycemia contextual advisory. No diagnosis of diabetes is implied or asserted. The 126 mg/dL threshold from v0.1.0 was synthetic and has been removed."
+      },
+      "medication_criteria": {
+        "generic_name": "prednisone",
+        "brand_names": ["RAYOS", "Deltasone"],
+        "rxnorm_cui": "8640",
+        "who_atc_code": "H02AB07",
+        "mapping_status": "CURATED_EXACT",
+        "allowed_routes": ["ORAL"],
+        "allowed_dosage_forms": ["TABLET", "DELAYED_RELEASE_TABLET"],
+        "treatment_state": "ANY"
+      },
+      "laboratory_criteria": {
+        "analyte_key": "GLUCOSE",
+        "canonical_display_name": "Serum/Plasma Glucose",
+        "loinc_code": "14749-6",
+        "loinc_mapping_status": "CURATED_EXACT",
+        "fasting_context_required": false,
+        "required_canonical_unit": "STATUS_ONLY",
+        "allowed_unit_aliases": [],
+        "convertible_units": [],
+        "unit_conversion": {},
+        "specimen_type": "SERUM_OR_PLASMA",
+        "assay_platform_requirement": {
+          "architecture": "NOT_APPLICABLE",
+          "susceptible_technologies": [],
+          "immune_technologies": [],
+          "allow_brand_immunity_assumption": false,
+          "interference_note": "No known analytical interference from corticosteroids on glucose oxidase or hexokinase enzymatic assays. The effect is pharmacodynamic (true glucose elevation via gluconeogenesis and insulin resistance), not analytical."
+        }
+      },
+      "evaluation_logic": {
+        "direction": "MED_TO_LAB",
+        "interaction_type": "PHARMACODYNAMIC_EFFECT",
+        "operator": "STATUS_MATCH",
+        "threshold_value": null,
+        "threshold_range_high": null,
+        "interval_endpoints": "NOT_APPLICABLE",
+        "target_lab_statuses": ["ABNORMAL_HIGH", "HIGH", "ELEVATED", "DIABETES_RANGE", "PREDIABETES"],
+        "timing_window_days": null,
+        "applicability_checks": [
+          "medication_identity_verified",
+          "medication_route_matches",
+          "laboratory_analyte_matches"
+        ]
+      },
+      "evidence_references": [
+        {
+          "source_name": "US FDA Prescribing Information",
+          "exact_product_name": "RAYOS (prednisone) delayed-release tablets",
+          "active_ingredient": "prednisone",
+          "actual_document_title": "RAYOS (prednisone) delayed-release tablets, for oral use",
+          "document_id": "NDA 202020",
+          "section": "6 ADVERSE REACTIONS",
+          "page_or_section": "Section 6.1",
+          "publication_or_revision_date": "2012-07-30",
+          "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2012/202020s000lbl.pdf",
+          "attempted_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2012/202020s000lbl.pdf",
+          "resolved_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2012/202020s000lbl.pdf",
+          "retrieval_status": "RETRIEVED",
+          "retrieval_failure_reason": "NONE",
+          "document_sha256": null,
+          "verbatim_passage": "Metabolic: hyperglycemia, hyperlipidemia",
+          "quote_match_outcome": "QUOTE_MISMATCH",
+          "license_type": "PUBLIC_DOMAIN_US_GOVERNMENT",
+          "curation_note": "Verbatim passage lists hyperglycemia under Adverse Reactions Section 6.1 of the RAYOS label. No document-local numeric cutoff. Quote match is MISMATCH because the full surrounding sentence was not isolated."
+        }
+      ],
+      "clinical_advisory": {
+        "clinical_importance": "SIGNIFICANT_MONITORING",
+        "action_category": "MONITORING_MANDATED",
+        "summary_title": "Prednisone — Corticosteroid-Associated Glucose Elevation (Research Candidate)",
+        "authored_advisory_text": "Prednisone (RAYOS) is a corticosteroid documented by its prescribing information to cause hyperglycemia as an adverse reaction. An elevated or abnormal glucose result in a patient receiving prednisone therapy may reflect a corticosteroid pharmacodynamic effect. This finding does not constitute a diagnosis of diabetes or any other condition and does not imply that prednisone is the sole or primary cause of the glucose elevation. Clinical evaluation by a qualified healthcare provider is required.",
+        "prohibited_actions": ["AUTONOMOUS_DOSE_CHANGE", "AUTONOMOUS_DISCONTINUATION", "DIAGNOSIS"]
+      },
+      "context_outcomes": {
+        "on_missing_lab_status": "INSUFFICIENT_CONTEXT",
+        "on_missing_unit": "NOT_APPLICABLE",
+        "on_incompatible_unit": "NOT_APPLICABLE",
+        "on_missing_value": "NOT_APPLICABLE",
+        "on_unknown_assay": "NOT_APPLICABLE",
+        "on_unknown_treatment_state": "REMAIN_UNKNOWN_REQUIRE_REVIEW"
+      }
+    },
+
+    {
+      "rule_id": "DLTI_INT_PREDNISONE_CRP_V1",
+      "rule_version": "0.2.0",
+      "tier": "TIER_2_RESEARCH_CANDIDATE",
+      "relationship_category": "PHARMACODYNAMIC_EFFECT",
+      "is_superseded": false,
+      "superseded_by": null,
+      "superseded_reason": null,
+      "governance": {
+        "review_status": "DRAFT",
+        "clinical_reviewer_name": null,
+        "clinical_reviewer_credential": null,
+        "review_date": null,
+        "release_approved": false,
+        "approval_hash": null,
+        "governance_notes": "Research candidate — evaluation DISABLED. No defensible evaluable rule could be established for this relationship. The <1.0 mg/L threshold used in v0.1.0 was synthetic with no document-local support. Classifying physiological CRP suppression as ANALYTICAL_INTERFERENCE was incorrect — no assay-specific interference evidence exists. The relationship (corticosteroids suppress CRP pharmacodynamically) is pharmacologically known but no specific rule trigger can be specified without a validated, document-local threshold or assay-specific evidence. Retained for governance visibility; engine will not evaluate it."
+      },
+      "medication_criteria": {
+        "generic_name": "prednisone",
+        "brand_names": ["RAYOS", "Deltasone"],
+        "rxnorm_cui": "8640",
+        "who_atc_code": "H02AB07",
+        "mapping_status": "CURATED_EXACT",
+        "allowed_routes": ["ORAL"],
+        "allowed_dosage_forms": ["TABLET", "DELAYED_RELEASE_TABLET"],
+        "treatment_state": "CONTINUATION"
+      },
+      "laboratory_criteria": {
+        "analyte_key": "CRP",
+        "canonical_display_name": "C-Reactive Protein",
+        "loinc_code": "1988-5",
+        "loinc_mapping_status": "CURATED_EXACT",
+        "fasting_context_required": false,
+        "required_canonical_unit": "STATUS_ONLY",
+        "allowed_unit_aliases": [],
+        "convertible_units": [],
+        "unit_conversion": {},
+        "specimen_type": "SERUM_OR_PLASMA",
+        "assay_platform_requirement": {
+          "architecture": "NOT_APPLICABLE",
+          "susceptible_technologies": [],
+          "immune_technologies": [],
+          "allow_brand_immunity_assumption": false,
+          "interference_note": "No assay-specific analytical interference evidence from prednisone on CRP immunoassays has been curated. Effect is pharmacodynamic (true CRP suppression). Rule evaluation is disabled pending valid threshold evidence."
+        }
+      },
+      "evaluation_logic": {
+        "direction": "MED_TO_LAB",
+        "interaction_type": "PHARMACODYNAMIC_EFFECT",
+        "operator": "DISABLED",
+        "threshold_value": null,
+        "threshold_range_high": null,
+        "interval_endpoints": "NOT_APPLICABLE",
+        "target_lab_statuses": [],
+        "timing_window_days": null,
+        "applicability_checks": [
+          "medication_identity_verified",
+          "medication_route_matches",
+          "laboratory_analyte_matches"
+        ]
+      },
+      "evidence_references": [
+        {
+          "source_name": "None — mechanism only",
+          "exact_product_name": null,
+          "active_ingredient": "prednisone",
+          "actual_document_title": "Corticosteroid suppression of acute-phase reactants (pharmacological mechanism)",
+          "document_id": null,
+          "section": null,
+          "page_or_section": null,
+          "publication_or_revision_date": null,
+          "source_url": null,
+          "attempted_url": null,
+          "resolved_url": null,
+          "retrieval_status": "RETRIEVAL_FAILED",
+          "retrieval_failure_reason": "No specific prescribing-information or peer-reviewed document with a document-local threshold has been curated. Rule is derived from general pharmacological knowledge only.",
+          "document_sha256": null,
+          "verbatim_passage": null,
+          "quote_match_outcome": "UNVERIFIED_RETRIEVAL_FAILED",
+          "license_type": null
+        }
+      ],
+      "clinical_advisory": {
+        "clinical_importance": "ANALYTICAL_INTERPRETATION",
+        "action_category": "INTERFERENCE_CAUTION",
+        "summary_title": "Prednisone — CRP Suppression Context Note (Research Candidate — Disabled)",
+        "authored_advisory_text": "Corticosteroids including prednisone are pharmacologically known to suppress C-Reactive Protein (CRP) via inhibition of the acute-phase response. This rule is retained as a disabled research candidate. No evaluable, document-supported numeric threshold has been established. Clinical interpretation of CRP results in patients receiving corticosteroid therapy should account for this pharmacodynamic effect.",
+        "prohibited_actions": ["AUTONOMOUS_DOSE_CHANGE", "AUTONOMOUS_DISCONTINUATION", "DIAGNOSIS"]
+      },
+      "context_outcomes": {
+        "on_missing_lab_status": "NOT_APPLICABLE",
+        "on_missing_unit": "NOT_APPLICABLE",
+        "on_incompatible_unit": "NOT_APPLICABLE",
+        "on_missing_value": "NOT_APPLICABLE",
+        "on_unknown_assay": "NOT_APPLICABLE",
+        "on_unknown_treatment_state": "NOT_APPLICABLE"
+      }
+    },
+
+    {
+      "rule_id": "DLTI_SAF_SPIRONOLACTONE_POTASSIUM_V1",
+      "rule_version": "0.2.0",
+      "tier": "TIER_2_RESEARCH_CANDIDATE",
+      "relationship_category": "CLINICAL_SAFETY_MONITORING",
+      "is_superseded": false,
+      "superseded_by": null,
+      "superseded_reason": null,
+      "governance": {
+        "review_status": "DRAFT",
+        "clinical_reviewer_name": null,
+        "clinical_reviewer_credential": null,
+        "review_date": null,
+        "release_approved": false,
+        "approval_hash": null,
+        "governance_notes": "Research candidate. ALDACTONE (spironolactone) NDA 012151 prescribing information retrieved. Warnings section documents hyperkalemia as a potentially fatal adverse effect, especially in patients with impaired renal function or excessive potassium intake. The label does not cite a universal numeric potassium threshold applicable to all patients independent of renal function, indication, or treatment state. The >5.0 mmol/L threshold from v0.1.0 was synthetic and has been removed. The evaluable document-supported relationship is: spironolactone + ABNORMAL_HIGH potassium status finding = hyperkalemia monitoring advisory, consistent with the label warning. The label condition 'impaired renal function' is noted but cannot be evaluated without verified renal function data; applicability is noted as broadly applicable given the warning."
+      },
+      "medication_criteria": {
+        "generic_name": "spironolactone",
+        "brand_names": ["ALDACTONE", "CaroSpir"],
+        "rxnorm_cui": "9997",
+        "who_atc_code": "C03DA01",
+        "mapping_status": "CURATED_EXACT",
+        "allowed_routes": ["ORAL"],
+        "allowed_dosage_forms": ["TABLET", "ORAL_SUSPENSION"],
+        "treatment_state": "ANY"
+      },
+      "laboratory_criteria": {
+        "analyte_key": "POTASSIUM",
+        "canonical_display_name": "Serum Potassium",
+        "loinc_code": "2823-3",
+        "loinc_mapping_status": "CURATED_EXACT",
+        "fasting_context_required": false,
+        "required_canonical_unit": "STATUS_ONLY",
+        "allowed_unit_aliases": [],
+        "convertible_units": [],
+        "unit_conversion": {},
+        "specimen_type": "SERUM_OR_PLASMA",
+        "assay_platform_requirement": {
+          "architecture": "NOT_APPLICABLE",
+          "susceptible_technologies": [],
+          "immune_technologies": [],
+          "allow_brand_immunity_assumption": false,
+          "interference_note": "No significant analytical interference from spironolactone on potassium ISE assays. Effect is pharmacodynamic (potassium retention via aldosterone antagonism)."
+        }
+      },
+      "evaluation_logic": {
+        "direction": "MED_TO_LAB",
+        "interaction_type": "CLINICAL_SAFETY_MONITORING",
+        "operator": "STATUS_MATCH",
+        "threshold_value": null,
+        "threshold_range_high": null,
+        "interval_endpoints": "NOT_APPLICABLE",
+        "target_lab_statuses": ["ABNORMAL_HIGH", "HIGH", "ELEVATED", "CRITICAL_HIGH"],
+        "timing_window_days": null,
+        "applicability_checks": [
+          "medication_identity_verified",
+          "medication_route_matches",
+          "laboratory_analyte_matches"
+        ]
+      },
+      "evidence_references": [
+        {
+          "source_name": "US FDA Prescribing Information",
+          "exact_product_name": "ALDACTONE (spironolactone) Tablets",
+          "active_ingredient": "spironolactone",
+          "actual_document_title": "Aldactone (spironolactone) 25 mg, 50 mg, and 100 mg Tablets, GD SEARLE LLC",
+          "document_id": "NDA 012151",
+          "section": "WARNINGS: Hyperkalemia",
+          "page_or_section": "Warnings (Page 8-10)",
+          "publication_or_revision_date": "2014-10-23",
+          "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2014/012151s072lbl.pdf",
+          "attempted_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2014/012151s072lbl.pdf",
+          "resolved_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2014/012151s072lbl.pdf",
+          "retrieval_status": "RETRIEVED",
+          "retrieval_failure_reason": "NONE",
+          "document_sha256": null,
+          "verbatim_passage": "Hyperkalemia may occur in patients with impaired renal function or excessive potassium intake and can cause cardiac irregularities, which may be fatal.",
+          "quote_match_outcome": "QUOTE_MISMATCH",
+          "license_type": "PUBLIC_DOMAIN_US_GOVERNMENT",
+          "curation_note": "Verbatim passage from ALDACTONE Warnings section. Quote match is MISMATCH because the full surrounding paragraph was not isolated. No document-local universal numeric threshold for all patients is cited. The label references renal impairment and potassium intake as risk factors. A 5.0 mmol/L threshold in the Dosage section applies specifically to severe heart failure initiation and is not a universal hyperkalemia trigger."
+        }
+      ],
+      "clinical_advisory": {
+        "clinical_importance": "CRITICAL_SAFETY",
+        "action_category": "MONITORING_MANDATED",
+        "summary_title": "Spironolactone — Hyperkalemia Monitoring Advisory (Research Candidate)",
+        "authored_advisory_text": "Spironolactone's prescribing information warns that hyperkalemia may occur, particularly in patients with impaired renal function or excessive potassium intake, and may be fatal. An elevated or abnormal serum potassium result in a patient receiving spironolactone warrants clinical review. This finding does not specify a universal numeric threshold and does not substitute for clinical judgment. No autonomous medication change should be made based on this finding.",
+        "prohibited_actions": ["AUTONOMOUS_DOSE_CHANGE", "AUTONOMOUS_DISCONTINUATION", "DIAGNOSIS"]
+      },
+      "context_outcomes": {
+        "on_missing_lab_status": "INSUFFICIENT_CONTEXT",
+        "on_missing_unit": "NOT_APPLICABLE",
+        "on_incompatible_unit": "NOT_APPLICABLE",
+        "on_missing_value": "NOT_APPLICABLE",
+        "on_unknown_assay": "NOT_APPLICABLE",
+        "on_unknown_treatment_state": "REMAIN_UNKNOWN_REQUIRE_REVIEW"
+      }
+    }
+  ]
+}
