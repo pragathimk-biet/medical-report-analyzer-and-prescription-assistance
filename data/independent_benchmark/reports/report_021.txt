@@ -1,2 +1,0 @@
-LAB SHEET
-Fasting Blood Glucose: POSITIVE_TEXT_STRING
