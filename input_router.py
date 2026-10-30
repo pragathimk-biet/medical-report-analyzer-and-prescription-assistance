@@ -67,7 +67,11 @@ class InputRouter:
         r'\brx\b', r'\bprescription\b', r'\btab\b', r'\btablet\b', r'\bcap\b',
         r'\bcapsule\b', r'\bsyrup\b', r'\bdosage\b', r'\bmg\b', r'\bml\b',
         r'\b1-0-1\b', r'\b0-0-1\b', r'\b1-0-0\b', r'\btake after meals\b',
-        r'\bdispense\b', r'\bsig\b', r'\bdr\.\s+[a-z]+'
+        r'\bdispense\b', r'\bsig\b', r'\bdr\.\s+[a-z]+',
+        r'\binvoice\b', r'\bbill\b', r'\bcash memo\b', r'\bretail invoice\b',
+        r'\btax invoice\b', r'\bpharmacy\b', r'\bchemist\b', r'\bdruggist\b',
+        r'\bmrp\b', r'\bbatch\b', r'\brate\b', r'\bamount\b', r'\bparticulars\b',
+        r'\bqty\b', r'\bquantity\b'
     ]
 
     REPORT_KEYWORDS = [
@@ -101,7 +105,7 @@ class InputRouter:
         report_score = 0
 
         # Filename heuristics
-        if "rx" in filename_lower or "prescription" in filename_lower:
+        if any(k in filename_lower for k in ["rx", "prescription", "invoice", "bill", "cashmemo", "pharmacy"]):
             rx_score += 3
         if "report" in filename_lower or "lab" in filename_lower:
             report_score += 2

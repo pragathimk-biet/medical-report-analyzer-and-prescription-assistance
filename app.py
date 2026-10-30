@@ -371,6 +371,7 @@ from report_verification_agent import ReportVerificationAgent
 from ml_safety_agent import MLSafetyAgent
 import chat_context
 from report_reasoning_agent import ReportReasoningAgent
+from ddi_checker import TrustedPatientAuthContract
 
 rule_engine = MedicalRuleEngine()
 patient_history = PatientHistoryManager()
@@ -1241,6 +1242,17 @@ def upload_prescription():
                             "rejection_reason": "No current laboratory measurements were submitted in this request."
                         }]
 
+                user_session = session.get('user', {})
+                logged_in_name = user_session.get('name')
+                auth_contract = None
+                if logged_in_name:
+                    auth_contract = TrustedPatientAuthContract(
+                        patient_scope=logged_in_name,
+                        issuer="session_auth",
+                        is_verified=True
+                    )
+                    logger.info(f"Prescription pipeline authorized with session contract for: {logged_in_name}")
+
                 dlti_preview_enabled = app.config.get(
                     "DLTI_RESEARCH_PREVIEW_ENABLED",
                     os.getenv("DLTI_RESEARCH_PREVIEW_ENABLED", "false").lower() in ("true", "1", "yes")
@@ -1251,10 +1263,35 @@ def upload_prescription():
                     ocr_extractor_func=PerceptionExtractionAgent.extract,
                     ai_generator_func=generate_ai_analysis,
                     patient_history_mgr=patient_history,
-                    trusted_auth_contract=None,
+                    trusted_auth_contract=auth_contract,
                     dlti_research_preview_enabled=dlti_preview_enabled,
                 )
                 logger.info("Complete Prescription Pipeline execution finished")
+
+                # Persist complete prescription to relational SQLite DB and history store when authenticated
+                if logged_in_name:
+                    try:
+                        extracted_meds = pipeline_ctx.get("extracted_data", {}).get("medications", [])
+                        ddi_pairs = pipeline_ctx.get("ddi", {}).get("pairs", [])
+                        rx_date = pipeline_ctx.get("extracted_data", {}).get("prescription_metadata", {}).get("date")
+                        v_status = pipeline_ctx.get("verification", {}).get("overall_status", "verified")
+                        s_status = pipeline_ctx.get("safety", {}).get("safety_status", "SAFE TO DISPLAY")
+                        raw_text_val = pipeline_ctx.get("extracted_data", {}).get("raw_text", "")
+
+                        patient_history.save_complete_prescription(
+                            patient_name=logged_in_name,
+                            visit_id=f"VISIT-RX-{version}",
+                            file_path=filename,
+                            raw_text=raw_text_val,
+                            verification_status=v_status,
+                            safety_status=s_status,
+                            prescription_date=rx_date,
+                            extracted_meds=extracted_meds,
+                            ddi_results=ddi_pairs
+                        )
+                        logger.info(f"Persisted complete prescription to database for patient: {logged_in_name}")
+                    except Exception as save_err:
+                        logger.warning(f"Failed to persist prescription to database: {save_err}")
 
                 chat_context.complete_analysis(
                     session, version,
@@ -1302,6 +1339,7 @@ def login():
         user = patient_history.authenticate_user(email, password)
         if user:
             session['user'] = {
+                'user_id': user.get('user_id'),
                 'email': user['email'],
                 'name': user['full_name'],
                 'patient_id': user['patient_slug']
@@ -1318,16 +1356,27 @@ def register():
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
         age = request.form.get('age', '').strip()
         gender = request.form.get('gender', '').strip()
+        contact_phone = request.form.get('contact_phone', '').strip()
 
         if not full_name or not email or not password:
             return render_template('register.html', error="Full name, email, and password are required to register.")
 
-        success, result_or_err = patient_history.create_user_account(email, password, full_name, age=age, gender=gender)
+        success, result_or_err = patient_history.create_user_account(
+            email=email,
+            password=password,
+            full_name=full_name,
+            age=age,
+            gender=gender,
+            contact_phone=contact_phone,
+            confirm_password=confirm_password
+        )
         if success:
             user = result_or_err
             session['user'] = {
+                'user_id': user.get('user_id'),
                 'email': user['email'],
                 'name': user['full_name'],
                 'patient_id': user['patient_slug']
@@ -1386,13 +1435,81 @@ def upload_file():
                     return jsonify({'error': text}), 400
 
                 # Input Router (Step 1 Foundation)
+                explicit_doc_type = request.form.get('document_type')
                 pipeline_ctx = InputRouter.route_and_create_context(
                     text=text,
                     filename=filename,
-                    explicit_type="medical_report",
+                    explicit_type=explicit_doc_type or None,
                     metadata={"patient_name": patient_name, "ocr_metadata": ocr_meta}
                 )
                 logger.info(f"InputRouter classified payload as: {pipeline_ctx['document_type']}")
+
+                if pipeline_ctx['document_type'] == 'prescription':
+                    user_session = session.get('user', {})
+                    logged_in_name = user_session.get('name')
+                    auth_contract = None
+                    if logged_in_name:
+                        auth_contract = TrustedPatientAuthContract(
+                            patient_scope=logged_in_name,
+                            issuer="session_auth",
+                            is_verified=True
+                        )
+                        logger.info(f"Prescription pipeline authorized with session contract for: {logged_in_name}")
+
+                    dlti_preview_enabled = app.config.get(
+                        "DLTI_RESEARCH_PREVIEW_ENABLED",
+                        os.getenv("DLTI_RESEARCH_PREVIEW_ENABLED", "false").lower() in ("true", "1", "yes")
+                    )
+                    pipeline_ctx = PrescriptionPipelineBoundary.process_prescription(
+                        pipeline_ctx,
+                        ocr_extractor_func=PerceptionExtractionAgent.extract,
+                        ai_generator_func=generate_ai_analysis,
+                        patient_history_mgr=patient_history,
+                        trusted_auth_contract=auth_contract,
+                        dlti_research_preview_enabled=dlti_preview_enabled,
+                    )
+                    if logged_in_name:
+                        try:
+                            extracted_meds = pipeline_ctx.get("extracted_data", {}).get("medications", [])
+                            ddi_pairs = pipeline_ctx.get("ddi", {}).get("pairs", [])
+                            rx_date = pipeline_ctx.get("extracted_data", {}).get("prescription_metadata", {}).get("date")
+                            v_status = pipeline_ctx.get("verification", {}).get("overall_status", "verified")
+                            s_status = pipeline_ctx.get("safety", {}).get("safety_status", "SAFE TO DISPLAY")
+                            raw_text_val = pipeline_ctx.get("extracted_data", {}).get("raw_text", "")
+
+                            patient_history.save_complete_prescription(
+                                patient_name=logged_in_name,
+                                visit_id=f"VISIT-RX-{version}",
+                                file_path=filename,
+                                raw_text=raw_text_val,
+                                verification_status=v_status,
+                                safety_status=s_status,
+                                prescription_date=rx_date,
+                                extracted_meds=extracted_meds,
+                                ddi_results=ddi_pairs
+                            )
+                            logger.info(f"Persisted complete prescription to database for patient: {logged_in_name}")
+                        except Exception as save_err:
+                            logger.warning(f"Failed to persist prescription to database: {save_err}")
+
+                    chat_context.complete_analysis(
+                        session, version,
+                        chat_context.build_prescription_snapshot(pipeline_ctx, version=version)
+                    )
+                    analysis_summary = pipeline_ctx["reasoning"].get("summary", "")
+                    p_name_res = pipeline_ctx["extracted_data"].get("patient_info", {}).get("patient_name") or patient_name
+
+                    return jsonify({
+                        'success': True,
+                        'analysis': {
+                            'english': analysis_summary,
+                            'bangla': None,
+                            'patient_name': p_name_res
+                        },
+                        'analysis_version': version,
+                        'document_type': 'prescription',
+                        'pipeline_context': pipeline_ctx
+                    })
 
                 # Report Extraction Agent (Step 2)
                 pipeline_ctx = ReportExtractionAgent.process(pipeline_ctx)
@@ -1463,6 +1580,23 @@ def route_input_endpoint():
 @app.route('/api/patients', methods=['GET'])
 def get_patients_list():
     try:
+        user = session.get('user')
+        if user and user.get('name'):
+            # Enforce user data isolation: authenticated patient only sees their own profile
+            my_history = patient_history.get_patient_history(user['name'])
+            slug, _ = normalize_patient_name(user['name'])
+            return jsonify({
+                'success': True,
+                'patients': [{
+                    'slug': slug,
+                    'patient_name': user['name'],
+                    'medications_count': len(my_history.get('active_medications', [])),
+                    'lab_results_count': len(my_history.get('past_lab_results', [])),
+                    'prescriptions_count': len(my_history.get('prescriptions', [])),
+                    'reports_count': len(my_history.get('reports', [])),
+                    'visits_count': len(my_history.get('visits', []))
+                }]
+            })
         patients = patient_history.list_all_patients()
         return jsonify({'success': True, 'patients': patients})
     except Exception as e:
@@ -1471,9 +1605,81 @@ def get_patients_list():
 @app.route('/api/patient/<patient_name>', methods=['GET'])
 def get_patient_detail(patient_name):
     try:
+        user = session.get('user')
+        if user:
+            # Backend authorization check: verify user scope matches requested patient
+            req_slug, _ = normalize_patient_name(patient_name)
+            my_slug = user.get('patient_id') or normalize_patient_name(user.get('name', ''))[0]
+            if req_slug != my_slug and patient_name.lower() != user.get('name', '').lower():
+                return jsonify({'success': False, 'error': 'Unauthorized: Access restricted to your own patient profile only.'}), 403
+
         history = patient_history.get_patient_history(patient_name)
         return jsonify({'success': True, 'patient': history})
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/patient/dashboard', methods=['GET'])
+def get_patient_dashboard():
+    """Returns complete consolidated patient dashboard data from relational database."""
+    user = session.get('user')
+    if not user:
+        return jsonify({'success': False, 'error': 'Authentication required. Please log in.'}), 401
+    try:
+        data = patient_history.get_dashboard_data(user['name'])
+        return jsonify({'success': True, 'dashboard': data})
+    except Exception as e:
+        logger.error(f"Error retrieving dashboard data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/patient/toggle-medication', methods=['POST'])
+def toggle_patient_medication():
+    """Toggles medication status between active and discontinued."""
+    user = session.get('user')
+    if not user:
+        return jsonify({'success': False, 'error': 'Authentication required. Please log in.'}), 401
+    try:
+        data = request.get_json() or {}
+        med_id = data.get('medication_id') or data.get('medicine_name')
+        new_status = data.get('status', 'discontinued')
+        if not med_id:
+            return jsonify({'success': False, 'error': 'Medication identifier is required.'}), 400
+
+        updated = patient_history.toggle_medication_status(user['name'], med_id, new_status)
+        return jsonify({'success': True, 'updated': updated, 'status': new_status})
+    except Exception as e:
+        logger.error(f"Error toggling medication status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/patient/confirm-prescribed-medication', methods=['POST'])
+def confirm_prescribed_medication():
+    """Adds a verified prescribed medicine to the patient's active medication list."""
+    user = session.get('user')
+    if not user:
+        return jsonify({'success': False, 'error': 'Authentication required. Please log in.'}), 401
+    try:
+        data = request.get_json() or {}
+        med_name = data.get('medicine_name')
+        dosage = data.get('dosage')
+        generic_name = data.get('generic_name')
+        strength = data.get('strength')
+
+        if not med_name:
+            return jsonify({'success': False, 'error': 'Medicine name is required.'}), 400
+
+        patient_history.add_active_medication(
+            medicine_name=med_name,
+            dosage=dosage,
+            patient_name=user['name'],
+            status="active",
+            generic_name=generic_name,
+            strength=strength
+        )
+        return jsonify({
+            'success': True,
+            'message': f"Medication '{med_name}' confirmed and added to active medications."
+        })
+    except Exception as e:
+        logger.error(f"Error confirming prescribed medication: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/patient/active-medication', methods=['POST'])
@@ -1483,6 +1689,10 @@ def add_patient_medication():
         med_name = data.get('medicine_name')
         patient_name = data.get('patient_name', 'Default Patient')
         dosage = data.get('dosage')
+
+        user = session.get('user')
+        if user and user.get('name'):
+            patient_name = user['name']
 
         if not med_name:
             return jsonify({'error': 'Medicine name is required'}), 400
@@ -1528,15 +1738,16 @@ def process_symptoms():
         return jsonify({'error': f'Error processing symptoms: {str(e)}'}), 500
 
 @app.route('/export-pdf', methods=['POST'])
+@app.route('/download-pdf', methods=['POST'])
 def export_pdf():
     """Render the displayed analysis markdown as a downloadable PDF attachment."""
     if request.is_json:
         payload = request.get_json(silent=True) or {}
-        markdown_text = payload.get('markdown')
-        kind = payload.get('kind')
+        markdown_text = payload.get('markdown') or payload.get('content')
+        kind = payload.get('kind') or payload.get('document_type')
     else:
-        markdown_text = request.form.get('markdown')
-        kind = request.form.get('kind')
+        markdown_text = request.form.get('markdown') or request.form.get('content')
+        kind = request.form.get('kind') or request.form.get('document_type')
 
     if not kind or kind not in ('medicine', 'report', 'symptoms'):
         kind = 'medicine'

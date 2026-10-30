@@ -207,7 +207,36 @@ def _build_ddi_deterministic_block(ddi: dict) -> str:
             "Unqualified full coverage cannot be claimed."
         )
 
+    # Missing patient history notice if scope authorized but no prior meds
+    if ddi.get("no_history_disclaimer"):
+        lines.append(f"> ℹ️ **Notice on Patient History:** {ddi['no_history_disclaimer']}")
+
     lines.append("")
+
+    # Duplicate Active Ingredient Warnings Table
+    dup_risks = ddi.get("duplicate_risks", [])
+    if dup_risks:
+        lines.append("### ⚠️ Duplicate Active Ingredient Warnings")
+        lines.append("| Active Ingredient | Detected In Products | Severity | Clinical Risk |")
+        lines.append("| :--- | :--- | :--- | :--- |")
+        for dup in dup_risks:
+            prods_str = ", ".join(dup.get("products", []))
+            lines.append(f"| **{dup.get('canonical_name')}** | `{prods_str}` | `{dup.get('severity')}` | {dup.get('description')} |")
+        lines.append("")
+
+    # Structured DDI Results Table
+    if pairs:
+        lines.append("### Drug-Drug Interaction Overview")
+        lines.append("| Medicine A | Medicine B | Source | Severity | Interaction |")
+        lines.append("| :--- | :--- | :--- | :--- | :--- |")
+        for pair in pairs:
+            a = pair.get("drug_a", "?")
+            b = pair.get("drug_b", "?")
+            p_type = pair.get("pair_type") or "NEW_VS_NEW"
+            lev = pair.get("level") or "–"
+            note_summary = pair.get("note", "").split(".")[0].strip()
+            lines.append(f"| **{a}** | **{b}** | `{p_type}` | `{lev}` | {note_summary} |")
+        lines.append("")
 
     # -- Pair-level results --
     if pairs:

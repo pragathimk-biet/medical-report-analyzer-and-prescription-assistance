@@ -30,13 +30,16 @@ STRICT EXTRACTION BOUNDARIES:
 import os
 import re
 import logging
+from patient_history import classify_medical_item, normalize_medicine_name, TRUSTED_MEDICATION_DATABASE
 
 logger = logging.getLogger(__name__)
 
-# Common dosage forms
+# Common dosage forms (expanded for hospital prescriptions and pharmacy invoices)
 DOSAGE_FORMS = [
-    "tablet", "tab", "capsule", "cap", "injection", "inj", "syrup", "syr",
-    "cream", "ointment", "drops", "suspension", "solution", "inhaler"
+    "tablet", "tab", "tabs", "capsule", "cap", "caps", "injection", "inj",
+    "syrup", "syr", "drops", "drop", "powder", "pwd", "granules", "gran",
+    "cream", "crm", "ointment", "oint", "gel", "lotion", "solution", "sol",
+    "suspension", "susp", "inhaler", "spray", "sachet", "sachets"
 ]
 
 # Frequency schedule patterns
@@ -153,6 +156,13 @@ class PrescriptionExtractionAgent:
                     if line_num is not None:
                         conf_map[line_num] = float(conf) / 100.0 if float(conf) > 1.0 else float(conf)
 
+        logger.info("PrescriptionExtractionAgent: Beginning extraction on text (%d characters, %d lines)", len(text), len(lines))
+
+        # Common invoice table header patterns to skip
+        INVOICE_HEADER_PATTERNS = [
+            r'\b(?:sl\s*no|sl\.no|item\s*no|particulars|product\s*description|description|batch\s*no|batch|mfg|exp\s*date|expiry|rate|amount|mrp|tax\s*invoice|retail\s*invoice|cash\s*memo|total\s*amount|grand\s*total|sub\s*total|subtotal|gstin|cgst|sgst|discount|terms\s*and\s*conditions|signature|pharmacist)\b'
+        ]
+
         for idx, line in enumerate(lines, 1):
             line_lower = line.lower().strip()
             
@@ -160,36 +170,56 @@ class PrescriptionExtractionAgent:
             if line_lower in ["rx", "prescription", "rx:", "medications:"] or line_lower.startswith("take ") or line_lower.startswith("sig "):
                 continue
 
-            if any(h in line_lower for h in ["patient", "laboratory", "diagnosis", "report", "clinic", "hospital", "dr."]) and not any(d in line_lower for d in ["tab", "cap", "mg"]):
+            # Skip invoice table headers and administrative lines unless line explicitly contains medication/dosage forms
+            if any(re.search(pat, line_lower) for pat in INVOICE_HEADER_PATTERNS) and not any(d in line_lower for d in ["tab", "cap", "inj", "drops", "syrup", "powder", "granules"]):
                 continue
 
-            # Detect medication indicator keywords or strength numbers
-            is_med_line = (
-                any(f in line_lower for f in ["tab", "tablet", "cap", "capsule", "inj", "syrup", "syr"]) or
-                re.search(r'\b\d+\s*(?:mg|g|mcg|ml)\b', line_lower) is not None or
-                any(p in line_lower for p in ["1-0-1", "1-1-1", "0-0-1", "twice daily", "once daily"]) or
-                line_lower.startswith("rx ")
+            if any(h in line_lower for h in ["laboratory", "diagnosis", "report", "clinic", "hospital"]) and not any(d in line_lower for d in ["tab", "cap", "mg", "drops", "powder"]):
+                continue
+
+            # Classify medical item: medicine vs nutritional product vs dietary supplement vs medical device vs medical supply
+            item_info = classify_medical_item(line)
+
+            # Detect item line: covers prescriptions, handwritten notes, and invoice table rows
+            is_item_line = (
+                item_info["is_device_or_supply"] or
+                item_info.get("is_nutritional") or
+                item_info.get("is_supplement") or
+                any(re.search(r'\b' + f + r'\b', line_lower) for f in DOSAGE_FORMS) or
+                re.search(r'\b\d+\s*(?:mg|g|mcg|ml|iu)\b', line_lower) is not None or
+                any(p in line_lower for p in ["1-0-1", "1-1-1", "0-0-1", "twice daily", "once daily", "bid", "tid", "od", "prn"]) or
+                re.match(r'^\s*\d+[\.\s\-]+[a-zA-Z]', line) is not None or  # Itemized invoice row (e.g. "1. Dexolac...", "1 Parajely...")
+                line_lower.startswith("rx ") or
+                any(dbk in line_lower for dbk in TRUSTED_MEDICATION_DATABASE if len(dbk) >= 4)
             )
 
-            if not is_med_line:
+            if not is_item_line:
                 continue
 
             line_conf = conf_map.get(idx, 0.95)
 
-            # Check dosage form
-            dosage_form = None
-            for form in DOSAGE_FORMS:
-                if re.search(r'\b' + form + r'\b', line_lower):
-                    dosage_form = form.capitalize()
-                    break
+            # 1. Clean line from invoice trailing columns (rates, quantities, amounts, batch, exp date)
+            line_cleaned_for_name = re.sub(r'(\s+\d{1,2}[\/\-\.]\d{2,4})', '', line)
+            line_cleaned_for_name = re.sub(r'(\s+\d+(?:\.\d+)?)+\s*$', '', line_cleaned_for_name).strip()
+            line_cleaned_for_name = re.sub(r'\s+(?:b(?:atch)?\.?\s*(?:no\.?)?[:\s]*)?[A-Z0-9]{4,10}\s*$', '', line_cleaned_for_name, flags=re.I).strip()
 
-            # Check strength
-            strength = None
-            str_match = re.search(r'(-?\d+(?:\.\d+)?\s*(?:mg|g|mcg|ml|iu|units))\b', line, re.IGNORECASE)
-            if str_match:
-                strength = str_match.group(1)
+            # 2. Extract dosage form using normalizer and standalone words
+            norm_res = normalize_medicine_name(line_cleaned_for_name)
+            dosage_form = norm_res.get("dosage_form")
+            if not dosage_form:
+                for form in DOSAGE_FORMS:
+                    if re.search(r'\b' + form + r'\b', line_lower):
+                        dosage_form = form.capitalize()
+                        break
 
-            # Check frequency schedule
+            # 3. Check strength
+            strength = norm_res.get("strength")
+            if not strength:
+                str_match = re.search(r'(-?\d+(?:\.\d+)?\s*(?:mg|g|mcg|ml|iu|units))\b', line, re.IGNORECASE)
+                if str_match:
+                    strength = str_match.group(1)
+
+            # 4. Check frequency schedule
             freq_dict = {
                 "frequency": None, "morning": False, "afternoon": False, "evening": False
             }
@@ -198,46 +228,75 @@ class PrescriptionExtractionAgent:
                     freq_dict = f_info
                     break
 
-            # Check timing (before/after food)
+            # 5. Check timing (before/after food)
             timing = None
             if re.search(r'\bafter\s*(?:food|meals)\b|\bpc\b', line_lower):
                 timing = "After Food"
             elif re.search(r'\bbefore\s*(?:food|meals)\b|\bac\b', line_lower):
                 timing = "Before Food"
 
-            # Check duration
+            # 6. Check duration
             duration = None
             dur_match = re.search(r'(?:for\s*)?(\d+\s*(?:days|weeks|months|day|week|month))', line_lower)
             if dur_match:
                 duration = dur_match.group(1)
 
-            # Extract raw name
             raw_name = line
-            # Clean up prefix like "Rx", "1.", "2.", "Tab", "Cap", "Tablet", "Capsule"
-            clean_name = re.sub(r'^(?:rx|1\.|2\.|3\.|4\.|5\.|[\-\*\•])\s*', '', line, flags=re.IGNORECASE).strip()
-            
-            # Remove dosage form prefix from drug name
-            for form in ["tablet", "tab", "capsule", "cap", "injection", "inj", "syrup", "syr"]:
+            # If the normalizer stripped a concatenated dosage form (e.g. PERINORMTAB -> Perinorm), use its clean_name
+            if norm_res.get("dosage_form") and norm_res.get("clean_name"):
+                clean_name = norm_res.get("clean_name")
+            else:
+                clean_name = line_cleaned_for_name
+
+            # Strip leading prefixes
+            clean_name = re.sub(r'^(?:rx|\d+[\.\s\-]+|[\-\*\•])\s*', '', clean_name, flags=re.IGNORECASE).strip()
+            for form in ["tablet", "tab", "capsule", "cap", "injection", "inj", "syrup", "syr", "drops"]:
                 clean_name = re.sub(r'^\b' + form + r'\b\s*', '', clean_name, flags=re.IGNORECASE).strip()
 
-            # Extract main drug name tokens (stop at numbers, dosage units, frequency)
+            # Stop at dosage units or frequency/SIG instructions (e.g. "Prednisone 10mg once daily" -> "Prednisone")
             name_tokens = []
             for token in clean_name.split():
-                token_l = token.lower().strip()
-                if (re.match(r'^\d', token_l) or
-                    token_l in ["mg", "mcg", "g", "ml", "iu", "units", "1-0-1", "1-1-1", "0-0-1", "after", "before", "once", "twice", "daily", "for", "tab", "tablet", "cap", "capsule"]):
+                token_l = token.lower().strip(":,.-")
+                if token in ["-", "–", "—", "/", "|"]:
+                    break
+                if token_l in ["1-0-1", "1-1-1", "0-0-1", "1-0-0", "0-1-0", "after", "before", "once", "twice", "daily", "bid", "tid", "qid", "od", "prn", "take", "sig", "dispense", "pc", "ac", "stat", "sos"]:
+                    break
+                if token_l in ["mg", "mcg", "g", "gm", "ml", "iu", "units"]:
+                    break
+                if re.match(r'^\d', token_l) and not any(k in clean_name.lower() for k in ["dexolac", "lactare"]):
                     break
                 name_tokens.append(token)
 
-            extracted_name = " ".join(name_tokens).strip() if name_tokens else clean_name
+            extracted_name = " ".join(name_tokens).strip(" -–—,.:;/") if name_tokens else clean_name.strip(" -–—,.:;/")
+
+            # Resolve item type and flags
+            if item_info.get("is_nutritional"):
+                item_type = "NUTRITIONAL_PRODUCT"
+                is_medicine = False
+                is_device_or_supply = False
+            elif item_info.get("is_supplement"):
+                item_type = "DIETARY_SUPPLEMENT"
+                is_medicine = False
+                is_device_or_supply = False
+            elif item_info.get("is_device_or_supply"):
+                item_type = item_info.get("item_type", "MEDICAL_DEVICE")
+                is_medicine = False
+                is_device_or_supply = True
+            else:
+                item_type = "MEDICINE"
+                is_medicine = True
+                is_device_or_supply = False
 
             # Low confidence or truncated drug name handling
             is_ambiguous = (
                 line_conf < 0.50 or
                 extracted_name.endswith("...") or
-                len(extracted_name) <= 2 or
-                re.search(r'[^a-zA-Z0-9\s]', extracted_name) is not None
+                (len(extracted_name) <= 2 and extracted_name.lower() not in ["k+", "fe"]) or
+                re.search(r'[^a-zA-Z0-9\s\-\+\/]', extracted_name) is not None
             )
+
+            logger.info("PrescriptionExtractionAgent: Extracted item '%s' (raw='%s', type=%s, form=%s, strength=%s, conf=%.2f)",
+                        extracted_name, raw_name, item_type, dosage_form, strength, line_conf)
 
             if is_ambiguous:
                 med_entry = {
@@ -254,6 +313,9 @@ class PrescriptionExtractionAgent:
                     "instructions": line,
                     "source_text": line,
                     "confidence": round(line_conf, 2),
+                    "item_type": item_info["item_type"],
+                    "is_device_or_supply": item_info["is_device_or_supply"],
+                    "is_medicine": item_info["is_medicine"],
                     "warning": "Medication name ambiguous or low OCR confidence"
                 }
                 handwriting_candidates.append({
@@ -276,7 +338,10 @@ class PrescriptionExtractionAgent:
                     "duration": duration,
                     "instructions": line,
                     "source_text": line,
-                    "confidence": round(line_conf, 2)
+                    "confidence": round(line_conf, 2),
+                    "item_type": item_info["item_type"],
+                    "is_device_or_supply": item_info["is_device_or_supply"],
+                    "is_medicine": item_info["is_medicine"],
                 }
 
             medications.append(med_entry)

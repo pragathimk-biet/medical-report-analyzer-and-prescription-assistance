@@ -90,6 +90,82 @@ class PrescriptionVerificationAgent:
         verification_source = "unclassified"
         verified_name = None
 
+        # 0. Check if item is a recognized nutritional product, dietary supplement, medical device, or supply
+        if med_entry.get("is_nutritional") or med_entry.get("item_type") == "NUTRITIONAL_PRODUCT":
+            return {
+                "raw_name": raw_name,
+                "name": name or raw_name,
+                "proposed_name": None,
+                "verified_name": name or raw_name,
+                "strength": strength,
+                "dosage_form": dosage_form or "Powder",
+                "frequency": frequency,
+                "duration": duration,
+                "timing": med_entry.get("timing"),
+                "identity_verified": True,
+                "verification_status": "verified_nutritional",
+                "verification_source": "nutritional_catalog",
+                "review_required": False,
+                "is_unsupported": True,  # Non-drug clinical feed, safely excluded from DDI
+                "item_type": "NUTRITIONAL_PRODUCT",
+                "is_medicine": False,
+                "is_nutritional": True,
+                "is_device_or_supply": False,
+                "strength_unverified": False,
+                "frequency_unverified": False,
+                "warnings": []
+            }
+
+        if med_entry.get("is_supplement") or med_entry.get("item_type") == "DIETARY_SUPPLEMENT":
+            return {
+                "raw_name": raw_name,
+                "name": name or raw_name,
+                "proposed_name": None,
+                "verified_name": name or raw_name,
+                "strength": strength,
+                "dosage_form": dosage_form or "Granules",
+                "frequency": frequency,
+                "duration": duration,
+                "timing": med_entry.get("timing"),
+                "identity_verified": True,
+                "verification_status": "verified_supplement",
+                "verification_source": "supplement_catalog",
+                "review_required": False,
+                "is_unsupported": True,  # Dietary/herbal formulation, safely excluded from DDI
+                "item_type": "DIETARY_SUPPLEMENT",
+                "is_medicine": False,
+                "is_supplement": True,
+                "is_device_or_supply": False,
+                "strength_unverified": False,
+                "frequency_unverified": False,
+                "warnings": []
+            }
+
+        if med_entry.get("is_device_or_supply"):
+            item_type = med_entry.get("item_type", "MEDICAL_DEVICE")
+            v_status = "verified_device" if item_type == "MEDICAL_DEVICE" else "verified_supply"
+            return {
+                "raw_name": raw_name,
+                "name": name or raw_name,
+                "proposed_name": None,
+                "verified_name": name or raw_name,
+                "strength": strength,
+                "dosage_form": dosage_form,
+                "frequency": frequency,
+                "duration": duration,
+                "timing": med_entry.get("timing"),
+                "identity_verified": True,
+                "verification_status": v_status,
+                "verification_source": "medical_catalog",
+                "review_required": False,
+                "is_unsupported": True,  # Unsupported for DDI checking
+                "item_type": item_type,
+                "is_device_or_supply": True,
+                "strength_unverified": False,
+                "frequency_unverified": False,
+                "warnings": []
+            }
+
         # 1. Missing Medication Name Check
         if not name and not proposed_name and not raw_name:
             warnings.append("Missing medication name in prescription extraction.")
@@ -158,9 +234,41 @@ class PrescriptionVerificationAgent:
                 verification_status = "verified"
                 verification_source = "trusted_medication_database"
                 verified_name = cls_res.get("medication", name)
+                if not dosage_form and cls_res.get("dosage_form"):
+                    dosage_form = cls_res.get("dosage_form")
+                if not strength and cls_res.get("extracted_strength"):
+                    strength = cls_res.get("extracted_strength")
+                logger.info("PrescriptionVerificationAgent: Verified medication '%s' -> '%s' (generic: %s, method: %s, conf: %.2f)",
+                            name, verified_name, cls_res.get("generic_name"), cls_res.get("match_method"), cls_res.get("confidence", 1.0))
                 if name and re.search(r'\d', name):
                     review_required = True
                     warnings.append(f"Medication '{name}' contains numeric characters indicating OCR distortion. Manual review required.")
+            elif cls_res.get("status") in ["NUTRITIONAL_PRODUCT_MATCH", "DIETARY_SUPPLEMENT_MATCH"]:
+                item_type = cls_res.get("item_type", "NUTRITIONAL_PRODUCT")
+                return {
+                    "raw_name": raw_name,
+                    "name": name or raw_name,
+                    "proposed_name": None,
+                    "verified_name": cls_res.get("medication", name),
+                    "strength": strength,
+                    "dosage_form": dosage_form,
+                    "frequency": frequency,
+                    "duration": duration,
+                    "timing": med_entry.get("timing"),
+                    "identity_verified": True,
+                    "verification_status": "verified_nutritional" if item_type == "NUTRITIONAL_PRODUCT" else "verified_supplement",
+                    "verification_source": "product_catalog",
+                    "review_required": False,
+                    "is_unsupported": True,  # Non-drug feed, safe to exclude from DDI
+                    "item_type": item_type,
+                    "is_medicine": False,
+                    "is_nutritional": item_type == "NUTRITIONAL_PRODUCT",
+                    "is_supplement": item_type == "DIETARY_SUPPLEMENT",
+                    "is_device_or_supply": False,
+                    "strength_unverified": False,
+                    "frequency_unverified": False,
+                    "warnings": []
+                }
             else:
                 identity_verified = False
                 verification_status = "unknown"
@@ -168,6 +276,7 @@ class PrescriptionVerificationAgent:
                 review_required = True
                 verified_name = name
                 warnings.append(f"Medication '{name}' is not found in trusted database.")
+                logger.warning("PrescriptionVerificationAgent: Medication '%s' not found in trusted database (zero-guessing policy enforced)", name)
 
         # 5. Structural Dosage & Schedule Validation
         strength_unverified = False
@@ -335,11 +444,35 @@ class PrescriptionVerificationAgent:
                 pstore = patient_history_mgr._get_patient_store(authorized_scope)
                 active_meds = pstore.get("active_medications", [])
                 for am in active_meds:
+                    if str(am.get("status", "active")).lower() not in ["active", ""]:
+                        continue
+                    am_name = (am.get("name") or am.get("medicine_name") or "").strip()
                     active_med_checks.append({
                         "patient_slug": pstore.get("patient_name"),
-                        "medicine_name": am.get("name") or am.get("medicine_name"),
+                        "medicine_name": am_name,
                         "status": "active_history_recorded"
                     })
+                    # Med-Med Contraindication Cross-Check (New Prescription vs Active Historical Meds)
+                    for v_item in verified_med_items:
+                        check_drug = v_item["verified_name"] or v_item["proposed_name"] or v_item["name"]
+                        if check_drug and not v_item.get("is_device_or_supply"):
+                            cd_l = check_drug.lower()
+                            am_l = am_name.lower()
+                            if ((("lisinopril" in cd_l or "enalapril" in cd_l or "ramipril" in cd_l or "losartan" in cd_l or "telmisartan" in cd_l) and ("spironolactone" in am_l or "aldactone" in am_l)) or
+                                (("spironolactone" in cd_l or "aldactone" in cd_l) and ("lisinopril" in am_l or "enalapril" in am_l or "ramipril" in am_l or "losartan" in am_l or "telmisartan" in am_l))):
+                                alert = {
+                                    "direction": "New Prescription -> Active Historical Medications",
+                                    "rule_id": "MED_MED_ACEI_SPIRONOLACTONE_HYPERKALEMIA",
+                                    "title": "Severe Medication-Medication Safety Warning: Hyperkalemia Risk",
+                                    "severity": "CRITICAL",
+                                    "trigger_drug": check_drug,
+                                    "matched_drug": am_name,
+                                    "explanation": f"Concurrent use of {check_drug} with active historical medication '{am_name}' creates a high risk of severe, life-threatening hyperkalemia."
+                                }
+                                med_lab_checks.append(alert)
+                                any_high_safety_alert = True
+                                v_item["verification_status"] = "contraindicated"
+                                v_item["review_required"] = True
             except Exception as active_err:
                 logger.warning(f"PrescriptionVerificationAgent active med query error: {active_err}")
         else:

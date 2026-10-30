@@ -131,6 +131,317 @@ AUTHORITATIVE_IDENTITY_MAPPINGS: Dict[str, dict] = {
             "notes": "Direct DDInter 2.0 canonical substance name.",
         },
     },
+    "mgso4": {
+        "canonical_name": "Magnesium sulfate",
+        "ddinter_id": "DDInter1120",
+        "provenance": {
+            "source_vocabulary": "RxNorm / PubChem / DDInter",
+            "rxnorm_rxcui": "6581",
+            "relationship": "chemical_formula_abbreviation_to_canonical",
+            "match_method": "authoritative_abbreviation",
+            "notes": "Chemical formula MgSO4 maps to Magnesium sulfate (DDInter1120).",
+        },
+    },
+    "magnesium sulphate": {
+        "canonical_name": "Magnesium sulfate",
+        "ddinter_id": "DDInter1120",
+        "provenance": {
+            "source_vocabulary": "BAN / WHO INN",
+            "relationship": "british_spelling_synonym",
+            "match_method": "curated_authoritative_synonym",
+            "notes": "British English spelling for Magnesium sulfate (DDInter1120).",
+        },
+    },
+    "dolo": {
+        "canonical_name": "Acetaminophen",
+        "ddinter_id": "DDInter14",
+        "provenance": {
+            "source_vocabulary": "Indian Pharmacopoeia / Brand",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Dolo brand of Paracetamol (Acetaminophen DDInter14).",
+        },
+    },
+    "dolo 650": {
+        "canonical_name": "Acetaminophen",
+        "ddinter_id": "DDInter14",
+        "provenance": {
+            "source_vocabulary": "Indian Pharmacopoeia / Brand",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Dolo 650 brand of Paracetamol (Acetaminophen DDInter14).",
+        },
+    },
+    "crocin": {
+        "canonical_name": "Acetaminophen",
+        "ddinter_id": "DDInter14",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Crocin brand of Paracetamol (Acetaminophen DDInter14).",
+        },
+    },
+    "calpol": {
+        "canonical_name": "Acetaminophen",
+        "ddinter_id": "DDInter14",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Calpol brand of Paracetamol (Acetaminophen DDInter14).",
+        },
+    },
+    "glycomet": {
+        "canonical_name": "Metformin",
+        "ddinter_id": "DDInter1164",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Glycomet brand of Metformin (DDInter1164).",
+        },
+    },
+    "pan": {
+        "canonical_name": "Pantoprazole",
+        "ddinter_id": "DDInter1388",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Pan brand of Pantoprazole (DDInter1388).",
+        },
+    },
+    "pan 40": {
+        "canonical_name": "Pantoprazole",
+        "ddinter_id": "DDInter1388",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Pan 40 brand of Pantoprazole (DDInter1388).",
+        },
+    },
+    "pantocid": {
+        "canonical_name": "Pantoprazole",
+        "ddinter_id": "DDInter1388",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Pantocid brand of Pantoprazole (DDInter1388).",
+        },
+    },
+    "omez": {
+        "canonical_name": "Omeprazole",
+        "ddinter_id": "DDInter1340",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Omez brand of Omeprazole (DDInter1340).",
+        },
+    },
+    "amlong": {
+        "canonical_name": "Amlodipine",
+        "ddinter_id": "DDInter79",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Amlong brand of Amlodipine (DDInter79).",
+        },
+    },
+    "telma": {
+        "canonical_name": "Telmisartan",
+        "ddinter_id": "DDInter1759",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Telma brand of Telmisartan (DDInter1759).",
+        },
+    },
+    "telma 40": {
+        "canonical_name": "Telmisartan",
+        "ddinter_id": "DDInter1759",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Telma 40 brand of Telmisartan (DDInter1759).",
+        },
+    },
+    "ecosprin": {
+        "canonical_name": "Acetylsalicylic acid",
+        "ddinter_id": "DDInter20",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Ecosprin brand of Aspirin / Acetylsalicylic acid (DDInter20).",
+        },
+    },
+    "disprin": {
+        "canonical_name": "Acetylsalicylic acid",
+        "ddinter_id": "DDInter20",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Disprin brand of Aspirin / Acetylsalicylic acid (DDInter20).",
+        },
+    },
+    "atorva": {
+        "canonical_name": "Atorvastatin",
+        "ddinter_id": "DDInter133",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Atorva brand of Atorvastatin (DDInter133).",
+        },
+    },
+    "rosuvas": {
+        "canonical_name": "Rosuvastatin",
+        "ddinter_id": "DDInter1622",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Rosuvas brand of Rosuvastatin (DDInter1622).",
+        },
+    },
+    "azithral": {
+        "canonical_name": "Azithromycin",
+        "ddinter_id": "DDInter157",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Azithral brand of Azithromycin (DDInter157).",
+        },
+    },
+    "ciplox": {
+        "canonical_name": "Ciprofloxacin",
+        "ddinter_id": "DDInter384",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Ciplox brand of Ciprofloxacin (DDInter384).",
+        },
+    },
+    "lasix": {
+        "canonical_name": "Furosemide",
+        "ddinter_id": "DDInter790",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Lasix brand of Furosemide (DDInter790).",
+        },
+    },
+    "plavix": {
+        "canonical_name": "Clopidogrel",
+        "ddinter_id": "DDInter413",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Plavix brand of Clopidogrel (DDInter413).",
+        },
+    },
+    "lanoxin": {
+        "canonical_name": "Digoxin",
+        "ddinter_id": "DDInter554",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Lanoxin brand of Digoxin (DDInter554).",
+        },
+    },
+    "aldactone": {
+        "canonical_name": "Spironolactone",
+        "ddinter_id": "DDInter1707",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Aldactone brand of Spironolactone (DDInter1707).",
+        },
+    },
+    "perinorm": {
+        "canonical_name": "Metoclopramide",
+        "ddinter_id": "DDInter1197",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Perinorm brand of Metoclopramide (DDInter1197).",
+        },
+    },
+    "metoclopramide": {
+        "canonical_name": "Metoclopramide",
+        "ddinter_id": "DDInter1197",
+        "provenance": {
+            "source_vocabulary": "DDInter 2.0 Dataset",
+            "relationship": "exact_canonical_match",
+            "match_method": "direct_dataset_match",
+            "notes": "Metoclopramide (DDInter1197).",
+        },
+    },
+    "parajely": {
+        "canonical_name": "Acetaminophen",
+        "ddinter_id": "DDInter14",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Parajely brand of Paracetamol / Acetaminophen (DDInter14).",
+        },
+    },
+    "parajel": {
+        "canonical_name": "Acetaminophen",
+        "ddinter_id": "DDInter14",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Parajel brand of Paracetamol / Acetaminophen (DDInter14).",
+        },
+    },
+    "domperidone": {
+        "canonical_name": "Domperidone",
+        "ddinter_id": "DDInter577",
+        "provenance": {
+            "source_vocabulary": "DDInter 2.0 Dataset",
+            "relationship": "exact_canonical_match",
+            "match_method": "direct_dataset_match",
+            "notes": "Domperidone (DDInter577).",
+        },
+    },
+    "ondansetron": {
+        "canonical_name": "Ondansetron",
+        "ddinter_id": "DDInter1342",
+        "provenance": {
+            "source_vocabulary": "DDInter 2.0 Dataset",
+            "relationship": "exact_canonical_match",
+            "match_method": "direct_dataset_match",
+            "notes": "Ondansetron (DDInter1342).",
+        },
+    },
+    "emset": {
+        "canonical_name": "Ondansetron",
+        "ddinter_id": "DDInter1342",
+        "provenance": {
+            "source_vocabulary": "Brand to Generic",
+            "relationship": "brand_to_generic",
+            "match_method": "curated_brand_mapping",
+            "notes": "Emset brand of Ondansetron (DDInter1342).",
+        },
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -175,6 +486,8 @@ COMBINATION_PRODUCT_INGREDIENTS: Dict[str, List[str]] = {
     "amoxiclav":                            ["amoxicillin", "clavulanate"],
     "amoxicillin/clavulanic acid":          ["amoxicillin", "clavulanic acid"],
     "co-amoxiclav":                         ["amoxicillin", "clavulanate"],
+    "augmentin":                            ["amoxicillin", "clavulanate"],
+    "clavam":                               ["amoxicillin", "clavulanate"],
     "trimethoprim/sulfamethoxazole":        ["trimethoprim", "sulfamethoxazole"],
     "co-trimoxazole":                       ["trimethoprim", "sulfamethoxazole"],
     "piperacillin/tazobactam":              ["piperacillin", "tazobactam"],
@@ -191,6 +504,12 @@ COMBINATION_PRODUCT_INGREDIENTS: Dict[str, List[str]] = {
     "bisoprolol/hydrochlorothiazide":      ["bisoprolol", "hydrochlorothiazide"],
     "perindopril/amlodipine":              ["perindopril", "amlodipine"],
     "insulin/metformin":                   ["insulin", "metformin"],
+    "combiflam":                           ["ibuprofen", "paracetamol"],
+    "pan-d":                               ["pantoprazole", "domperidone"],
+    "pantocid-d":                          ["pantoprazole", "domperidone"],
+    "telma-am":                            ["telmisartan", "amlodipine"],
+    "telma-h":                             ["telmisartan", "hydrochlorothiazide"],
+    "glycomet-gp":                         ["metformin", "glimepiride"],
 }
 
 
@@ -204,6 +523,13 @@ def _split_to_ingredients(drug_name: str) -> List[str]:
     key = drug_name.strip().lower()
     if key in COMBINATION_PRODUCT_INGREDIENTS:
         return [i.strip() for i in COMBINATION_PRODUCT_INGREDIENTS[key]]
+    # Strip parenthetical annotations e.g. "Metformin (Glycomet)" -> "Metformin"
+    clean = re.sub(r'\s*\([^)]*\)', '', drug_name).strip()
+    clean_key = clean.lower()
+    if clean_key in COMBINATION_PRODUCT_INGREDIENTS:
+        return [i.strip() for i in COMBINATION_PRODUCT_INGREDIENTS[clean_key]]
+    if clean:
+        return [clean]
     return [drug_name.strip()]
 
 
@@ -505,6 +831,23 @@ class DDInterLoader:
                 },
             }
 
+        # 3. Fallback: try stripping parenthetical annotation, e.g. "Metformin (Glycomet)" -> "Metformin"
+        if "(" in raw_key and ")" in raw_key:
+            stripped = re.sub(r'\s*\([^)]*\)', '', raw_key).strip()
+            if stripped and stripped != raw_key:
+                res = self.resolve_drug_identity(stripped)
+                if res:
+                    return res
+
+        # 4. Fallback: try stripping dosage strengths/forms, e.g. "Aspirin 75mg" -> "Aspirin", "Paracetamol Tablet" -> "Paracetamol"
+        from patient_history import normalize_medicine_name
+        norm = normalize_medicine_name(raw_key)
+        clean_key = norm.get("canonical_key", "").strip()
+        if clean_key and clean_key != raw_key:
+            res = self.resolve_drug_identity(clean_key)
+            if res:
+                return res
+
         return None
 
     def resolve_drug_name(self, ingredient_name: str) -> Optional[str]:
@@ -536,6 +879,11 @@ class DDInterLoader:
         records = self._pair_index.get(key, [])
         if records:
             return STATUS_INTERACTION_FOUND, records
+
+        # Curated high-risk clinical pharmacology pairs
+        if key in CURATED_CLINICAL_PAIRS:
+            return STATUS_INTERACTION_FOUND, [CURATED_CLINICAL_PAIRS[key]]
+
         return STATUS_NO_RECORD_FOUND, []
 
     def get_schema_info(self) -> dict:
@@ -580,6 +928,57 @@ def get_loader() -> DDInterLoader:
 # ---------------------------------------------------------------------------
 # Pair Checker
 # ---------------------------------------------------------------------------
+
+CURATED_CLINICAL_PAIRS: Dict[frozenset, dict] = {
+    frozenset({"lisinopril", "spironolactone"}): {
+        "Level": "Major",
+        "Drug_A": "Lisinopril",
+        "Drug_B": "Spironolactone",
+        "DDInterID_A": "CURATED_LISINOPRIL",
+        "DDInterID_B": "CURATED_SPIRONOLACTONE",
+        "Interaction": "Concurrent use of ACE inhibitor and potassium-sparing diuretic significantly impairs renal potassium excretion, risking severe hyperkalemia."
+    },
+    frozenset({"enalapril", "spironolactone"}): {
+        "Level": "Major",
+        "Drug_A": "Enalapril",
+        "Drug_B": "Spironolactone",
+        "DDInterID_A": "CURATED_ENALAPRIL",
+        "DDInterID_B": "CURATED_SPIRONOLACTONE",
+        "Interaction": "Severe hyperkalemia risk from combining ACE inhibitor with potassium-sparing diuretic."
+    },
+    frozenset({"ramipril", "spironolactone"}): {
+        "Level": "Major",
+        "Drug_A": "Ramipril",
+        "Drug_B": "Spironolactone",
+        "DDInterID_A": "CURATED_RAMIPRIL",
+        "DDInterID_B": "CURATED_SPIRONOLACTONE",
+        "Interaction": "Severe hyperkalemia risk from combining ACE inhibitor with potassium-sparing diuretic."
+    },
+    frozenset({"losartan", "spironolactone"}): {
+        "Level": "Major",
+        "Drug_A": "Losartan",
+        "Drug_B": "Spironolactone",
+        "DDInterID_A": "CURATED_LOSARTAN",
+        "DDInterID_B": "CURATED_SPIRONOLACTONE",
+        "Interaction": "Severe hyperkalemia risk from combining ARB with potassium-sparing diuretic."
+    },
+    frozenset({"telmisartan", "spironolactone"}): {
+        "Level": "Major",
+        "Drug_A": "Telmisartan",
+        "Drug_B": "Spironolactone",
+        "DDInterID_A": "CURATED_TELMISARTAN",
+        "DDInterID_B": "CURATED_SPIRONOLACTONE",
+        "Interaction": "Severe hyperkalemia risk from combining ARB with potassium-sparing diuretic."
+    },
+    frozenset({"ciprofloxacin", "azithromycin"}): {
+        "Level": "Major",
+        "Drug_A": "Ciprofloxacin",
+        "Drug_B": "Azithromycin",
+        "DDInterID_A": "DDInter384",
+        "DDInterID_B": "DDInter157",
+        "Interaction": "Concurrent administration of ciprofloxacin and azithromycin may significantly prolong the QT interval, predisposing to dangerous ventricular arrhythmias including Torsades de Pointes."
+    }
+}
 
 class DDIPairChecker:
     """
@@ -710,9 +1109,19 @@ class DDIPairChecker:
             src_prod_a_str = ", ".join(dict.fromkeys(grp_a["source_products"]))
             src_prod_b_str = ", ".join(dict.fromkeys(grp_b["source_products"]))
 
+            src_a_type = "HISTORICAL" if "(historical)" in src_prod_a_str.lower() else "NEW"
+            src_b_type = "HISTORICAL" if "(historical)" in src_prod_b_str.lower() else "NEW"
+            if src_a_type == src_b_type:
+                pair_type = f"{src_a_type}_VS_{src_b_type}"
+            else:
+                pair_type = "NEW_VS_HISTORICAL"
+
             results.append({
                 "drug_a":           name_a,
                 "drug_b":           name_b,
+                "source_a":         src_a_type,
+                "source_b":         src_b_type,
+                "pair_type":        pair_type,
                 "source_product_a": src_prod_a_str,
                 "source_product_b": src_prod_b_str,
                 "source_products_a": list(dict.fromkeys(grp_a["source_products"])),
@@ -725,6 +1134,11 @@ class DDIPairChecker:
                 "provenance_b":     id_b["provenance"] if id_b else None,
                 "status":           status,
                 "level":            level_str,
+                "severity":         (level_str.upper() if level_str else None),
+                "interaction_description": note,
+                "clinical_consequences": records[0].get("Interaction") if (records and "Interaction" in records[0]) else None,
+                "recommendation": "Consult physician or clinical pharmacist regarding potential co-administration risks." if status == STATUS_INTERACTION_FOUND else None,
+                "evidence_source":  "DDInter 2.0 / Curated Clinical Database",
                 "records":          records,
                 "note":             note,
             })
@@ -903,23 +1317,54 @@ class DDICheckingAgent:
                     pstore = patient_history_mgr._get_patient_store(clean_scope)
                     active_meds = [
                         m for m in pstore.get("active_medications", [])
-                        if m.get("status", "").lower() == "active"
+                        if (str(m.get("status", "active")).lower() in ("active", "")
+                            and str(m.get("status", "")).lower() not in ("discontinued", "inactive", "stopped"))
                         or m.get("is_active", False) is True
                     ]
+                    # Also retrieve verified active medications from SQLite relational database
+                    from patient_history import normalize_patient_name
+                    slug, _ = normalize_patient_name(clean_scope)
+                    if hasattr(patient_history_mgr, "sqlite_db") and patient_history_mgr.sqlite_db:
+                        try:
+                            db_meds = patient_history_mgr.sqlite_db.get_patient_medications(slug, status="active")
+                            seen_names = {(m.get("name") or m.get("medicine_name") or "").lower() for m in active_meds}
+                            for dbm in db_meds:
+                                dbm_name = (dbm.get("medicine_name") or "").strip()
+                                if dbm_name and dbm_name.lower() not in seen_names:
+                                    active_meds.append({"name": dbm_name, "status": "active"})
+                                    seen_names.add(dbm_name.lower())
+                        except Exception as _dbe:
+                            logger.debug("DDICheckingAgent SQLite active meds query note: %s", _dbe)
+
                     for am in active_meds:
                         med_name = (am.get("name") or am.get("medicine_name") or "").strip()
                         if not med_name:
                             continue
                         for ing in _split_to_ingredients(med_name):
                             key = ing.lower()
+                            hist_prod = f"{med_name} (historical)"
                             if key not in source_map:
-                                source_map[key] = f"{med_name} (historical)"
+                                source_map[key] = hist_prod
+                            else:
+                                existing = source_map[key]
+                                if isinstance(existing, list):
+                                    if hist_prod not in existing:
+                                        existing.append(hist_prod)
+                                elif existing != hist_prod:
+                                    source_map[key] = [existing, hist_prod]
                             all_ingredients.append(ing)
                         historical_active_count += 1
-                        logger.debug(
-                            "DDICheckingAgent: Included historical active med for %s.",
-                            patient_slug
+                        logger.info(
+                            "DDICheckingAgent: Included historical active medication '%s' for authorized patient '%s'",
+                            med_name, clean_scope
                         )
+                    if historical_active_count == 0:
+                        missing_history_disclaimer = (
+                            "No previous medication history found in the patient database. "
+                            "DDI checking will be performed against the medicines identified in the current prescription. "
+                            "Interactions with unrecorded medications cannot be assessed."
+                        )
+                        warnings.append(missing_history_disclaimer)
                     history_retrieval_status = "SUCCESS"
                 except Exception as hist_err:
                     history_retrieval_status = "FAILED"
@@ -982,6 +1427,14 @@ class DDICheckingAgent:
         interactions_found = [
             p for p in pair_results if p["status"] == STATUS_INTERACTION_FOUND
         ]
+
+        logger.info("DDICheckingAgent: Evaluated %d pair(s) across %d verified ingredients (%d interaction(s) detected)",
+                    evaluated_pairs_count, resolved_ingredients_count, len(interactions_found))
+        for inter in interactions_found:
+            logger.info("  * DDI MATCH: %s (%s) <-> %s (%s) [Level: %s, Source: %s]",
+                        inter.get("drug_a"), inter.get("source_a"),
+                        inter.get("drug_b"), inter.get("source_b"),
+                        inter.get("level"), inter.get("evidence_source"))
 
         # Calculate count of submitted verified prescription medications fully resolved & checked
         # Unsupported medications are excluded and must never count as checked
@@ -1069,13 +1522,60 @@ class DDICheckingAgent:
                 coverage_completeness = "FULL"
                 overall_status = "checked"
 
+        # Duplicate Active Ingredient Detection
+        duplicate_risks = []
+        canon_ingredient_map: Dict[str, dict] = {}
+        for ing in unique_raw_ingredients:
+            identity = _loader.resolve_drug_identity(ing)
+            c_key = identity.get("ddinter_id") or identity["canonical_name_lower"] if identity else ing.lower()
+            c_name = identity["canonical_name"] if identity else ing
+            src_prod = source_map.get(ing.lower(), ing)
+            if c_key not in canon_ingredient_map:
+                canon_ingredient_map[c_key] = {
+                    "canonical_name": c_name,
+                    "products": [src_prod]
+                }
+            else:
+                canon_ingredient_map[c_key]["products"].append(src_prod)
+
+        for c_key, c_info in canon_ingredient_map.items():
+            flat_prods = []
+            for p in c_info["products"]:
+                if isinstance(p, list):
+                    flat_prods.extend([str(x) for x in p if x])
+                elif p:
+                    flat_prods.append(str(p))
+            u_prods = list(dict.fromkeys(flat_prods))
+            if len(u_prods) > 1:
+                dup_risk = {
+                    "category": "DUPLICATE_ACTIVE_INGREDIENT",
+                    "severity": "HIGH",
+                    "canonical_name": c_info["canonical_name"],
+                    "products": u_prods,
+                    "description": f"Duplicate active ingredient detected: '{c_info['canonical_name']}' is present across multiple prescribed or historical items ({', '.join(u_prods)}).",
+                    "clinical_consequences": "Taking multiple medications with identical active ingredients significantly increases risk of inadvertent toxicity and overdose.",
+                    "recommendation": "Consult prescriber immediately to confirm whether this duplicate dosing is clinically intended."
+                }
+                duplicate_risks.append(dup_risk)
+                warnings.append(dup_risk["description"])
+
         # ----------------------------------------------------------------
         # 6. Populate context
         # ----------------------------------------------------------------
+        no_hist_msg = None
+        if history_scope_status == "AUTHORIZED" and historical_active_count == 0:
+            no_hist_msg = (
+                "No previous medication history found in the patient database. "
+                "DDI checking will be performed against the medicines identified in the current prescription. "
+                "Interactions with unrecorded medications cannot be assessed."
+            )
+
         pipeline_context["ddi"] = {
             "overall_status":        overall_status,
             "execution_completion":  execution_completion,
             "coverage_completeness": coverage_completeness,
+            "no_history_disclaimer": no_hist_msg,
+            "duplicate_risks":       duplicate_risks,
             "coverage": {
                 "execution_completion":        execution_completion,
                 "coverage_completeness":       coverage_completeness,

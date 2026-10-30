@@ -33,9 +33,15 @@
                 </span>
 
                 {% if session.get('user') %}
-                <div class="flex items-center space-x-2 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg text-blue-800 font-semibold">
-                    <span>👤 {{ session['user']['name'] }}</span>
-                    <a href="/logout" class="text-xs text-red-600 hover:underline ml-1">Logout</a>
+                <div class="flex items-center space-x-2">
+                    <button id="open-dashboard-btn" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition-colors flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span>Patient Records</span>
+                    </button>
+                    <div class="flex items-center space-x-2 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg text-blue-800 font-semibold">
+                        <span>👤 {{ session['user']['name'] }}</span>
+                        <a href="/logout" class="text-xs text-red-600 hover:underline ml-1">Logout</a>
+                    </div>
                 </div>
                 {% else %}
                 <a href="/login" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition-colors flex items-center gap-1">
@@ -49,6 +55,162 @@
             </div>
         </div>
     </header>
+
+    <!-- Patient Records & History Dashboard Modal / Panel -->
+    <div id="patient-dashboard-modal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 overflow-y-auto flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100 animate-fadeIn">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">
+                        📋
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold tracking-tight" id="dash-patient-name">Patient Health Records</h3>
+                        <p class="text-xs text-blue-100" id="dash-patient-subtitle">Longitudinal History, Stored Medications & DDI Analytics</p>
+                    </div>
+                </div>
+                <button id="close-dashboard-btn" class="text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Profile Summary Bar -->
+            <div class="px-6 py-3 bg-blue-50/60 border-b border-blue-100 flex flex-wrap gap-4 text-xs text-gray-700 flex-shrink-0 items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <span><strong>Email:</strong> <span id="dash-email" class="text-gray-900">-</span></span>
+                    <span><strong>Age:</strong> <span id="dash-age" class="text-gray-900">-</span></span>
+                    <span><strong>Gender:</strong> <span id="dash-gender" class="text-gray-900">-</span></span>
+                </div>
+                <div>
+                    <span class="bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded text-[11px] font-semibold" id="dash-slug">ID: -</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Sub-Tabs -->
+            <div class="px-6 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+                <div class="flex space-x-4 text-xs font-semibold">
+                    <button id="dash-tab-meds" class="py-3 border-b-2 border-blue-600 text-blue-600">Active Medications</button>
+                    <button id="dash-tab-discontinued" class="py-3 text-gray-500 hover:text-blue-600">Discontinued Medications</button>
+                    <button id="dash-tab-prescriptions" class="py-3 text-gray-500 hover:text-blue-600">Prescription History</button>
+                    <button id="dash-tab-labs" class="py-3 text-gray-500 hover:text-blue-600">Lab Reports</button>
+                    <button id="dash-tab-ddi" class="py-3 text-gray-500 hover:text-blue-600">DDI History Table</button>
+                </div>
+            </div>
+
+            <!-- Modal Body Scrollable Area -->
+            <div class="p-6 overflow-y-auto flex-grow space-y-4">
+                <!-- Section 1: Active Medications -->
+                <div id="dash-sec-meds" class="space-y-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-bold text-gray-800">Current Active Medications</h4>
+                        <span class="text-xs text-gray-500">Meds currently included in automatic DDI and safety checks</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="px-3 py-2 border-b">Medicine</th>
+                                    <th class="px-3 py-2 border-b">Strength / Dose</th>
+                                    <th class="px-3 py-2 border-b">Class</th>
+                                    <th class="px-3 py-2 border-b">Added Date</th>
+                                    <th class="px-3 py-2 border-b text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-active-meds-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">Loading active medications...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 2: Discontinued Medications -->
+                <div id="dash-sec-discontinued" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-bold text-gray-800">Past & Discontinued Medications</h4>
+                        <span class="text-xs text-gray-500">Excluded from active DDI checking</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="px-3 py-2 border-b">Medicine</th>
+                                    <th class="px-3 py-2 border-b">Strength / Dose</th>
+                                    <th class="px-3 py-2 border-b">Class</th>
+                                    <th class="px-3 py-2 border-b">Status</th>
+                                    <th class="px-3 py-2 border-b text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-discontinued-meds-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No discontinued medications recorded.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 3: Prescriptions History -->
+                <div id="dash-sec-prescriptions" class="space-y-3 hidden">
+                    <h4 class="text-sm font-bold text-gray-800 mb-2">Prescription Uploads & Extracted Medicines</h4>
+                    <div id="dash-prescriptions-list" class="space-y-3">
+                        <p class="text-xs text-gray-400 text-center py-4">Loading prescription records...</p>
+                    </div>
+                </div>
+
+                <!-- Section 4: Lab Reports -->
+                <div id="dash-sec-labs" class="space-y-3 hidden">
+                    <h4 class="text-sm font-bold text-gray-800 mb-2">Laboratory Measurement History</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="px-3 py-2 border-b">Parameter</th>
+                                    <th class="px-3 py-2 border-b">Value</th>
+                                    <th class="px-3 py-2 border-b">Unit</th>
+                                    <th class="px-3 py-2 border-b">Status</th>
+                                    <th class="px-3 py-2 border-b">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-labs-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">Loading lab history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 5: DDI History Table -->
+                <div id="dash-sec-ddi" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-bold text-gray-800">Drug-Drug Interaction Analysis History</h4>
+                        <span class="text-xs text-gray-500">Persistent across sessions</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
+                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="px-3 py-2 border-b">Medicine A</th>
+                                    <th class="px-3 py-2 border-b">Medicine B</th>
+                                    <th class="px-3 py-2 border-b">Source</th>
+                                    <th class="px-3 py-2 border-b">Severity</th>
+                                    <th class="px-3 py-2 border-b">Interaction Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-ddi-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No interaction records found.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs flex-shrink-0">
+                <span class="text-gray-500">Records isolated to your secure patient profile.</span>
+                <button id="close-dashboard-btn-2" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold text-gray-700 transition-colors">
+                    Close Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="w-full max-w-5xl mx-auto px-4 flex-grow">
         <!-- Tab Navigation -->

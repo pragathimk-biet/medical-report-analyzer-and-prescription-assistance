@@ -922,6 +922,242 @@ document.addEventListener('DOMContentLoaded', function() {
         if (btn) btn.addEventListener('click', () => setTimeout(updateChatContext, 50));
     });
 
+    // =========================================================================
+    // Patient Records Dashboard Management
+    // =========================================================================
+    const openDashboardBtn = document.getElementById('open-dashboard-btn');
+    const closeDashboardBtn = document.getElementById('close-dashboard-btn');
+    const closeDashboardBtn2 = document.getElementById('close-dashboard-btn2');
+    const dashboardModal = document.getElementById('patient-dashboard-modal');
+
+    // Dashboard Sub-Tabs
+    const dashTabMeds = document.getElementById('dash-tab-meds');
+    const dashTabDiscontinued = document.getElementById('dash-tab-discontinued');
+    const dashTabPrescriptions = document.getElementById('dash-tab-prescriptions');
+    const dashTabLabs = document.getElementById('dash-tab-labs');
+    const dashTabDdi = document.getElementById('dash-tab-ddi');
+
+    const dashSecMeds = document.getElementById('dash-sec-meds');
+    const dashSecDiscontinued = document.getElementById('dash-sec-discontinued');
+    const dashSecPrescriptions = document.getElementById('dash-sec-prescriptions');
+    const dashSecLabs = document.getElementById('dash-sec-labs');
+    const dashSecDdi = document.getElementById('dash-sec-ddi');
+
+    function switchDashTab(activeBtn, activeSec) {
+        [dashTabMeds, dashTabDiscontinued, dashTabPrescriptions, dashTabLabs, dashTabDdi].forEach(btn => {
+            if (btn) {
+                btn.className = "py-3 text-gray-500 hover:text-blue-600 font-semibold";
+            }
+        });
+        if (activeBtn) {
+            activeBtn.className = "py-3 border-b-2 border-blue-600 text-blue-600 font-semibold";
+        }
+        [dashSecMeds, dashSecDiscontinued, dashSecPrescriptions, dashSecLabs, dashSecDdi].forEach(sec => {
+            if (sec) sec.classList.add('hidden');
+        });
+        if (activeSec) {
+            activeSec.classList.remove('hidden');
+        }
+    }
+
+    if (dashTabMeds) dashTabMeds.addEventListener('click', () => switchDashTab(dashTabMeds, dashSecMeds));
+    if (dashTabDiscontinued) dashTabDiscontinued.addEventListener('click', () => switchDashTab(dashTabDiscontinued, dashSecDiscontinued));
+    if (dashTabPrescriptions) dashTabPrescriptions.addEventListener('click', () => switchDashTab(dashTabPrescriptions, dashSecPrescriptions));
+    if (dashTabLabs) dashTabLabs.addEventListener('click', () => switchDashTab(dashTabLabs, dashSecLabs));
+    if (dashTabDdi) dashTabDdi.addEventListener('click', () => switchDashTab(dashTabDdi, dashSecDdi));
+
+    function loadPatientDashboard() {
+        fetch('/api/patient/dashboard')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    console.warn("Failed to load dashboard data:", data.error);
+                    return;
+                }
+                const dash = data.dashboard || {};
+                const profile = dash.profile || {};
+                
+                // Populate profile
+                const pNameEl = document.getElementById('dash-patient-name');
+                if (pNameEl) pNameEl.textContent = profile.patient_name || 'Patient Records';
+                const pEmailEl = document.getElementById('dash-email');
+                if (pEmailEl) pEmailEl.textContent = profile.email || 'N/A';
+                const pAgeEl = document.getElementById('dash-age');
+                if (pAgeEl) pAgeEl.textContent = profile.age ? `${profile.age} yrs` : 'Not specified';
+                const pGenEl = document.getElementById('dash-gender');
+                if (pGenEl) pGenEl.textContent = profile.gender || 'Not specified';
+                const pSlugEl = document.getElementById('dash-slug');
+                if (pSlugEl) pSlugEl.textContent = `ID: ${profile.slug || '-'}`;
+
+                // Populate Active Medications
+                const activeBody = document.getElementById('dash-active-meds-body');
+                if (activeBody) {
+                    const activeMeds = dash.active_medications || [];
+                    if (activeMeds.length === 0) {
+                        activeBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No active medications currently recorded.</td></tr>';
+                    } else {
+                        activeBody.innerHTML = activeMeds.map(m => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2.5 font-bold text-gray-900">${m.medicine_name || m.name}</td>
+                                <td class="px-3 py-2.5 text-gray-600">${m.strength || m.dosage || '–'}</td>
+                                <td class="px-3 py-2.5"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-medium text-[11px]">${m.med_class || 'Unclassified'}</span></td>
+                                <td class="px-3 py-2.5 text-gray-500">${(m.added_at || '').substring(0, 10)}</td>
+                                <td class="px-3 py-2.5 text-right">
+                                    <button onclick="toggleMedStatus('${m.id || m.medicine_name}', 'discontinued')" class="px-2.5 py-1 text-[11px] font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors">
+                                        Discontinue
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                // Populate Discontinued Medications
+                const disBody = document.getElementById('dash-discontinued-meds-body');
+                if (disBody) {
+                    const disMeds = dash.discontinued_medications || [];
+                    if (disMeds.length === 0) {
+                        disBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No discontinued medications recorded.</td></tr>';
+                    } else {
+                        disBody.innerHTML = disMeds.map(m => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2.5 font-bold text-gray-700 line-through">${m.medicine_name || m.name}</td>
+                                <td class="px-3 py-2.5 text-gray-500">${m.strength || m.dosage || '–'}</td>
+                                <td class="px-3 py-2.5 text-gray-500 text-[11px]">${m.med_class || 'Unclassified'}</td>
+                                <td class="px-3 py-2.5 text-gray-400"><span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[11px]">Discontinued</span></td>
+                                <td class="px-3 py-2.5 text-right">
+                                    <button onclick="toggleMedStatus('${m.id || m.medicine_name}', 'active')" class="px-2.5 py-1 text-[11px] font-semibold text-green-700 hover:text-green-900 bg-green-50 hover:bg-green-100 rounded border border-green-200 transition-colors">
+                                        Reactivate
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                // Populate Prescriptions
+                const rxList = document.getElementById('dash-prescriptions-list');
+                if (rxList) {
+                    const rxs = dash.prescriptions || [];
+                    if (rxs.length === 0) {
+                        rxList.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">No uploaded prescriptions found.</p>';
+                    } else {
+                        rxList.innerHTML = rxs.map(rx => `
+                            <div class="p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs space-y-1.5">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-900">Prescription #${rx.id || rx.visit_id} • ${(rx.timestamp || '').substring(0, 10)}</span>
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded text-[10px] font-semibold">${rx.verification_status || 'VERIFIED'}</span>
+                                </div>
+                                <p class="text-gray-700"><strong>Summary:</strong> ${rx.medicine_name || 'Prescription items'}</p>
+                                ${rx.medicines && rx.medicines.length ? `
+                                    <div class="mt-1 pt-1 border-t border-gray-200 flex flex-wrap gap-1">
+                                        ${rx.medicines.map(m => `<span class="px-2 py-0.5 bg-white border border-gray-200 rounded text-[11px] font-medium text-gray-800">${m.medicine_name} ${m.strength || ''}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                // Populate Labs
+                const labsBody = document.getElementById('dash-labs-body');
+                if (labsBody) {
+                    const labs = dash.lab_results || [];
+                    if (labs.length === 0) {
+                        labsBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No laboratory measurements recorded yet.</td></tr>';
+                    } else {
+                        labsBody.innerHTML = labs.map(l => {
+                            const isAbn = ['HIGH', 'VERY_HIGH', 'LOW', 'POSITIVE'].includes((l.status || '').toUpperCase());
+                            const badgeClass = isAbn ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+                            return `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-2 font-semibold text-gray-800">${l.parameter}</td>
+                                    <td class="px-3 py-2 font-mono font-bold">${l.value}</td>
+                                    <td class="px-3 py-2 text-gray-500">${l.unit || '–'}</td>
+                                    <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${l.status}</span></td>
+                                    <td class="px-3 py-2 text-gray-400">${(l.evaluated_at || '').substring(0, 10)}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+
+                // Populate DDI History Table
+                const ddiBody = document.getElementById('dash-ddi-body');
+                if (ddiBody) {
+                    const ddis = dash.ddi_history || [];
+                    if (ddis.length === 0) {
+                        ddiBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No interaction records found.</td></tr>';
+                    } else {
+                        ddiBody.innerHTML = ddis.map(d => {
+                            const sev = (d.severity || '').toUpperCase();
+                            const sevClass = (sev === 'CRITICAL' || sev === 'MAJOR') ? 'bg-red-100 text-red-800' : (sev === 'MODERATE' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800');
+                            return `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-2.5 font-bold text-gray-900">${d.medicine_a}</td>
+                                    <td class="px-3 py-2.5 font-bold text-gray-900">${d.medicine_b}</td>
+                                    <td class="px-3 py-2.5 text-gray-600 font-mono text-[10px]">${d.source_a || 'NEW'} ↔ ${d.source_b || 'HIST'}</td>
+                                    <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${sevClass}">${d.severity}</span></td>
+                                    <td class="px-3 py-2.5 text-gray-600 text-[11px] max-w-xs">${d.interaction_description || '–'}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            })
+            .catch(err => console.error("Error loading patient dashboard:", err));
+    }
+
+    window.toggleMedStatus = function(medId, newStatus) {
+        fetch('/api/patient/toggle-medication', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ medication_id: medId, status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadPatientDashboard();
+            } else {
+                alert('Could not update medication status: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error('Error toggling medication:', err));
+    };
+
+    window.confirmPrescriptionMed = function(name, dosage, genericName, strength) {
+        fetch('/api/patient/confirm-prescribed-medication', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ medicine_name: name, dosage: dosage, generic_name: genericName, strength: strength })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Medication '${name}' confirmed and saved to your active medications!`);
+                loadPatientDashboard();
+            } else {
+                alert('Could not add medication: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error('Error confirming medication:', err));
+    };
+
+    if (openDashboardBtn && dashboardModal) {
+        openDashboardBtn.addEventListener('click', () => {
+            dashboardModal.classList.remove('hidden');
+            loadPatientDashboard();
+        });
+    }
+
+    if (closeDashboardBtn && dashboardModal) {
+        closeDashboardBtn.addEventListener('click', () => dashboardModal.classList.add('hidden'));
+    }
+
+    if (closeDashboardBtn2 && dashboardModal) {
+        closeDashboardBtn2.addEventListener('click', () => dashboardModal.classList.add('hidden'));
+    }
+
     function handleError(err) {
         console.error('Error details:', err);
         loading.classList.add('hidden');
