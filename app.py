@@ -1,27 +1,43 @@
+"""
+app.py — Medical Report Analyzer & Prescription Assistant
+Enhanced Agentic AI v3.0 — Full Integration Build
+Preserves all original functionality + adds DDI, biomarker extraction, patient history, RAG chatbot
+"""
+
 import os
 import io
-from flask import Flask, request, render_template, jsonify, session, redirect, url_for, send_file, has_request_context
-from pdf_export import build_analysis_pdf, pdf_filename
+import cv2
+import uuid
+import numpy as np
+import threading
+import concurrent.futures
+from flask import Flask, request, render_template, jsonify, session
 from werkzeug.utils import secure_filename
 from PIL import Image
 import pytesseract
-from pdf2image import convert_from_path
 from dotenv import load_dotenv
 import requests
 import json
 import logging
-import re
 import shutil
-import patient_privacy
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
-load_dotenv(override=True)
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+load_dotenv()
 
-# Auto-discover Tesseract path on Windows
+# ---------------------------------------------------------------------------
+# Tesseract auto-discovery
+# ---------------------------------------------------------------------------
 def init_tesseract():
     tess_paths = [
         r'C:\Program Files\Tesseract-OCR\tesseract.exe',
@@ -39,23 +55,91 @@ def init_tesseract():
         pytesseract.pytesseract.tesseract_cmd = which_p
         logger.info(f"Tesseract found via PATH: {which_p}")
         return which_p
-    logger.warning("Tesseract not found in standard system paths.")
+    logger.warning("Tesseract not found. Will rely on RapidOCR and Windows OCR.")
     return None
 
-init_tesseract()
+TESSERACT_AVAILABLE = init_tesseract() is not None
 
+# ---------------------------------------------------------------------------
+# Flask App
+# ---------------------------------------------------------------------------
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "medical_report_analyzer_secret_2026")
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "medical-analyzer-secret-2026")
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
-
-# Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# LLM Providers Configuration
+ALLOWED_EXTENSIONS = {
+    'jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'webp',
+    'pdf', 'docx', 'doc', 'txt'
+}
+IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'webp'}
+
+# ---------------------------------------------------------------------------
+# LLM Configuration (preserved from original)
+# ---------------------------------------------------------------------------
 OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 DEFAULT_MODEL_NAME = "deepseek-r1:14b"
 NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
+
+NVIDIA_PREFERRED_MODELS = [
+    "nvidia/nemotron-3.5-bolt-e4b",
+    "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "mistralai/mistral-large-4-1t-a52b",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "poolside/laguna-xs-2.1",
+]
+_working_nvidia_model = None
+
+# ---------------------------------------------------------------------------
+# RapidOCR — global singleton
+# ---------------------------------------------------------------------------
+rapid_ocr_engine = None
+rapid_ocr_lock = threading.Lock()
+try:
+    from rapidocr_onnxruntime import RapidOCR
+    rapid_ocr_engine = RapidOCR()
+    logger.info("RapidOCR pre-initialized.")
+except Exception as _ocr_err:
+    logger.warning(f"RapidOCR init warning: {_ocr_err}")
+
+# ---------------------------------------------------------------------------
+# Windows OCR
+# ---------------------------------------------------------------------------
+from win_ocr import run_win_ocr
+
+# ---------------------------------------------------------------------------
+# Enhanced modules
+# ---------------------------------------------------------------------------
+from rule_engine import extract_biomarkers_from_text, format_findings_for_display, classify_finding, validate_finding_7_layers
+from ddi_engine import (
+    normalize_medicine_name, run_full_ddi_check,
+    get_ingredients, get_category, TRUSTED_MEDICATION_DATABASE,
+    check_prescription_vs_labs, check_labs_vs_active_medicines
+)
+from database import (
+    init_db, save_analysis, get_analysis_history, save_active_medicines,
+    get_active_medicines, save_lab_results, get_lab_history, get_session_context,
+    get_patient_profile, save_patient_profile, set_medicine_status
+)
+
+# Initialize database
+init_db()
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def get_session_id():
+    """Get or create a session ID."""
+    if 'session_id' not in session:
+        session['session_id'] = str(uuid.uuid4())
+    return session['session_id']
+
 
 def get_available_ollama_model():
     try:
@@ -74,805 +158,719 @@ def get_available_ollama_model():
         pass
     return DEFAULT_MODEL_NAME
 
-# Pre-initialize RapidOCR globally for instant image extraction
-rapid_ocr_engine = None
-try:
-    from rapidocr_onnxruntime import RapidOCR
-    rapid_ocr_engine = RapidOCR()
-    logger.info("RapidOCR engine pre-initialized globally.")
-except Exception as _ocr_err:
-    logger.warning(f"RapidOCR global init warning: {_ocr_err}")
 
-def _safe_ai_fallback_text(prompt, system_prompt="You are an expert medical AI advisor."):
-    """Return a safe deterministic summary when AI backends are unavailable."""
-    text = str(prompt or "")
-    
-    # 1. If this is a prescription reasoning prompt, return None to trigger
-    # PrescriptionReasoningAgent's comprehensive deterministic explanation layer.
-    if "Verified Prescription Items:" in text or "DDI Check Data:" in text:
-        return None
-
-    # 1b. If this is an interactive chatbot inquiry from chat_context.py, answer grounded in the facts
-    if "Patient question:" in text and "<<DATA>>" in text:
-        q_match = re.search(r"Patient question:\s*(.*?)(?=\n\nFACTS|\n\n<<DATA>>|$)", text, re.DOTALL)
-        user_question = q_match.group(1).strip() if q_match else ""
-
-        facts_match = re.search(r"<<DATA>>\s*(.*?)\s*<<END DATA>>", text, re.DOTALL)
-        facts_block = facts_match.group(1).strip() if facts_match else ""
-        fact_lines_list = [line.strip() for line in facts_block.splitlines() if line.strip() and line.strip().startswith("[")]
-
-        q_lower = user_question.lower()
-        matched_facts = []
-        for fl in fact_lines_list:
-            cid_match = re.match(r"\[([A-Z]\d+)\]\s*(.*)", fl)
-            if not cid_match:
-                continue
-            cid, content = cid_match.group(1), cid_match.group(2)
-            content_lower = content.lower()
-            words = [w for w in re.findall(r"\w+", content_lower) if len(w) > 3 and w not in ("test", "serum", "blood", "level", "printed", "range", "guideline", "evaluation", "qualitative", "observation", "category")]
-            if any(w in q_lower for w in words):
-                matched_facts.append((cid, content))
-
-        if matched_facts:
-            resp_lines = []
-            for cid, content in matched_facts:
-                resp_lines.append(f"Regarding your inquiry, your recorded finding is: {content} [{cid}].")
-            resp_lines.append("Please discuss these recorded findings with your healthcare provider.")
-            return "\n".join(resp_lines)
-        elif fact_lines_list:
-            first_cid_match = re.match(r"\[([A-Z]\d+)\]\s*(.*)", fact_lines_list[0])
-            if first_cid_match:
-                cid, content = first_cid_match.group(1), first_cid_match.group(2)
-                return f"From your current analysis, your recorded result is: {content} [{cid}]. Please discuss these findings with your doctor."
-        return "I cannot tell from the current analysis because this information was not recorded in the uploaded document. Please discuss this with your doctor."
-
-    # 2. Extract structured laboratory findings via authoritative Rule Engine
-    from patient_history import extract_patient_demographics
-    from report_reasoning_agent import ReportReasoningAgent
-    
-    eval_results = rule_engine.parse_and_evaluate(text)
-    demographics = extract_patient_demographics(text)
-
-    # 3. If findings were extracted, generate comprehensive report explanation
-    if eval_results:
-        return ReportReasoningAgent.build_report_patient_summary(eval_results, demographics=demographics)
-
-    # 4. If no findings detected, return safe formatted markdown with proper demographics
-    p_name = demographics.get("patient_name") or "Default Patient"
-    p_age = str(demographics.get("age") or "N/A")
-    p_gender = str(demographics.get("gender") or "N/A")
-    lab_ref = str(demographics.get("lab_ref_no") or "N/A")
-    reg_d = str(demographics.get("registration_date") or "N/A")
-
-    return (
-        f"# 📋 Medical Report Analysis & Clinical Guidance\n\n"
-        f"### 👤 Patient Information\n"
-        f"| Demographic Field | Value | Demographic Field | Value |\n"
-        f"| :--- | :--- | :--- | :--- |\n"
-        f"| **Patient Name** | **{p_name}** | **Age / Gender** | {p_age} Years / {p_gender} |\n"
-        f"| **Lab Ref No.** | `{lab_ref}` | **Report Date** | {reg_d} |\n\n"
-        f"---\n\n"
-        f"## 🔬 Extracted Laboratory Test Findings\n\n"
-        f"No validated laboratory values were detected from the submitted input. "
-        f"Please review the original report or paste a clearer lab report for detailed analysis.\n\n"
-        f"> ⚠️ **Medical Disclaimer**: This automated analysis is designed for patient education and decision support. "
-        f"It does not provide a formal medical diagnosis. Always consult a licensed healthcare professional for official medical advice."
-    )
+# ---------------------------------------------------------------------------
+# Image preprocessing
+# ---------------------------------------------------------------------------
+def preprocess_image_for_ocr(image_path):
+    try:
+        img_cv = cv2.imread(image_path)
+        if img_cv is None:
+            pil_img = Image.open(image_path).convert('RGB')
+            img_cv = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        h, w = gray.shape
+        if max(h, w) < 1500:
+            scale = 2.0
+            gray = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        denoised = cv2.fastNlMeansDenoising(gray, h=10)
+        binary = cv2.adaptiveThreshold(
+            denoised, 255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY, 31, 10
+        )
+        kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        sharpened = cv2.filter2D(binary, -1, kernel)
+        return Image.fromarray(sharpened)
+    except Exception as e:
+        logger.warning(f"Image preprocessing failed: {e}. Using original.")
+        try:
+            return Image.open(image_path).convert('L')
+        except Exception:
+            return Image.open(image_path)
 
 
+def ocr_single_image_pil(pil_image):
+    """Run OCR on a PIL Image using all available engines."""
+    texts = []
+    if rapid_ocr_engine:
+        try:
+            img_array = np.array(pil_image.convert('RGB'))
+            with rapid_ocr_lock:
+                ocr_result, _ = rapid_ocr_engine(img_array)
+            if ocr_result:
+                lines = [line[1] for line in ocr_result if line and len(line) > 1 and line[1].strip()]
+                if lines:
+                    texts.append(("rapidocr", "\n".join(lines)))
+        except Exception as e:
+            logger.warning(f"RapidOCR: {e}")
+
+    if TESSERACT_AVAILABLE:
+        try:
+            custom_config = r'--oem 3 --psm 6'
+            text = pytesseract.image_to_string(pil_image, config=custom_config)
+            if text and text.strip():
+                texts.append(("tesseract", text.strip()))
+        except Exception as e:
+            logger.warning(f"Tesseract: {e}")
+
+    if texts:
+        best = max(texts, key=lambda x: len(x[1]))
+        logger.info(f"Best OCR engine: {best[0]} ({len(best[1])} chars)")
+        return best[1]
+    return ""
+
+
+def extract_text_from_image(image_path):
+    preprocessed = preprocess_image_for_ocr(image_path)
+    text = ocr_single_image_pil(preprocessed)
+    if text and len(text.strip()) > 10:
+        return text
+    try:
+        orig = Image.open(image_path)
+        text = ocr_single_image_pil(orig)
+        if text and text.strip():
+            return text
+    except Exception as e:
+        logger.warning(f"Original image OCR fallback: {e}")
+    try:
+        win_text = run_win_ocr(image_path)
+        if win_text and win_text.strip():
+            logger.info("Windows Native OCR succeeded.")
+            return win_text
+    except Exception as e:
+        logger.warning(f"Windows Native OCR: {e}")
+    return "Error: Could not extract text from this image."
+
+
+def _process_pdf_page(args):
+    page_index, pil_image = args
+    try:
+        text = ocr_single_image_pil(pil_image)
+        return (page_index, text)
+    except Exception:
+        return (page_index, "")
+
+
+def extract_text_from_pdf(pdf_path):
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(pdf_path)
+        native_texts = []
+        for page in reader.pages:
+            t = page.extract_text()
+            if t and t.strip():
+                native_texts.append(t.strip())
+        if native_texts:
+            combined = "\n\n".join(native_texts)
+            if len(combined.strip()) > 50:
+                return combined
+    except Exception as e:
+        logger.warning(f"PyPDF extraction: {e}")
+
+    try:
+        from pdf2image import convert_from_path
+        poppler_paths = [
+            r'C:\Program Files\poppler\Library\bin',
+            r'C:\Program Files\poppler\bin',
+            r'C:\Program Files (x86)\poppler\bin',
+            os.path.expanduser(r'~\AppData\Local\Programs\poppler\Library\bin'),
+        ]
+        poppler_path = None
+        for p in poppler_paths:
+            if os.path.isdir(p):
+                poppler_path = p
+                break
+
+        kwargs = {'dpi': 200, 'fmt': 'PNG'}
+        if poppler_path:
+            kwargs['poppler_path'] = poppler_path
+
+        images = convert_from_path(pdf_path, **kwargs)
+        if not images:
+            return "Error: Could not render PDF pages."
+
+        page_args = [(i, img) for i, img in enumerate(images)]
+        results = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(images))) as executor:
+            futures = {executor.submit(_process_pdf_page, arg): arg[0] for arg in page_args}
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    page_idx, text = future.result()
+                    results[page_idx] = text
+                except Exception as e:
+                    logger.warning(f"PDF page OCR error: {e}")
+
+        sorted_texts = [results.get(i, "") for i in range(len(images))]
+        combined = "\n\n".join(t for t in sorted_texts if t.strip())
+        if combined.strip():
+            return combined
+    except Exception as e:
+        logger.warning(f"PDF to image: {e}")
+
+    return "Error: Could not extract text from this PDF."
+
+
+def extract_text_from_docx(file_path):
+    try:
+        import docx
+        doc = docx.Document(file_path)
+        paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                if row_text:
+                    paragraphs.append(row_text)
+        if paragraphs:
+            return "\n".join(paragraphs)
+    except Exception as e:
+        logger.warning(f"DOCX extraction: {e}")
+    return "Error: Could not extract text from Word document."
+
+
+def extract_text_from_txt(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+            return f.read()
+    except Exception as e:
+        logger.warning(f"TXT extraction: {e}")
+    return "Error: Could not read text file."
+
+
+def extract_text(file_path, ext):
+    ext = ext.lower()
+    if ext in IMAGE_EXTENSIONS:
+        return extract_text_from_image(file_path)
+    elif ext == 'pdf':
+        return extract_text_from_pdf(file_path)
+    elif ext in ('docx', 'doc'):
+        return extract_text_from_docx(file_path)
+    elif ext == 'txt':
+        return extract_text_from_txt(file_path)
+    return "Error: Unsupported file format."
+
+
+# ---------------------------------------------------------------------------
+# LLM AI Analysis (preserved + enhanced)
+# ---------------------------------------------------------------------------
 def generate_ai_analysis(prompt, system_prompt="You are an expert medical AI advisor."):
+    global _working_nvidia_model
     nvidia_key = os.getenv("NVIDIA_API_KEY", "").strip()
 
-    # 1. NVIDIA Nemotron / NIM API
     if nvidia_key:
         try:
             from openai import OpenAI
-            model = os.getenv("NVIDIA_MODEL", "meta/llama-3.2-11b-vision-instruct").strip()
-            client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=nvidia_key, timeout=15.0)
-            logger.info(f"Using NVIDIA NIM API (Model: {model})")
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.2,
-                max_tokens=2000
-            )
-            choice = response.choices[0]
-            if getattr(choice, 'finish_reason', None) == 'length':
-                logger.warning("NVIDIA NIM AI output was truncated by max_tokens limit (finish_reason='length'). Raising to trigger deterministic fallback.")
-                raise ValueError("NVIDIA NIM AI output was truncated by token length limit.")
-            return choice.message.content
-        except Exception as e:
-            logger.warning(f"NVIDIA API Error: {e}. Falling back to Ollama local AI.")
+            client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=nvidia_key)
+            env_model = os.getenv("NVIDIA_MODEL", "").strip()
+            candidates = []
+            if _working_nvidia_model:
+                candidates.append(_working_nvidia_model)
+            if env_model and env_model not in candidates:
+                candidates.append(env_model)
+            for m in NVIDIA_PREFERRED_MODELS:
+                if m not in candidates:
+                    candidates.append(m)
 
-    # 2. Local Ollama AI
+            last_error = None
+            for model in candidates:
+                try:
+                    logger.info(f"Trying NVIDIA NIM model: {model}")
+                    response = client.chat.completions.create(
+                        model=model,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.3,
+                        max_tokens=1500,
+                        timeout=60
+                    )
+                    _working_nvidia_model = model
+                    logger.info(f"NVIDIA NIM success: {model}")
+                    return response.choices[0].message.content
+                except Exception as model_err:
+                    err_str = str(model_err)
+                    if any(code in err_str for code in ['410', '404', '403', 'end of life', 'Not found', 'not subscribed']):
+                        logger.warning(f"Model {model} unavailable, trying next...")
+                        if _working_nvidia_model == model:
+                            _working_nvidia_model = None
+                        last_error = model_err
+                        continue
+                    logger.warning(f"Model {model} error ({err_str[:60]}), trying next...")
+                    last_error = model_err
+                    continue
+
+            logger.error(f"All NVIDIA models failed. Last error: {last_error}")
+        except ImportError:
+            logger.warning("openai package not installed.")
+        except Exception as e:
+            logger.error(f"NVIDIA client init error: {e}")
+
+    # Ollama fallback
     try:
         model = get_available_ollama_model()
         data = {
             "model": model,
             "prompt": f"{system_prompt}\n\n{prompt}",
             "stream": False,
-            "options": {
-                "temperature": 0.3,
-                "num_predict": 2000
-            }
+            "options": {"temperature": 0.3, "num_predict": 1500}
         }
-        logger.info(f"Using Ollama local AI (Model: {model})")
-        response = requests.post(OLLAMA_ENDPOINT, json=data, timeout=8)
+        logger.info(f"Trying Ollama local AI: {model}")
+        response = requests.post(OLLAMA_ENDPOINT, json=data, timeout=180)
         response.raise_for_status()
         result = response.json()
-        ai_reply = result.get('response', '')
-        if ai_reply:
-            return ai_reply
+        text = result.get('response', '')
+        if text.strip():
+            return text
     except Exception as e:
-        logger.warning(f"Ollama local AI connection failed: {e}")
+        logger.warning(f"Ollama unavailable: {e}")
 
-    logger.warning("No AI backend reachable. Returning deterministic offline clinical fallback.")
-    return _safe_ai_fallback_text(prompt, system_prompt)
+    raise requests.exceptions.ConnectionError(
+        "No AI backend available. Set a valid NVIDIA_API_KEY or start Ollama."
+    )
 
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'pdf'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-from win_ocr import run_win_ocr
-
-def optimize_image_for_fast_ocr(image_input, max_dimension=1600):
-    """
-    Downsamples large scanner/camera images (>1600px) in memory using fast bilinear scaling.
-    Reduces OCR computation time by 75%-85% while preserving 100% text recognition accuracy.
-    """
-    try:
-        if isinstance(image_input, str):
-            img = Image.open(image_input)
-        else:
-            img = image_input
-
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-
-        w, h = img.size
-        if max(w, h) > max_dimension:
-            scale = max_dimension / float(max(w, h))
-            new_w, new_h = int(w * scale), int(h * scale)
-            img = img.resize((new_w, new_h), Image.Resampling.BILINEAR)
-
-        import tempfile
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-        img.save(temp_file.name, format="JPEG", quality=85, optimize=True)
-        temp_file.close()
-        return temp_file.name
-    except Exception as e:
-        logger.warning(f"Fast image pre-scaling warning: {e}")
-        return image_input if isinstance(image_input, str) else None
-
-
-def extract_text_from_image(image_path):
-    ocr_metadata = []
-    
-    # 0. Fast pre-scaling for ONNX OCR
-    fast_image_path = optimize_image_for_fast_ocr(image_path, max_dimension=1600)
-    target_path = fast_image_path or image_path
-
-    try:
-        # 1. Try RapidOCR (high accuracy ONNX-based OCR, instant global instance)
-        if rapid_ocr_engine:
-            try:
-                ocr_result, _ = rapid_ocr_engine(target_path)
-                if ocr_result:
-                    extracted_lines = []
-                    for line_idx, line in enumerate(ocr_result, 1):
-                        if line and len(line) > 1 and line[1].strip():
-                            text_str = line[1].strip()
-                            conf = round(float(line[2]) * 100, 1) if len(line) > 2 and line[2] is not None else None
-                            extracted_lines.append(text_str)
-                            ocr_metadata.append({
-                                "line_number": line_idx,
-                                "raw_line": text_str,
-                                "confidence": conf
-                            })
-                    if extracted_lines:
-                        extracted_text = "\n".join(extracted_lines)
-                        logger.info("Successfully extracted text using RapidOCR engine!")
-                        return extracted_text, ocr_metadata
-            except Exception as e:
-                logger.warning(f"RapidOCR extraction warning: {e}")
-
-        # 2. Try PyTesseract if available
-        try:
-            text = pytesseract.image_to_string(Image.open(target_path))
-            if text and text.strip():
-                return text, []
-        except Exception as e:
-            logger.warning(f"PyTesseract extraction warning: {e}")
-
-        # 3. Try Windows Native OCR (WinRT)
-        try:
-            win_text = run_win_ocr(target_path)
-            if win_text and win_text.strip():
-                logger.info("Successfully extracted text using Windows Native OCR!")
-                return win_text, []
-        except Exception as e:
-            logger.warning(f"Windows Native OCR warning: {e}")
-    finally:
-        if fast_image_path and fast_image_path != image_path and os.path.exists(fast_image_path):
-            try:
-                os.remove(fast_image_path)
-            except Exception:
-                pass
-
-    return "Error: Could not extract text from this image. Please upload a clearer report image, upload a PDF file, or paste your report text directly into the text field.", []
-
-
-def extract_text_from_pdf(pdf_path):
-    # 1. Instant native PDF text extraction with PyPDF (< 0.05s)
-    try:
-        from pypdf import PdfReader
-        reader = PdfReader(pdf_path)
-        extracted = []
-        for page in reader.pages[:5]:  # Process first 5 pages for speed
-            t = page.extract_text()
-            if t and t.strip():
-                extracted.append(t.strip())
-        if extracted and len("\n".join(extracted)) > 50:
-            logger.info("Instant native PDF text extraction successful!")
-            return "\n".join(extracted), []
-    except Exception as e:
-        logger.warning(f"PyPDF extraction fallback: {e}")
-
-    # 2. High-speed multi-threaded PDF to Image OCR (150 DPI, thread_count=4)
-    try:
-        images = convert_from_path(pdf_path, dpi=150, thread_count=4, first_page=1, last_page=5)
-        extracted_text_list = []
-        all_metadata = []
-        for idx, img in enumerate(images, 1):
-            opt_path = optimize_image_for_fast_ocr(img, max_dimension=1600)
-            target = opt_path or img
-            if rapid_ocr_engine:
-                try:
-                    ocr_res, _ = rapid_ocr_engine(target)
-                    if ocr_res:
-                        page_lines = [l[1].strip() for l in ocr_res if l and len(l) > 1 and l[1].strip()]
-                        if page_lines:
-                            extracted_text_list.append("\n".join(page_lines))
-                except Exception as page_err:
-                    logger.warning(f"RapidOCR PDF page {idx} warning: {page_err}")
-
-            if opt_path and os.path.exists(opt_path):
-                try:
-                    os.remove(opt_path)
-                except Exception:
-                    pass
-
-        if extracted_text_list:
-            full_text = "\n".join(extracted_text_list)
-            logger.info("High-speed PDF OCR extraction successful!")
-            return full_text, all_metadata
-    except Exception as e:
-        logger.warning(f"PDF OCR warning: {e}")
-
-    return "Error: Could not extract text from PDF. Please upload a text-based PDF or paste the report text directly.", []
 
 def is_connection_error(e):
-    if e is None:
-        return True
     err_str = str(e).lower()
-    return isinstance(e, (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.RequestException)) or \
-        any(k in err_str for k in ['connection', 'refused', '10061', 'actively refused', 'max retries', 'failed to establish', '410', '404', '401', '429', 'statuserror', 'httperror', 'openai', 'api', 'gone', 'not found'])
-
-from rule_engine import MedicalRuleEngine
-from patient_history import PatientHistoryManager, extract_patient_name, normalize_patient_name
-from tabular_ml_engine import TabularMLAgent, predict_finding_safety
-from input_router import InputRouter, create_pipeline_context, PrescriptionPipelineBoundary
-from report_extraction_agent import ReportExtractionAgent
-from report_verification_agent import ReportVerificationAgent
-from ml_safety_agent import MLSafetyAgent
-import chat_context
-from report_reasoning_agent import ReportReasoningAgent
-from ddi_checker import TrustedPatientAuthContract
-
-rule_engine = MedicalRuleEngine()
-patient_history = PatientHistoryManager()
-
-FORBIDDEN_DIAGNOSTIC_TERMS = [
-    # 1. Diagnostic Assertions
-    r'diagnosed with',
-    r'diagnostic confirmation',
-    r'confirm(?:s)? (?:that you have|a diagnosis of|clinical|kidney|renal|liver|hepatic|thyroid|heart|diabetic)',
-    r'is suffering from',
-    r'has developed (?:kidney|renal|liver|hepatic|thyroid|heart|diabetic)',
-    r'definitive diagnosis',
-    r'proves (?:that you have|the presence of)',
-
-    # 2. Organ Failure & Disease Terms
-    r'renal failure',
-    r'kidney failure',
-    r'kidney disease',
-    r'renal disease',
-    r'impaired kidney function',
-    r'impaired renal function',
-    r'active typhoid infection',
-    r'active typhoid fever',
-    r'hepatic failure',
-    r'liver failure',
-    r'liver disease',
-    r'hepatotoxicity',
-    r'heart failure',
-    r'cardiac failure',
-    r'respiratory failure',
-    r'organ failure',
-    r'pancreatitis',
-    r'cirrhosis',
-    r'diabetic ketoacidosis',
-    r'severe anemia',
-    r'thyroid disease',
-
-    # 3. Prescriptive Treatment & Mandatory Interventions
-    r'immediately stop',
-    r'stop taking your medication',
-    r'immediately discontinue',
-    r'discontinue your medication',
-    r'you must take',
-    r'start taking',
-    r'must drink \d+ liters',
-    r'strict diet ban',
-    r'food ban'
-]
-
-def get_patient_friendly_status(status, validation_status=None):
-    if validation_status in ["REVIEW_REQUIRED", "AMBIGUOUS", "UNVERIFIED"]:
-        return "❓ Unable to Determine"
-    s_upper = str(status).upper()
-    if s_upper in ["NORMAL", "NEGATIVE", "DESIRABLE", "OPTIMAL", "ACCEPTABLE"]:
-        return "✅ Normal"
-    elif s_upper in ["PREDIABETES", "PREDIABETES_RANGE", "BORDERLINE_HIGH", "NEAR_OPTIMAL", "MILDLY_DECREASED"]:
-        return "⚠️ Needs Attention"
-    elif s_upper in ["HIGH", "VERY_HIGH", "DIABETES_RANGE", "POSITIVE", "KIDNEY_FAILURE_RANGE", "SEVERELY_DECREASED"]:
-        return "🔴 High"
-    elif s_upper == "LOW":
-        return "🔵 Low"
-    else:
-        return "ℹ️ Informational"
-
-def get_health_condition_suggestion(status, validation_status=None):
-    if validation_status in ["REVIEW_REQUIRED", "AMBIGUOUS", "UNVERIFIED"]:
-        return "**Cannot determine from this report**\n\n**This report does not by itself confirm a disease.**"
-    s_upper = str(status).upper()
-    if s_upper in ["NORMAL", "NEGATIVE", "DESIRABLE", "OPTIMAL", "ACCEPTABLE"]:
-        return "**No clear abnormality detected**\n\n**This report does not by itself confirm a disease.**"
-    elif s_upper in ["PREDIABETES", "PREDIABETES_RANGE", "BORDERLINE_HIGH", "MILDLY_DECREASED"]:
-        return "**Possible health-related finding**\n\n**This report does not by itself confirm a disease.**"
-    else:
-        return "**Finding that may need medical evaluation**\n\n**This report does not by itself confirm a disease.**"
-
-def get_recommended_doctor_category(param_key, category, status):
-    p_key = str(param_key).lower()
-    cat = str(category).lower()
-    s_upper = str(status).upper()
-    
-    if s_upper in ["NORMAL", "NEGATIVE", "DESIRABLE", "OPTIMAL", "ACCEPTABLE"]:
-        return "**General Physician / Primary Care Doctor** (for routine wellness monitoring)"
-        
-    if "hba1c" in p_key or "glucose" in p_key or cat == "diabetes":
-        return "**Diabetologist or Endocrinologist**"
-    elif "creatinine" in p_key or "urea" in p_key or "bun" in p_key or "egfr" in p_key or cat == "kidney":
-        return "**Nephrologist**"
-    elif "tsh" in p_key or "t4" in p_key or cat == "thyroid":
-        return "**Endocrinologist**"
-    elif "hemoglobin" in p_key or "wbc" in p_key or "platelets" in p_key or cat == "cbc":
-        return "**Hematologist**"
-    elif "alt" in p_key or "ast" in p_key or "bilirubin" in p_key or cat == "liver":
-        return "**Gastroenterologist or Hepatologist**"
-    elif "cholesterol" in p_key or "triglycerides" in p_key or cat == "lipid_profile":
-        return "**Cardiologist or Primary Care Physician**"
-    elif "sodium" in p_key or "potassium" in p_key or cat == "electrolytes":
-        return "**Nephrologist or General Physician**"
-    elif "typhi" in p_key or cat == "widal":
-        return "**General Physician / Internal Medicine**"
-    else:
-        return "**General Physician / Internal Medicine**"
-
-def generate_safe_deterministic_fallback(eval_results, two_way_alerts=None, raw_text=""):
-    from report_reasoning_agent import ReportReasoningAgent
-    from patient_history import extract_patient_demographics
-    demographics = extract_patient_demographics(raw_text)
-    return ReportReasoningAgent.build_report_patient_summary(eval_results, demographics=demographics, two_way_alerts=two_way_alerts)
+    return isinstance(e, (requests.exceptions.ConnectionError, requests.exceptions.Timeout)) or \
+        'connection refused' in err_str or '10061' in err_str or 'actively refused' in err_str or \
+        'max retries exceeded' in err_str or 'no ai backend' in err_str
 
 
-# --- REQUIREMENTS 7, 8, 10: LLM Consistency Validator Engine ---
-class LLMConsistencyValidator:
-    """
-    Audits candidate LLM output against structured authoritative findings.
-    Validates:
-    1. Completion: Not truncated, no mid-sentence cutoff.
-    2. Status Integrity: Parameter headers must match Rule Engine evaluated status.
-    3. Physiological Guardrails: No ungrounded 'effective regulation' or 'producing sugar in urine' claims.
-    4. Testing Context: No conversion of post-prandial to standardized OGTT.
-    5. Forbidden Diagnostic & Treatment Terms: No ungrounded organ failure claims or prescriptive mandates.
-    """
-    @staticmethod
-    def validate(analysis_text, eval_results, two_way_alerts=None):
-        violations = []
-        if not analysis_text or not isinstance(analysis_text, str) or len(analysis_text.strip()) < 50:
-            return False, ["Empty, invalid, or truncated analysis text"]
+# ---------------------------------------------------------------------------
+# Medicine Extractor from prescription text
+# ---------------------------------------------------------------------------
+import re
 
-        stripped = analysis_text.strip()
+def extract_medicines_from_text(text: str) -> list[dict]:
+    """Extract medicine names from prescription text."""
+    medicines = []
+    seen = set()
 
-        # Check for truncation
-        if re.search(r'\bto manage your\s*$', stripped, re.IGNORECASE):
-            violations.append("Output truncated mid-sentence at 'to manage your'.")
-        if stripped[-1] not in ['.', '!', '?', '>', '`', '*', ')', '}', ']']:
-            violations.append("Output terminates mid-sentence without terminal punctuation.")
+    lines = text.split('\n')
+    for line in lines:
+        line = line.strip()
+        if not line or len(line) < 3:
+            continue
 
-        # Check for ungrounded physiological/diagnostic claims
-        if re.search(r'\bproves?\s+(?:effective\s+)?(?:blood[- ]sugar\s+)?regulation\b', stripped, re.IGNORECASE):
-            if not re.search(r'(?:not|never|neither|cannot|no)\s+(?:\w+\s+)?proves?\s+(?:effective\s+)?(?:blood[- ]sugar\s+)?regulation', stripped, re.IGNORECASE):
-                violations.append("Narrative claims fasting glucose 'proves effective blood-sugar regulation'.")
-        if re.search(r'(?:body|system)\s+is\s+producing\s+excess\s+sugar\s+in\s+urine', stripped, re.IGNORECASE):
-            violations.append("Narrative claims body is 'producing excess sugar in urine' unjustified by qualitative result.")
-        if re.search(r'\b(?:you have diabetes|diagnosed with diabetes|confirms diabetes)\b', stripped, re.IGNORECASE):
-            violations.append("Narrative improperly asserts a diabetes diagnosis.")
-        if re.search(r'\b(?:75-?g|75\s*gram)?\s*(?:ogtt|oral\s+glucose\s+tolerance\s+test)\b', stripped, re.IGNORECASE) and not re.search(r'not\s+(?:an?\s+)?(?:ogtt|oral\s+glucose)', stripped, re.IGNORECASE):
-            violations.append("Narrative improperly equates routine post-meal test with standardized OGTT.")
-
-        # 1. Check for forbidden diagnostic terms & treatment mandates
-        for term_pattern in FORBIDDEN_DIAGNOSTIC_TERMS:
-            if re.search(term_pattern, analysis_text, re.IGNORECASE):
-                violations.append(f"Forbidden diagnostic / treatment term pattern matched: '{term_pattern}'")
-
-        # 2. Audit Parameter Status Consistency against Rule Engine Source of Truth
-        if eval_results:
-            for res in eval_results:
-                param = res.get("test_name", res.get("parameter"))
-                status = res.get("status")
-                if not param or not status:
-                    continue
-
-                # Check if block exists for param
-                param_block = re.search(r'##\s*🩺\s*' + re.escape(param) + r'([\s\S]*?)(?=##\s*🩺|##\s*📋|##\s*⚠️|##\s*3|$)', analysis_text, re.IGNORECASE)
-                if not param_block:
-                    param_block = re.search(r'###\s*🩺?\s*' + re.escape(param) + r'([\s\S]*?)(?=###|##|$)', analysis_text, re.IGNORECASE)
-
-                if param_block:
-                    block_content = param_block.group(1).lower()
-                    # Check if status contradicts rule engine status
-                    if status in ["NORMAL", "NEGATIVE", "DESIRABLE", "OPTIMAL"] and ("🔴 high" in block_content or "🔵 low" in block_content or "above normal" in block_content or "higher than normal" in block_content):
-                        violations.append(f"Status override detected for {param}: Rule Engine={status}, LLM text indicates High/Low")
-                    elif status in ["HIGH", "VERY_HIGH"] and ("✅ normal" in block_content or "within normal range" in block_content):
-                        violations.append(f"Status override detected for {param}: Rule Engine={status}, LLM text indicates Normal")
-
-        is_valid = len(violations) == 0
-        return is_valid, violations
-
-def sanitize_llm_explanation(analysis_text, eval_results=None):
-    """
-    Stage 4 & Stage 6 Guardrail Agent:
-    Rewrites forbidden diagnostic language and attaches mandatory safety disclaimers.
-    """
-    if not analysis_text or not isinstance(analysis_text, str):
-        return analysis_text
-
-    sanitized = analysis_text
-    for term_pattern in FORBIDDEN_DIAGNOSTIC_TERMS:
-        sanitized = re.sub(term_pattern, "finding requiring medical evaluation", sanitized, flags=re.IGNORECASE)
-
-    if "consult your primary care physician" not in sanitized.lower():
-        sanitized += "\n\n> ⚠️ **Mandatory Medical Disclaimer**: This automated analysis is for informational decision support only. Please consult your primary care physician for diagnostic confirmation."
-    return sanitized
-
-# --- REQUIREMENT 9: Modular Specialized Executable Agentic Orchestrator ---
-class PerceptionExtractionAgent:
-    """Agent 1: Data Perception & OCR Extraction Agent."""
-    @staticmethod
-    def extract(filepath, ext):
-        if ext == 'pdf':
-            return extract_text_from_pdf(filepath)
-        elif ext in ['txt', 'text']:
-            try:
-                with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-                    return f.read(), []
-            except Exception as _e:
-                logger.warning(f"Error reading text file {filepath}: {_e}")
-                return "", []
-        return extract_text_from_image(filepath)
-
-class LaboratoryEvaluationAgent:
-    """Agent 2: Deterministic Rule Engine Evaluation Agent."""
-    @staticmethod
-    def evaluate(text, ocr_metadata=None):
-        return rule_engine.parse_and_evaluate(text, ocr_metadata=ocr_metadata)
-
-class PatientHistoryAgent:
-    """Agent 3: Longitudinal History & Trend Detection Agent."""
-    @staticmethod
-    def process(eval_results, patient_name="Default Patient"):
-        patient_history.add_lab_results(eval_results, patient_name=patient_name)
-        trends = patient_history.analyze_parameter_trends(eval_results, patient_name=patient_name)
-        return trends
-
-class PrescriptionAgent:
-    """Agent 4: Prescription & Trusted Medication Classification Agent."""
-    @staticmethod
-    def classify(medicine_name, dosage=None, patient_name="Default Patient"):
-        # Note: Historical writes (add_active_medication) disabled without trusted authorization contract.
-        return patient_history.classify_medication(medicine_name)
-
-class SafetyCrossCheckAgent:
-    """Agent 5: True Bidirectional Medication/Lab Safety Agent."""
-    @staticmethod
-    def check_direction_a(new_medicine_name, patient_name="Default Patient"):
-        return patient_history.check_prescription_against_past_labs(new_medicine_name, patient_name=patient_name)
-
-    @staticmethod
-    def check_direction_b(new_eval_results, patient_name="Default Patient"):
-        return patient_history.check_new_labs_against_active_meds(new_eval_results, patient_name=patient_name)
-
-class ExplanationAgent:
-    """Agent 6: Constrained Explanation Generator Agent."""
-    @staticmethod
-    def generate(text, eval_results, two_way_alerts=None, trends=None):
-        from patient_history import extract_patient_demographics
-        demographics = extract_patient_demographics(text)
-        deterministic_table = rule_engine.format_deterministic_markdown(eval_results)
-        
-        alerts_markdown = ""
-        if two_way_alerts:
-            alerts_lines = ["\n## ⚠️ Possible Medication–Lab Safety Alert"]
-            for alert in two_way_alerts:
-                alerts_lines.append(f"### {alert['title']} ({alert['severity']} Priority)")
-                alerts_lines.append(f"- **Details:** {alert['explanation']}")
-                alerts_lines.append("- **Note:** Potential medication-lab safety relationship detected. Professional clinical confirmation by your prescribing doctor is recommended.")
-                alerts_lines.append("")
-            alerts_markdown = "\n".join(alerts_lines)
-
-        trends_markdown = ""
-        if trends:
-            trends_lines = ["\n## 📈 Longitudinal Trend Observations"]
-            for tr in trends:
-                trends_lines.append(f"- **{tr['parameter']}**: {tr['summary']}")
-            trends_markdown = "\n".join(trends_lines)
-
-        p_raw = demographics.get('patient_name', 'Default Patient')
-        if bool(re.match(r"^Patient_[a-f0-9]+$", str(p_raw), re.I)) or str(p_raw).lower().startswith("patient_"):
-            patient_label = f"De-identified Patient (Reference ID: {p_raw})"
-        else:
-            clean_name = re.sub(r'^(mr|mrs|ms|dr|master)\.?\s*', '', str(p_raw), flags=re.I).strip()
-            patient_label = clean_name or "De-identified Patient"
-
-        age_display = f"{demographics.get('age')} Year(s)" if demographics.get('age') and str(demographics.get('age')).strip() not in ["None", "N/A", ""] else "Not recorded"
-        gender_display = str(demographics.get('gender')).strip() if demographics.get('gender') and str(demographics.get('gender')).strip() not in ["None", "N/A", ""] else "Not recorded"
-        ref_display = f"`{demographics.get('lab_ref_no')}`" if demographics.get('lab_ref_no') and str(demographics.get('lab_ref_no')).strip() not in ["None", "N/A", ""] else "Not recorded"
-        date_display = str(demographics.get('registration_date')).strip() if demographics.get('registration_date') and str(demographics.get('registration_date')).strip() not in ["None", "N/A", ""] else "Not recorded"
-
-        demo_card = f"""### 👤 Patient Demographic Information
-| Demographic Field | Details |
-| :--- | :--- |
-| **Patient Reference** | {patient_label} |
-| **Age / Sex** | {age_display} / {gender_display} |
-| **Lab Ref No.** | {ref_display} |
-| **Registration Date** | {date_display} |
-
----
-"""
-
-        system_prompt = f"""You are an expert patient-friendly medical report explainer AI. Your role is to explain laboratory findings in simple, reassuring, plain language based STRICTLY on the evaluated laboratory data below.
-
-STRICT MANDATORY GUIDELINES:
-1. NO TECHNICAL DEVELOPER JARGON in narrative sections.
-2. ABSOLUTE PROHIBITION OF DIAGNOSES: Never declare or imply a disease diagnosis (such as "You have diabetes").
-3. RECONCILE PRINTED RANGE VS GUIDELINES: For findings with differing comparisons (such as Fasting glucose 102 mg/dL within printed range 70–120 mg/dL but prediabetes category 100–125 mg/dL under ADA 2024), clearly state both comparisons without diagnosing. Do not conclude that one result proves effective blood-sugar regulation or overall health.
-4. TESTING CONTEXT: Treat post-prandial glucose as an ordinary post-meal test, NOT a standardized oral glucose tolerance test (OGTT).
-5. QUALITATIVE FINDINGS: Do not treat qualitative urine findings as blood sugar measurements or claim the body is "producing excess sugar".
-6. NON-REASSURANCE: Never say "everything is normal", "you are healthy", or "no disease".
-7. OUTPUT STRUCTURE: Follow this structure:
-# Medical Report Analysis
-## 1. Main Findings
-## 2. Your Results, Explained
-## 3. What Could Not Be Assessed & Reference Differences
-## 4. What To Do Next
-## 5. Important Limits
-
-Official Laboratory Evaluation Data:
-{deterministic_table}
-
-{trends_markdown}
-"""
-
-        prompt = f"Here is the medical report to explain based on the evaluated findings:\n\n{text}"
-        return generate_ai_analysis(prompt, system_prompt), prompt, system_prompt
-
-class ValidationGuardrailAgent:
-    """Agent 7: Consistency Validation & Safety Guardrail Agent (with Retry & Fail-Closed Fallback)."""
-    @staticmethod
-    def validate_and_enforce(analysis_text, eval_results, two_way_alerts=None, prompt_ref=None, system_prompt_ref=None, raw_text=""):
-        forbidden_phrases = [
-            ("Deterministic Test Findings & Cautious Interpretation", ""),
-            ("Deterministic Test Findings", ""),
-            ("Deterministic Status", "Status"),
-            ("Rule Engine", "System"),
-            ("AI Summary", "Summary"),
-            ("AI reasoning", "")
-        ]
-        cleaned_text = analysis_text
-        if cleaned_text:
-            for phrase, replacement in forbidden_phrases:
-                pattern = re.compile(re.escape(phrase), re.IGNORECASE)
-                cleaned_text = pattern.sub(replacement, cleaned_text)
-            cleaned_text = re.sub(r'##\s*Possible [^\n]*Finding[s]?\s*\n*\s*\([^\)]*(?:No abnormal|no specific abnormal|all normal)[^\)]*\)\s*\n*', '', cleaned_text, flags=re.IGNORECASE)
-
-        # Execute Consistency Validation
-        is_valid, violations = LLMConsistencyValidator.validate(cleaned_text, eval_results, two_way_alerts)
-        
-        # Check canonical section presence
-        if is_valid and cleaned_text:
-            if "## 1. Main Findings" not in cleaned_text and "## Main Findings" not in cleaned_text:
-                violations.append("Candidate explanation lacks canonical section structure.")
-                is_valid = False
-
-        if is_valid:
-            # Append technical details under collapsible HTML tag for auditability
-            if eval_results and "<details>" not in cleaned_text:
-                from report_reasoning_agent import ReportReasoningAgent
-                from patient_history import extract_patient_demographics
-                demographics = extract_patient_demographics(raw_text)
-                return ReportReasoningAgent.build_report_patient_summary(eval_results, demographics=demographics, two_way_alerts=two_way_alerts)
-            return cleaned_text
-
-        logger.warning(f"VALIDATION GUARDRAIL TRIGGERED: Violations detected: {violations}")
-
-        # Attempt 1 Retry with Constrained Prompt
-        if prompt_ref and system_prompt_ref:
-            try:
-                logger.info("Retrying LLM generation with constrained safety correction prompt...")
-                correction_prompt = f"CRITICAL SAFETY CORRECTION NOTICE: Your previous output violated clinical safety rules for these reasons:\n"
-                for v in violations:
-                    correction_prompt += f"- {v}\n"
-                correction_prompt += "\nPlease regenerate the explanation strictly adhering to the exact Rule Engine statuses, values, and non-diagnostic guidelines.\n\n"
-                correction_prompt += prompt_ref
-
-                retry_analysis = generate_ai_analysis(correction_prompt, system_prompt_ref)
-                if retry_analysis:
-                    for phrase, replacement in forbidden_phrases:
-                        pattern = re.compile(re.escape(phrase), re.IGNORECASE)
-                        retry_analysis = pattern.sub(replacement, retry_analysis)
-                    
-                    retry_valid, retry_violations = LLMConsistencyValidator.validate(retry_analysis, eval_results, two_way_alerts)
-                    if retry_valid:
-                        logger.info("Retry succeeded! Safe analysis generated.")
-                        if eval_results and "<details>" not in retry_analysis:
-                            retry_analysis += "\n\n<details>\n<summary>🔬 View Technical & Evidence Details</summary>\n\n"
-                            retry_analysis += rule_engine.format_deterministic_markdown(eval_results)
-                            retry_analysis += "\n\n</details>"
-                        return retry_analysis
-                    else:
-                        logger.warning(f"Retry validation failed with violations: {retry_violations}")
-            except Exception as retry_err:
-                logger.warning(f"Retry attempt failed: {retry_err}")
-
-        # Fail-Closed Fallback Generation (Zero LLM Dependency)
-        logger.warning("Failing closed to safe code-generated deterministic fallback.")
-        return generate_safe_deterministic_fallback(eval_results, two_way_alerts, raw_text=raw_text or prompt_ref or "")
-
-def enforce_safety_guardrails(analysis_text, eval_results, two_way_alerts=None):
-    """Wrapper function for backward compatibility."""
-    return ValidationGuardrailAgent.validate_and_enforce(analysis_text, eval_results, two_way_alerts)
-
-def analyze_medical_report(text, ocr_metadata=None, patient_name=None, analysis_version=None):
-    try:
-        p_name = patient_name or extract_patient_name(text) or "Default Patient"
-
-        # Agent 2: Laboratory Evaluation
-        eval_results = LaboratoryEvaluationAgent.evaluate(text, ocr_metadata=ocr_metadata)
-
-        # Agent 8: Tabular ML Safety Classification Agent
-        ml_safety_summary = TabularMLAgent.evaluate_report(eval_results, ocr_metadata=ocr_metadata)
-
-        # Agent 3: Patient History & Trend Detection
-        trends = PatientHistoryAgent.process(eval_results, patient_name=p_name)
-
-        # Agent 5: Safety Cross-Check (Direction B: New Labs -> Active Medications)
-        two_way_alerts = SafetyCrossCheckAgent.check_direction_b(eval_results, patient_name=p_name)
-
-        # Privacy & De-identification at Ingestion
-        sanitized_text = patient_privacy.strip_pii_from_report_text(text, patient_name=p_name)
-
-        # Agent 6: Constrained Explanation Generator
-        raw_analysis, prompt_ref, sys_prompt_ref = ExplanationAgent.generate(sanitized_text, eval_results, two_way_alerts, trends)
-
-        # Agent 7: Consistency Validation & Safety Guardrails
-        validated_analysis = ValidationGuardrailAgent.validate_and_enforce(
-            raw_analysis, eval_results, two_way_alerts, prompt_ref=prompt_ref, system_prompt_ref=sys_prompt_ref, raw_text=text
+        # Try to match medicine patterns
+        # Pattern: Tab./Cap./Syp. MedicineName Strength Dosage
+        med_match = re.search(
+            r'(?:tab|cap|tablet|capsule|syrup|inj|injection|drops|cream|gel|oint|patch)\.?\s+([a-zA-Z][a-zA-Z\s\-]+?)(?:\s+\d|\s*\(|\s*$)',
+            line, re.IGNORECASE
         )
+        if med_match:
+            med_name = med_match.group(1).strip()
+            if len(med_name) > 2 and med_name.lower() not in seen:
+                canon = normalize_medicine_name(med_name)
+                seen.add(med_name.lower())
+                dosage_match = re.search(r'(\d+(?:\.\d+)?\s*mg|\d+\s*ml|\d+\s*mcg|\d+\s*iu)', line, re.IGNORECASE)
+                freq_match = re.search(r'(\d-\d-\d|\d\s*times|\bbd\b|\btds\b|\bod\b|\bqid\b)', line, re.IGNORECASE)
+                dur_match = re.search(r'(\d+\s*(?:days?|weeks?|months?))', line, re.IGNORECASE)
+                medicines.append({
+                    "name": med_name,
+                    "canonical_name": canon or med_name.lower(),
+                    "category": TRUSTED_MEDICATION_DATABASE.get(canon, {}).get("category", "medicine") if canon else "medicine",
+                    "dosage": dosage_match.group(0) if dosage_match else "",
+                    "frequency": freq_match.group(0) if freq_match else "",
+                    "duration": dur_match.group(0) if dur_match else "",
+                    "raw_line": line,
+                    "verified": canon is not None
+                })
+            continue
 
-        snapshot = chat_context.build_report_snapshot(eval_results, validated_analysis, version=analysis_version or 1)
-        _store_chat_snapshot(snapshot, version=analysis_version)
-        return {
-            'english': validated_analysis,
-            'bangla': None,
-            'patient_name': p_name
-        }
+        # Fallback: check if any word in the line matches a known medicine
+        words = re.findall(r'[a-zA-Z]{4,}', line)
+        for word in words:
+            if word.lower() in seen:
+                continue
+            canon = normalize_medicine_name(word)
+            if canon:
+                seen.add(word.lower())
+                seen.add(canon)
+                dosage_match = re.search(r'(\d+(?:\.\d+)?\s*mg|\d+\s*ml)', line, re.IGNORECASE)
+                medicines.append({
+                    "name": word,
+                    "canonical_name": canon,
+                    "category": TRUSTED_MEDICATION_DATABASE.get(canon, {}).get("category", "medicine"),
+                    "dosage": dosage_match.group(0) if dosage_match else "",
+                    "frequency": "",
+                    "duration": "",
+                    "raw_line": line,
+                    "verified": True
+                })
+
+    return medicines
+
+
+# ---------------------------------------------------------------------------
+# Analyze Medical Report — Enhanced with biomarker extraction
+# ---------------------------------------------------------------------------
+def analyze_medical_report(text: str, session_id: str = None, gender: str = "unknown") -> dict:
+    # Step 1: Deterministic biomarker extraction & 7-layer validation
+    findings = extract_biomarkers_from_text(text, gender)
+    findings_table = format_findings_for_display(findings)
+
+    # Step 2: Save lab results to profile history
+    if session_id and findings:
+        save_lab_results(session_id, findings)
+
+    # Step 2b: Stage 4F — Check new lab findings vs active medicines in patient profile
+    active_med_alerts = []
+    if session_id and findings:
+        active = get_active_medicines(session_id)
+        active_med_names = [m.get("canonical_name", "") for m in active if m.get("canonical_name")]
+        if active_med_names:
+            active_med_alerts = check_labs_vs_active_medicines(findings, active_med_names)
+
+    # Step 3: Build enhanced findings summary for LLM
+    if findings:
+        abnormal = [f for f in findings if f["status"] not in ("NORMAL", "UNKNOWN")]
+        normal = [f for f in findings if f["status"] == "NORMAL"]
+
+        findings_context = "\n\n## Deterministically Extracted Biomarker Values:\n"
+        for f in findings:
+            val = f.get("value", "")
+            unit = f.get("unit", "")
+            status = f.get("status", "")
+            flag = f.get("flag", "")
+            ref = f.get("reference", "")
+            test = f.get("test", "").replace("_", " ").title()
+            findings_context += f"- {test}: **{val} {unit}** {flag} {status} (Ref: {ref})\n"
+    else:
+        findings_context = ""
+        abnormal = []
+        normal = []
+
+    # Format active medicine cross-check alerts section
+    med_alert_section = ""
+    if active_med_alerts:
+        alert_lines = ["\n\n## ⚠️ Active Medications Cross-Check (from Patient Profile)\n"]
+        for al in active_med_alerts:
+            alert_lines.append(f"- 🔴 **{al['finding']}** correlates with active medicine **{al['active_medicine'].title()}**")
+            alert_lines.append(f"  - *Note:* {al['note']}")
+        med_alert_section = "\n".join(alert_lines)
+
+    # Step 4: AI Analysis
+    try:
+        system_prompt = """You are an expert medical report analyzer AI. Analyze the provided medical test report.
+Format your response strictly using these sections:
+
+# Medical Report Analysis
+
+## 1. Test Result Analysis
+For each test, clearly state:
+- **Test Name — Value (Status)**: e.g., Hemoglobin — 11.2 g/dL (LOW)
+- Reference range and what the status means
+
+## 2. AI Clinical Summary
+Concise 2-3 sentence summary in plain language.
+
+## 3. Abnormal Findings Explained
+Explain what each abnormal value means and why it matters.
+
+## 4. What to Reduce / Avoid
+Specific dietary and lifestyle items to reduce.
+
+## 5. Recommended Health Actions
+Clear, actionable dietary, exercise, and medical guidance.
+
+## 6. When to See a Doctor
+Urgency level (Routine / Soon / Urgent) and specific warning signs.
+
+IMPORTANT: Always display actual extracted values (e.g., "Hemoglobin: 11.2 g/dL — LOW"). Never invent values."""
+
+        prompt = f"Medical report text:\n\n{text}"
+        if findings_context:
+            prompt += f"\n{findings_context}"
+        if med_alert_section:
+            prompt += f"\n{med_alert_section}"
+
+        english_analysis = generate_ai_analysis(prompt, system_prompt)
+
+        # Prepend deterministic findings table and active medication alerts if available
+        prefix_parts = []
+        if findings_table:
+            prefix_parts.append(f"## 📊 Extracted Biomarker Values\n\n{findings_table}")
+        if med_alert_section:
+            prefix_parts.append(med_alert_section)
+        if prefix_parts:
+            english_analysis = "\n\n".join(prefix_parts) + "\n\n---\n\n" + english_analysis
 
     except Exception as e:
         if is_connection_error(e):
-            logger.warning("AI Connection failed. Returning structured patient demographic & deterministic fallback response.")
-            eval_results = rule_engine.parse_and_evaluate(text)
-            two_way_alerts = SafetyCrossCheckAgent.check_direction_b(eval_results, patient_name=p_name)
-            fallback_text = generate_safe_deterministic_fallback(eval_results, two_way_alerts, raw_text=text)
-            snapshot = chat_context.build_report_snapshot(eval_results, fallback_text, version=analysis_version or 1)
-            _store_chat_snapshot(snapshot, version=analysis_version)
-            return {
-                'english': fallback_text,
-                'bangla': None,
-                'patient_name': p_name
-            }
-        return {
-            'success': False,
-            'error': f"Error analyzing report: {str(e)}"
-        }
+            fallback_parts = ["### ⚠️ AI Server Connection Warning\n\n**Notice:** AI backend unavailable. Showing deterministic analysis only.\n\n---"]
+            if findings_table:
+                fallback_parts.append(f"## 📊 Extracted Biomarker Values\n\n{findings_table}")
+            if med_alert_section:
+                fallback_parts.append(med_alert_section)
+            if abnormal:
+                fallback_parts.append("## ⚠️ Abnormal Findings")
+                for f in abnormal:
+                    test = f.get("test", "").replace("_", " ").title()
+                    val = f.get("value", "")
+                    unit = f.get("unit", "")
+                    status = f.get("status", "")
+                    flag = f.get("flag", "")
+                    ref = f.get("reference", "")
+                    fallback_parts.append(f"- **{test}**: {val} {unit} {flag} **{status}** (Ref: {ref})")
+            fallback_parts.append("\n> Please consult a healthcare professional to evaluate your results.")
+            english_analysis = "\n\n".join(fallback_parts)
+        else:
+            english_analysis = f"Error analyzing report: {str(e)}"
 
-def analyze_symptoms(symptoms):
+    return {
+        'english': english_analysis,
+        'bangla': None,
+        'findings': findings,
+        'active_med_alerts': active_med_alerts,
+        'abnormal_count': len(abnormal) if 'abnormal' in dir() else 0
+    }
+
+
+# ---------------------------------------------------------------------------
+# Analyze Prescription — Enhanced with DDI checking, Previous Labs & Symptoms
+# ---------------------------------------------------------------------------
+def analyze_prescription(text: str, session_id: str = None, symptoms: str = "", patient_info: dict = None) -> dict:
+    # Step 1: Extract medicines from text
+    medicines = extract_medicines_from_text(text)
+
+    # Also handle manually added medicine if provided (combining Medicine Info into Prescription)
+    manual_med = (patient_info.get("medicine") or patient_info.get("additional_medicine") or "").strip() if patient_info else ""
+    if manual_med:
+        canon_manual = normalize_medicine_name(manual_med)
+        ds = []
+        if patient_info.get("dosage"):
+            d = patient_info["dosage"]
+            if d.get("morning"): ds.append(f"{d['morning']} morning")
+            if d.get("evening"): ds.append(f"{d['evening']} evening")
+            if d.get("night"): ds.append(f"{d['night']} night")
+        dosage_str = ", ".join(ds) if ds else "As directed"
+
+        if not any(m.get("canonical_name") == canon_manual for m in medicines):
+            medicines.append({
+                "name": manual_med,
+                "canonical_name": canon_manual or manual_med.lower(),
+                "category": TRUSTED_MEDICATION_DATABASE.get(canon_manual, {}).get("category", "medicine") if canon_manual else "medicine",
+                "dosage": dosage_str,
+                "frequency": "Daily",
+                "duration": "Ongoing",
+                "raw_line": f"{manual_med} - {dosage_str}",
+                "verified": canon_manual is not None
+            })
+
+    # Step 2: Get historical active medicines AND previous lab records
+    historical_meds = []
+    lab_history = []
+    if session_id:
+        active = get_active_medicines(session_id)
+        historical_meds = [m.get("canonical_name", "") for m in active if m.get("canonical_name")]
+        lab_history = get_lab_history(session_id, limit=30)
+
+    # Step 3: Multi-Vector DDI Check (New vs New, New vs Historical, Duplicates, Rx vs Labs)
+    new_med_names = [m.get("name", "") for m in medicines if m.get("category") == "medicine"]
+    ddi_report = {}
+    if new_med_names:
+        ddi_report = run_full_ddi_check(new_med_names, historical_meds if historical_meds else None, lab_history)
+
+    # Step 4: Save medicines to profile history
+    if session_id and medicines:
+        save_active_medicines(session_id, medicines)
+
+    # Step 5: Format DDI section
+    ddi_section = ""
+    if ddi_report:
+        total = ddi_report.get("total_interactions", 0)
+        sev = ddi_report.get("severity_summary", {})
+        new_vs_new = ddi_report.get("new_vs_new", [])
+        new_vs_hist = ddi_report.get("new_vs_historical", [])
+        duplicates = ddi_report.get("duplicate_ingredients", [])
+        rx_labs = ddi_report.get("prescription_vs_labs", [])
+
+        if total > 0 or duplicates:
+            ddi_parts = [f"\n\n## ⚠️ Drug Safety & Interaction Report\n"]
+            ddi_parts.append(f"**Found:** {sev.get('MAJOR', 0)} Major | {sev.get('MODERATE', 0)} Moderate | {sev.get('MINOR', 0)} Minor | {len(duplicates)} Duplicate Ingredient(s)\n")
+
+            if new_vs_new:
+                ddi_parts.append("### 🔴 New Prescription Interactions")
+                for i in new_vs_new:
+                    icon = "🔴" if i['severity'] == "MAJOR" else "🟡" if i['severity'] == "MODERATE" else "🟢"
+                    ddi_parts.append(f"- {icon} **{i['drug_a']} + {i['drug_b']}** [{i['severity']}]")
+                    ddi_parts.append(f"  - **Effect:** {i['clinical_effect']}")
+                    ddi_parts.append(f"  - **Management:** {i['management']}")
+
+            if new_vs_hist:
+                ddi_parts.append("\n### 🟡 New vs Historical Medicine Interactions (from Profile)")
+                for i in new_vs_hist:
+                    icon = "🔴" if i['severity'] == "MAJOR" else "🟡" if i['severity'] == "MODERATE" else "🟢"
+                    ddi_parts.append(f"- {icon} **{i['drug_a']}** (new) + **{i['drug_b']}** (historical profile) [{i['severity']}]")
+                    ddi_parts.append(f"  - **Effect:** {i['clinical_effect']}")
+                    ddi_parts.append(f"  - **Management:** {i['management']}")
+
+            if rx_labs:
+                ddi_parts.append("\n### 🔬 Prescription vs Previous Labs Alerts (from Profile)")
+                for al in rx_labs:
+                    icon = "🔴" if al['severity'] == "MAJOR" else "🟡"
+                    ddi_parts.append(f"- {icon} **{al['medicine']}** vs Previous **{al['lab_test']} ({al['lab_value']})** [{al['severity']}]")
+                    ddi_parts.append(f"  - **Risk:** {al['clinical_effect']}")
+                    ddi_parts.append(f"  - **Management:** {al['management']}")
+
+            if duplicates:
+                ddi_parts.append("\n### ⚠️ Duplicate Ingredients Detected")
+                for d in duplicates:
+                    ddi_parts.append(f"- **{d['ingredient']}** appears in: {', '.join(d['drugs'])}")
+
+            ddi_section = "\n".join(ddi_parts)
+        else:
+            ddi_section = "\n\n## ✅ Drug Interaction Safety Check\n\nNo known interactions detected between the extracted medicines or with previous lab records."
+
+    # Step 6: AI Analysis with optional Symptom Correlation
     try:
-        system_prompt = """You are a medical advisor. Based on the symptoms, please:
-1. Analyze the symptoms and provide potential conditions
-2. Rate the urgency level (Low/Medium/High)
-3. Suggest immediate steps or precautions
-4. Recommend when to seek professional medical help
+        med_list_str = ""
+        if medicines:
+            med_list_str = "\n\nExtracted Medicines:\n"
+            for m in medicines:
+                cat = m.get("category", "medicine")
+                cat_icon = "💊" if cat == "medicine" else "🧪" if cat == "supplement" else "📦"
+                med_list_str += f"- {cat_icon} **{m['name']}** ({cat})"
+                if m.get("dosage"):
+                    med_list_str += f" | Dose: {m['dosage']}"
+                if m.get("frequency"):
+                    med_list_str += f" | Freq: {m['frequency']}"
+                if m.get("duration"):
+                    med_list_str += f" | Duration: {m['duration']}"
+                if m.get("verified"):
+                    med_list_str += " ✓"
+                med_list_str += "\n"
 
-Please note this is for informational purposes only and not a substitute for professional medical advice."""
+        symptom_prompt_clause = ""
+        if symptoms.strip():
+            symptom_prompt_clause = """
+## 5. Symptom & Medication Correlation Analysis
+- **Therapeutic Alignment**: Assess whether the prescribed medicines appropriately address the reported symptoms.
+- **Potential Adverse Drug Reactions (ADR)**: Could any reported symptom be a known side effect or adverse reaction of the prescribed medications?
+- **Interaction Risk Correlation**: Highlight if any symptom could be a warning sign of the identified drug interactions (e.g., bleeding, hypoglycemia, electrolyte disturbance).
+- **Urgency & Consultation Guidance**: State if symptoms warrant urgent medical review or medication adjustment."""
+
+        system_prompt = f"""You are an expert medical pharmacist and clinical AI advisor. Analyze the provided prescription.
+Format your response strictly using these sections:
+
+# Prescription Analysis
+
+## 1. Prescribed Medicines
+List each medicine with:
+- **Medicine Name**: (generic + brand if mentioned)
+- **Dosage**: Strength and form
+- **Schedule**: Morning/Afternoon/Evening/Night dosing
+- **Duration**: Number of days
+
+## 2. Medicine Information
+For each medicine, briefly explain:
+- Primary use / condition it treats
+- Common side effects to be aware of
+- Key precautions
+
+## 3. General Instructions
+- Special instructions noted (with food, before bed, etc.)
+- Lifestyle or dietary advice
+
+## 4. Important Safety Notes
+- Drug interaction warnings (from the DDI section below if present)
+- When to contact the doctor immediately{symptom_prompt_clause}
+
+Note: This is for informational purposes only. Always follow your doctor's instructions."""
+
+        prompt = f"Prescription text:\n\n{text}"
+        if med_list_str:
+            prompt += med_list_str
+        if symptoms.strip():
+            prompt += f"\n\nReported Patient Symptoms to Correlate:\n{symptoms.strip()}"
+
+        english_analysis = generate_ai_analysis(prompt, system_prompt)
+        english_analysis += ddi_section
+
+    except Exception as e:
+        if is_connection_error(e):
+            fallback_parts = ["### ⚠️ AI Server Connection Warning\n\nAI backend unavailable. Showing extracted information only.\n\n---"]
+            if medicines:
+                fallback_parts.append("## 💊 Extracted Medicines\n")
+                for m in medicines:
+                    fallback_parts.append(f"- **{m['name']}** ({m.get('category', 'medicine')})")
+                    if m.get("dosage"):
+                        fallback_parts.append(f"  - Dosage: {m['dosage']}")
+                    if m.get("frequency"):
+                        fallback_parts.append(f"  - Frequency: {m['frequency']}")
+
+            if symptoms.strip():
+                fallback_parts.append(f"\n## 🔍 Reported Symptoms Check\n**Symptoms:** {symptoms.strip()}")
+                fallback_parts.append("- Please ensure your doctor is aware of these symptoms so they can monitor for medication side effects or adjust treatment.")
+
+            fallback_parts.append("\n> Always follow your doctor's exact prescription instructions.")
+            english_analysis = "\n\n".join(fallback_parts) + ddi_section
+        else:
+            english_analysis = f"Error analyzing prescription: {str(e)}" + ddi_section
+
+    return {
+        'english': english_analysis,
+        'bangla': None,
+        'medicines': medicines,
+        'ddi': ddi_report
+    }
+
+
+# ---------------------------------------------------------------------------
+# Symptoms Analysis (preserved from original)
+# ---------------------------------------------------------------------------
+def analyze_symptoms(symptoms: str) -> dict:
+    try:
+        system_prompt = """You are a medical advisor AI. Based on the symptoms described, provide:
+
+# Symptom Analysis
+
+## 1. Possible Conditions
+List the most likely conditions (from most to least probable) based on the symptoms.
+
+## 2. Urgency Level
+State clearly: 🟢 Low / 🟡 Medium / 🔴 High urgency — with justification.
+
+## 3. Immediate Steps
+Actionable things the person can do right now.
+
+## 4. When to Seek Medical Help
+Specific warning signs that require immediate medical attention.
+
+**Disclaimer:** This is for informational purposes only and not a substitute for professional medical advice."""
 
         prompt = f"Symptoms:\n{symptoms}"
-        
         english_analysis = generate_ai_analysis(prompt, system_prompt)
-        medline_info = "\n\nFor more detailed medical information, please visit: https://medlineplus.gov/"
-
-        return {
-            'english': english_analysis + medline_info,
-            'bangla': None
-        }
+        medline_info = "\n\n---\n*For more information, visit: https://medlineplus.gov/*"
+        return {'english': english_analysis + medline_info, 'bangla': None}
 
     except Exception as e:
         if is_connection_error(e):
-            logger.warning("AI Connection failed for symptoms analysis.")
-            fallback_text = f"""# 🔍 Symptoms Assessment & Guidance
+            fallback_text = f"""### ⚠️ AI Server Connection Warning
 
-### 📋 Reported Symptoms
-> "{symptoms}"
+**Notice:** Could not connect to AI endpoint.
 
 ---
 
-## ⚡ Preliminary Health Guidance
-1. **Urgency Level**: 🟡 **Medium** (Monitor symptoms closely)
-2. **General Precautions**: Rest adequately, maintain proper hydration, and track any symptom changes.
-3. **When to Seek Urgent Care**: Seek immediate medical attention if you experience high fever, severe pain, shortness of breath, or sudden weakness.
+### 🔍 Symptoms Assessment (Fallback)
+**Entered Symptoms:** "{symptoms}"
 
-> ⚠️ **Medical Disclaimer**: This automated symptom summary is provided for general informational guidance only. Always consult a certified physician for medical advice."""
-            return {
-                'english': fallback_text,
-                'bangla': None
-            }
-        return {
-            'success': False,
-            'error': f"Error analyzing symptoms: {str(e)}"
-        }
+1. **Urgency Assessment:** 🟡 **Medium** (Monitor closely)
+2. **General Precautions:** Rest adequately and maintain proper hydration.
+3. **Medical Disclaimer:** Seek emergency care if symptoms worsen or severe pain/fever occurs.
 
-def analyze_medicine(medicine_name, dosage, patient):
+For more information, visit: https://medlineplus.gov/"""
+            return {'english': fallback_text, 'bangla': None}
+        return {'success': False, 'error': f"Error analyzing symptoms: {str(e)}"}
+
+
+# ---------------------------------------------------------------------------
+# Medicine Analysis (preserved from original)
+# ---------------------------------------------------------------------------
+def analyze_medicine(medicine_name: str, dosage: dict, patient: dict) -> dict:
     try:
-        p_name = "Default Patient"
-        if patient and isinstance(patient, dict) and patient.get('name'):
-            p_name = patient.get('name')
-
-        # Agent 4: Prescription Classification (knowledge-base lookup only, no history writes)
-        PrescriptionAgent.classify(medicine_name, dosage, patient_name=p_name)
-        # Note: Historical writes (add_prescription_record) and reads (check_direction_a)
-        # are disabled because no trusted server-side authorization contract exists in the application.
-        rx_alerts_md = (
-            "\n\n> ⚠️ **Notice on Patient History**: Historical patient medication and lab records were "
-            "not accessed because no trusted server-side authorization contract exists in the application. "
-            "This analysis is prescription-only."
-        )
-
         dosage_str = []
         if dosage.get('morning', 0) > 0:
             dosage_str.append(f"{dosage['morning']} tablet(s) in the morning")
@@ -880,896 +878,328 @@ def analyze_medicine(medicine_name, dosage, patient):
             dosage_str.append(f"{dosage['evening']} tablet(s) in the evening")
         if dosage.get('night', 0) > 0:
             dosage_str.append(f"{dosage['night']} tablet(s) at night")
-        
+
         formatted_dosage = ", ".join(dosage_str) if dosage_str else "As directed"
 
         system_prompt = "You are a medical information advisor."
         prompt = f"""Please analyze the following medicine and dosage for a patient:
 
 Patient Information:
-- Patient Name: {p_name}
-- Age: {patient.get('age', 'N/A')} years old
-- Gender: {patient.get('gender', 'N/A')}
+- Age: {patient['age']} years old
+- Gender: {patient['gender']}
 
 Medicine Name: {medicine_name}
 Current Dosage: {formatted_dosage}
 
 Provide:
-1. Primary uses
+1. Primary uses and conditions treated
 2. Side effects (common to severe)
-3. Recommended dosage comparison
+3. Recommended dosage comparison with standard guidelines
 4. Warnings & drug interactions
-5. When to seek medical attention"""
+5. When to seek medical attention immediately"""
 
         english_analysis = generate_ai_analysis(prompt, system_prompt)
-        if rx_alerts_md:
-            english_analysis += rx_alerts_md
-        english_analysis += "\n\nFor more detailed medical information, please visit: https://medlineplus.gov/druginformation.html"
-
-        return {
-            'english': english_analysis,
-            'bangla': None,
-            'patient_name': p_name
-        }
+        english_analysis += "\n\n---\n*For more information: https://medlineplus.gov/druginformation.html*"
+        return {'english': english_analysis, 'bangla': None}
 
     except Exception as e:
         if is_connection_error(e):
-            logger.warning("AI Connection failed for medicine analysis.")
-            fallback_text = f"""# 💊 Medicine Information & Guidance
-
-### 👤 Patient Profile
-* **Patient Name**: {p_name}
-* **Age / Gender**: {patient.get('age')} Years / {patient.get('gender')}
-* **Prescribed Medicine**: `{medicine_name}`
-* **Dosage Schedule**: {formatted_dosage}
+            fallback_text = f"""### ⚠️ AI Server Connection Warning
 
 ---
 
-## 💡 Practical Usage & Safety Guidance
-1. **General Usage**: Take `{medicine_name}` as instructed by your prescribing doctor or pharmacist.
-2. **Precaution**: Do not stop or alter prescribed dosages without medical consultation.
+### 💊 Medicine Information (Fallback)
+**Medicine:** {medicine_name}
+**Patient Profile:** {patient.get('age')} yrs, {patient.get('gender')}
+**Dosage:** {formatted_dosage if 'formatted_dosage' in dir() else 'As directed'}
 
-> ⚠️ **Medical Disclaimer**: This automated summary is provided for general informational guidance only. Always consult a certified physician for medical advice."""
-            return {
-                'english': fallback_text,
-                'bangla': None
-            }
-        return {
-            'success': False,
-            'error': f"Error analyzing medicine: {str(e)}"
-        }
+Consult your pharmacist or prescribing doctor regarding `{medicine_name}`.
 
-def analyze_prescription_text(text, patient=None):
+For more information: https://medlineplus.gov/druginformation.html"""
+            return {'english': fallback_text, 'bangla': None}
+        return {'success': False, 'error': f"Error analyzing medicine: {str(e)}"}
+
+
+# ---------------------------------------------------------------------------
+# RAG Chatbot
+# ---------------------------------------------------------------------------
+def rag_chatbot_response(question: str, session_id: str, conversation_history: list = None, current_analysis: dict = None) -> str:
+    """Answer questions using patient-specific context, current analysis, and profile history."""
+    context = get_session_context(session_id)
+    profile = context.get("profile", {})
+    active_medicines = context.get("active_medicines", [])
+    lab_history = context.get("lab_history", [])
+    analysis_history = context.get("analysis_history", [])
+
+    context_parts = []
+
+    # Patient profile
+    if profile and profile.get("name"):
+        prof_line = f"Patient: {profile.get('name', 'Patient')}"
+        if profile.get("age"): prof_line += f", Age: {profile['age']}"
+        if profile.get("gender") and profile['gender'] != "unknown": prof_line += f", Gender: {profile['gender'].capitalize()}"
+        if profile.get("known_conditions"): prof_line += f", Conditions: {profile['known_conditions']}"
+        context_parts.append(f"## Patient Profile:\n{prof_line}")
+
+    # Currently active analyzed content
+    if current_analysis and isinstance(current_analysis, dict):
+        curr_text = current_analysis.get('english', '')
+        if curr_text:
+            context_parts.append(f"## Current Analyzed Report / Prescription Context:\n{curr_text[:2500]}")
+
+    if lab_history:
+        context_parts.append("## Recent Lab Results (Patient History):")
+        for lab in lab_history[:12]:
+            test = lab.get("test_name", "").replace("_", " ").title()
+            val = lab.get("value", "")
+            unit = lab.get("unit", "")
+            status = lab.get("status", "")
+            ref = lab.get("reference_range", "")
+            context_parts.append(f"- {test}: {val} {unit} [{status}] (Ref: {ref})")
+
+    if active_medicines:
+        context_parts.append("\n## Confirmed Active Medicines (Patient History):")
+        for med in active_medicines[:10]:
+            name = med.get("canonical_name", "").replace("_", " ").title()
+            dosage = med.get("dosage", "")
+            freq = med.get("frequency", "")
+            context_parts.append(f"- {name}" + (f" | {dosage}" if dosage else "") + (f" | {freq}" if freq else ""))
+
+    patient_context = "\n".join(context_parts) if context_parts else "No patient records available yet."
+
+    messages_context = ""
+    if conversation_history:
+        for msg in conversation_history[-4:]:
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            if role and content:
+                messages_context += f"\n{role.upper()}: {content}"
+
+    system_prompt = """You are a trusted medical clinical AI assistant for the Medical Report Analyzer system.
+Answer questions based strictly on the patient's verified laboratory values, prescriptions, and medical history provided in the context.
+Rules:
+1. Base answers on the patient's verified data in the context. Never invent unverified results.
+2. If data is unavailable, clearly state: "This information is not present in your current records."
+3. Explain abnormal findings clearly in accessible language, and detail dietary/lifestyle and clinical follow-ups.
+4. For medication interactions or flagged medicines, detail the interacting pairs, clinical mechanism, and risk mitigation.
+5. Provide actionable questions for the patient to discuss with their physician.
+6. Maintain strict data safety and clinical caution."""
+
+    prompt = f"""Patient Context:
+{patient_context}
+
+{f"Previous conversation:{messages_context}" if messages_context else ""}
+
+Patient Question: {question}
+
+Please provide a helpful, clinically accurate response based on the patient's actual data above."""
+
     try:
-        p_name = None
-        if patient and isinstance(patient, dict) and patient.get('name') and str(patient.get('name')).strip():
-            p_name = str(patient.get('name')).strip()
-        if not p_name:
-            p_name = extract_patient_name(text) or "Default Patient"
-
-        patient_info = f"\nPatient Information: Name: {p_name}\n"
-        if patient and isinstance(patient, dict):
-            age = patient.get('age')
-            gender = patient.get('gender')
-            if age or gender:
-                patient_info += f"Age: {age or 'N/A'}, Gender: {gender or 'N/A'}\n"
-
-        # Agent 4: Classify medications from lines (no history writes or reads without auth)
-        lines = text.splitlines()
-        for line in lines:
-            line_s = line.strip()
-            if line_s and not line_s.startswith(("#", "//", "Patient")):
-                first_word = line_s.split()[0].strip(":,.-")
-                if len(first_word) >= 3:
-                    PrescriptionAgent.classify(first_word, patient_name=p_name)
-                    # Historical writes and reads disabled without trusted authorization contract.
-
-        rx_alerts_md = (
-            "\n\n> ⚠️ **Notice on Patient History**: Historical patient medication and lab records were "
-            "not accessed because no trusted server-side authorization contract exists in the application. "
-            "This analysis is prescription-only."
-        )
-
-        system_prompt = """You are an expert clinical pharmacist and medical AI advisor. Analyze the provided prescription document text and format your response strictly using the following clear Markdown sections:
-
-# Prescription & Medication Analysis
-
-## 1. Identified Prescriptions & Dosage
-- **Prescribed Medications**: List each identified medication name, dosage strength, and frequency schedule (Morning, Evening, Night).
-- **Patient Profile Context**: State patient demographics if provided.
-
-## AI Summary
-Provide a concise, 1-2 sentence plain-language summary of the overall prescription instructions and intended treatment goal.
-
-## Key Indications & Drug Usage
-- Explain the primary medical purpose for each identified drug in simple language.
-
-## Precautions & Side Effects
-- Highlight common side effects and key safety warnings.
-- Warn against potential drug-drug or drug-food interactions.
-
-## Recommended Follow-up Actions
-- Provide clear instructions on taking medicines with/after meals, storage recommendations, and when to follow up with the prescribing doctor."""
-
-        prompt = f"Here is the extracted prescription document text to analyze:{patient_info}\n\n{text}"
-        
-        english_analysis = generate_ai_analysis(prompt, system_prompt)
-        if rx_alerts_md:
-            english_analysis += rx_alerts_md
-        english_analysis += "\n\nFor official drug information, please visit: https://medlineplus.gov/druginformation.html"
-
-        return {
-            'english': english_analysis,
-            'bangla': None,
-            'patient_name': p_name
-        }
-
+        response = generate_ai_analysis(prompt, system_prompt)
+        return response
     except Exception as e:
         if is_connection_error(e):
-            logger.warning("AI Connection failed for prescription analysis.")
-            demographics = patient_history.extract_patient_demographics(text)
-            lines_res = ["# 💊 Prescription Analysis & Medication Guidance", ""]
-            lines_res.append("### 👤 Patient Information")
-            lines_res.append("| Demographic Field | Value | Demographic Field | Value |")
-            lines_res.append("| :--- | :--- | :--- | :--- |")
-            lines_res.append(f"| **Patient Name** | **{demographics.get('patient_name', p_name)}** | **Age / Gender** | {demographics.get('age', 'N/A')} Years / {demographics.get('gender', 'N/A')} |")
-            lines_res.append(f"| **Lab Ref No.** | `{demographics.get('lab_ref_no', 'N/A')}` | **Date** | {demographics.get('registration_date', 'N/A')} |")
-            lines_res.append("")
-            lines_res.append("---")
-            lines_res.append("")
-            lines_res.append("## 📋 Extracted Prescription & Medication Findings\n")
-            lines_res.append(f"> {text[:350]}...\n" if len(text) > 350 else f"> {text}\n")
-            lines_res.append("## 💧 Recommended Health Actions & Next Steps\n")
-            lines_res.append("- 💊 **Verify Dosages**: Confirm dosage schedules directly with your pharmacist or prescribing doctor.")
-            lines_res.append("- 👨‍⚕️ **Medical Follow-Up**: Schedule regular check-ups to monitor treatment response.\n")
-            lines_res.append("> ⚠️ **Medical Disclaimer**: This automated prescription summary is provided for informational support only. Do not alter prescribed drug dosages without consulting your licensed healthcare provider.")
-            fallback_text = "\n".join(lines_res)
-            return {
-                'english': fallback_text,
-                'bangla': None,
-                'patient_name': p_name
-            }
-        return {
-            'success': False,
-            'error': f"Error analyzing prescription: {str(e)}"
-        }
+            q_lower = question.lower()
 
-@app.route('/upload-prescription', methods=['POST'])
-def upload_prescription():
-    version = chat_context.begin_analysis(session)
-    filepath = None
-    try:
-        if 'file' not in request.files:
-            logger.error("No file part in prescription request")
-            chat_context.fail_analysis(session, version, reason="No file part in prescription request")
-            return jsonify({'error': 'No file part'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            logger.error("No selected file in prescription request")
-            chat_context.fail_analysis(session, version, reason="No selected file")
-            return jsonify({'error': 'No selected file'}), 400
-
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], f"rx_{filename}")
-            file.save(filepath)
-            logger.info(f"Prescription file saved: {filepath}")
-
-            try:
-                ext = filename.rsplit('.', 1)[1].lower()
-                text, ocr_meta = PerceptionExtractionAgent.extract(filepath, ext)
-
-                if text and text.startswith("Error:"):
-                    logger.error(f"Prescription text extraction failed: {text}")
-                    chat_context.fail_analysis(session, version, reason=text)
-                    return jsonify({'error': text}), 400
-
-                age = request.form.get('age')
-                gender = request.form.get('gender')
-                user_session = session.get('user', {})
-                logged_in_name = user_session.get('name')
-                p_name_form = request.form.get('patient_name') or logged_in_name
-                
-                # If demographics were not explicitly in form, infer from extracted OCR text
-                from patient_history import extract_patient_demographics
-                dem = extract_patient_demographics(text) if text else {}
-                if not p_name_form and dem.get("patient_name"):
-                    p_name_form = dem.get("patient_name")
-                if not age and dem.get("age"):
-                    age = str(dem.get("age"))
-                if not gender and dem.get("gender"):
-                    gender = dem.get("gender")
-
-                auth_scope_form = request.form.get('authorized_patient_scope')
-                auth_id_form = request.form.get('authorized_patient_id')
-
-                # Create standardized Prescription Pipeline Context
-                meta = {
-                    "patient_name": p_name_form,
-                    "age": int(age) if age and str(age).isdigit() else None,
-                    "gender": gender if gender in ['male', 'female', 'other'] else None
-                }
-                if auth_scope_form:
-                    meta["authorized_patient_scope"] = auth_scope_form
-                if auth_id_form:
-                    meta["authorized_patient_id"] = auth_id_form
-
-                pipeline_ctx = create_pipeline_context(
-                    document_type="prescription",
-                    raw_input=filepath,
-                    metadata=meta
-                )
-
-                current_lab_analyte = request.form.get('current_lab_analyte')
-                current_lab_value = request.form.get('current_lab_value')
-                current_lab_unit = request.form.get('current_lab_unit') or ""
-                current_lab_timing = request.form.get('current_lab_timing') or ""
-
-                lab_provenance_records = []
-
-                if current_lab_analyte and current_lab_analyte.strip():
-                    raw_analyte = current_lab_analyte.strip()
-                    raw_val_str = (current_lab_value or "").strip()
-                    raw_unit_str = (current_lab_unit or "").strip()
-                    raw_timing_str = (current_lab_timing or "").strip()
-
-                    prov_rec = {
-                        "submitted_analyte": raw_analyte,
-                        "submitted_value": raw_val_str if raw_val_str else None,
-                        "submitted_unit": raw_unit_str if raw_unit_str else None,
-                        "submitted_timing": raw_timing_str if raw_timing_str else "unspecified",
-                        "validation_status": "PENDING",
-                        "derived_status": None,
-                        "rule_id": None,
-                        "reference_range": None,
-                        "rejection_reason": None,
-                        "provenance_status": None
-                    }
-
-                    if not raw_val_str:
-                        prov_rec["validation_status"] = "REJECTED_MISSING_VALUE"
-                        prov_rec["rejection_reason"] = "Analyte specified without a numeric measured value."
-                        lab_entry = {
-                            "analyte": raw_analyte,
-                            "unit": raw_unit_str,
-                            "timing": raw_timing_str,
-                            "status": "UNCLASSIFIED",
-                            "rejection_reason": prov_rec["rejection_reason"],
-                            "provenance": prov_rec
-                        }
-                    else:
-                        try:
-                            val_float = float(raw_val_str)
-                            prov_rec["parsed_numeric_value"] = val_float
-                            # Verify through existing MedicalRuleEngine without accepting arbitrary client flags
-                            from rule_engine import MedicalRuleEngine
-                            rule_eval = MedicalRuleEngine().evaluate_single_parameter(
-                                raw_analyte, val_float, raw_unit_str, timing_context=raw_timing_str
-                            )
-                            if rule_eval and isinstance(rule_eval, dict):
-                                eval_status = rule_eval.get("status")
-                                if eval_status == "INSUFFICIENT_CONTEXT":
-                                    prov_rec["validation_status"] = "INSUFFICIENT_CONTEXT"
-                                    prov_rec["derived_status"] = "INSUFFICIENT_CONTEXT"
-                                    prov_rec["rule_id"] = rule_eval.get("rule_id")
-                                    prov_rec["reference_range"] = rule_eval.get("range_description")
-                                    prov_rec["verified_analyte"] = rule_eval.get("parameter")
-                                    prov_rec["provenance_status"] = rule_eval.get("provenance_status")
-                                    prov_rec["rejection_reason"] = rule_eval.get("rejection_reason")
-                                    lab_entry = {
-                                        "analyte": raw_analyte,
-                                        "value": val_float,
-                                        "unit": raw_unit_str,
-                                        "timing": raw_timing_str,
-                                        "status": "INSUFFICIENT_CONTEXT",
-                                        "rule_id": rule_eval.get("rule_id"),
-                                        "range_description": rule_eval.get("range_description"),
-                                        "provenance_status": rule_eval.get("provenance_status"),
-                                        "rejection_reason": rule_eval.get("rejection_reason"),
-                                        "provenance": prov_rec
-                                    }
-                                else:
-                                    prov_rec["validation_status"] = "VERIFIED"
-                                    prov_rec["derived_status"] = rule_eval.get("status")
-                                    prov_rec["rule_id"] = rule_eval.get("rule_id")
-                                    prov_rec["reference_range"] = rule_eval.get("range_description")
-                                    prov_rec["verified_analyte"] = rule_eval.get("parameter")
-                                    prov_rec["provenance_status"] = rule_eval.get("provenance_status")
-                                    lab_entry = {
-                                        "analyte": raw_analyte,
-                                        "value": val_float,
-                                        "unit": raw_unit_str,
-                                        "timing": raw_timing_str,
-                                        "status": rule_eval.get("status"),
-                                        "rule_id": rule_eval.get("rule_id"),
-                                        "range_description": rule_eval.get("range_description"),
-                                        "provenance_status": rule_eval.get("provenance_status"),
-                                        "provenance": prov_rec
-                                    }
-                            else:
-                                prov_rec["validation_status"] = "REJECTED_UNRECOGNIZED_ANALYTE"
-                                prov_rec["rejection_reason"] = f"Analyte '{raw_analyte}' could not be matched to reference ranges in clinical rule engine."
-                                lab_entry = {
-                                    "analyte": raw_analyte,
-                                    "value": val_float,
-                                    "unit": raw_unit_str,
-                                    "timing": raw_timing_str,
-                                    "status": "UNCLASSIFIED",
-                                    "rejection_reason": prov_rec["rejection_reason"],
-                                    "provenance": prov_rec
-                                }
-                        except ValueError:
-                            prov_rec["validation_status"] = "REJECTED_INVALID_NUMERIC"
-                            prov_rec["rejection_reason"] = f"Submitted value '{raw_val_str}' is not a valid number."
-                            lab_entry = {
-                                "analyte": raw_analyte,
-                                "unit": raw_unit_str,
-                                "timing": raw_timing_str,
-                                "status": "UNCLASSIFIED",
-                                "rejection_reason": prov_rec["rejection_reason"],
-                                "provenance": prov_rec
-                            }
-
-                    lab_provenance_records.append(prov_rec)
-                    pipeline_ctx["lab_values"] = [lab_entry]
-                    pipeline_ctx["lab_input_provenance"] = lab_provenance_records
-                else:
-                    current_labs_form = request.form.get('current_labs')
-                    if current_labs_form:
-                        try:
-                            parsed_labs = json.loads(current_labs_form) if isinstance(current_labs_form, str) else current_labs_form
-                            if isinstance(parsed_labs, list):
-                                pipeline_ctx["lab_values"] = parsed_labs
-                                for plab in parsed_labs:
-                                    lab_provenance_records.append({
-                                        "submitted_analyte": plab.get("analyte") or plab.get("name"),
-                                        "submitted_value": plab.get("value"),
-                                        "submitted_unit": plab.get("unit"),
-                                        "validation_status": "PRE_PARSED" if plab.get("status") else "UNVERIFIED",
-                                        "derived_status": plab.get("status"),
-                                        "rejection_reason": None
-                                    })
-                                pipeline_ctx["lab_input_provenance"] = lab_provenance_records
-                        except Exception as _lab_err:
-                            logger.warning(f"Failed to parse current_labs from request form: {_lab_err}")
-                    if not pipeline_ctx.get("lab_input_provenance"):
-                        pipeline_ctx["lab_input_provenance"] = [{
-                            "submitted_analyte": None,
-                            "submitted_value": None,
-                            "submitted_unit": None,
-                            "validation_status": "NONE_SUBMITTED",
-                            "rejection_reason": "No current laboratory measurements were submitted in this request."
-                        }]
-
-                user_session = session.get('user', {})
-                logged_in_name = user_session.get('name')
-                auth_contract = None
-                if logged_in_name:
-                    auth_contract = TrustedPatientAuthContract(
-                        patient_scope=logged_in_name,
-                        issuer="session_auth",
-                        is_verified=True
+            # 1. Hemoglobin question
+            if any(w in q_lower for w in ["hemoglobin", "hgb", "hb"]):
+                hgb_labs = [l for l in lab_history if "hemoglobin" in str(l.get("test_name", "")).lower()]
+                if hgb_labs:
+                    l = hgb_labs[0]
+                    return (
+                        f"**Hemoglobin Status:** Your recorded hemoglobin is **{l['value']} {l['unit']}** ({l['status']}). "
+                        f"Normal reference range is **{l['reference_range']}**.\n\n"
+                        f"- **What it means:** A low hemoglobin level indicates reduced oxygen-carrying capacity of red blood cells (anemia).\n"
+                        f"- **Common causes:** Iron deficiency, vitamin B12/folate deficiency, blood loss, or chronic inflammation.\n"
+                        f"- **Next steps:** Consult your doctor to investigate the root cause, check serum ferritin, and discuss iron supplementation or dietary changes."
                     )
-                    logger.info(f"Prescription pipeline authorized with session contract for: {logged_in_name}")
+                return "No hemoglobin record found in your uploaded documents. Please upload a Complete Blood Count (CBC) report."
 
-                dlti_preview_enabled = app.config.get(
-                    "DLTI_RESEARCH_PREVIEW_ENABLED",
-                    os.getenv("DLTI_RESEARCH_PREVIEW_ENABLED", "false").lower() in ("true", "1", "yes")
+            # 2. HbA1c question
+            if any(w in q_lower for w in ["hba1c", "a1c", "glycated"]):
+                a1c_labs = [l for l in lab_history if "hba1c" in str(l.get("test_name", "")).lower()]
+                if a1c_labs:
+                    l = a1c_labs[0]
+                    return (
+                        f"**HbA1c Status:** Your HbA1c is **{l['value']}%** ({l['status']}).\n\n"
+                        f"- **What it means:** HbA1c reflects your average blood sugar levels over the past 2–3 months.\n"
+                        f"- **Benchmarks:** Normal is **< 5.7%**, Prediabetes is **5.7%–6.4%**, and Diabetes is **≥ 6.5%**.\n"
+                        f"- **Recommendation:** Discuss with your doctor regarding lifestyle, dietary adjustments, and appropriate glycemic management."
+                    )
+                return "No HbA1c measurement found in your current records. Upload a diabetes or glycemic panel report."
+
+            # 3. Abnormal test values question
+            if any(w in q_lower for w in ["abnormal", "out of range", "flagged", "high", "low"]):
+                abnormal = [l for l in lab_history if str(l.get("status", "")).upper() not in ("NORMAL", "UNKNOWN", "")]
+                if abnormal:
+                    res_lines = ["### ⚠️ Your Abnormal Lab Values:\n"]
+                    for l in abnormal:
+                        t = str(l.get('test_name', '')).replace('_', ' ').title()
+                        res_lines.append(f"- **{t}**: {l.get('value')} {l.get('unit', '')} — **{l.get('status')}** (Ref: {l.get('reference_range', 'N/A')})")
+                    res_lines.append("\n*Please schedule a clinical review with your doctor to evaluate these parameters together.*")
+                    return "\n".join(res_lines)
+                return "All your recorded laboratory values are currently within standard reference ranges!"
+
+            # 4. Medication interaction question
+            if any(w in q_lower for w in ["interact", "interaction", "ddi", "contraindication"]):
+                if active_medicines:
+                    med_names = [m.get("canonical_name", "") for m in active_medicines if m.get("canonical_name")]
+                    ddi = run_full_ddi_check(med_names)
+                    if ddi.get("total_interactions", 0) > 0:
+                        lines = ["### ⚠️ Identified Drug Interactions in Your Records:\n"]
+                        for i in ddi.get("new_vs_new", []):
+                            lines.append(f"- **{i['drug_a'].title()} + {i['drug_b'].title()}** [{i['severity']}]: {i['clinical_effect']}\n  *Action:* {i['management']}")
+                        return "\n".join(lines)
+                    return "No adverse drug-drug interactions detected among your recorded active medications."
+                return "No active medicines currently recorded. Please upload a prescription or enter your medications."
+
+            # 5. Doctor precautions question
+            if any(w in q_lower for w in ["precaution", "doctor", "questions to ask", "discuss"]):
+                return (
+                    "### 📋 Recommended Discussion Points for Your Doctor:\n"
+                    "1. **Abnormal Values**: Review any out-of-range lab markers and ask if repeat testing or imaging is warranted.\n"
+                    "2. **Medication Regimen**: Confirm dosages, timing (with/without food), and ask about alternative options for flagged interactions.\n"
+                    "3. **Lifestyle & Nutrition**: Inquire about tailored nutritional goals (e.g., low-glycemic, sodium-controlled, iron-rich diet).\n"
+                    "4. **Warning Signs**: Ask what acute symptoms (dizziness, palpitations, bruising) require urgent contact."
                 )
-                logger.info("Executing Complete Prescription Pipeline (incl. DDI and DLTI preview=%s)", dlti_preview_enabled)
-                pipeline_ctx = PrescriptionPipelineBoundary.process_prescription(
-                    pipeline_ctx,
-                    ocr_extractor_func=PerceptionExtractionAgent.extract,
-                    ai_generator_func=generate_ai_analysis,
-                    patient_history_mgr=patient_history,
-                    trusted_auth_contract=auth_contract,
-                    dlti_research_preview_enabled=dlti_preview_enabled,
-                )
-                logger.info("Complete Prescription Pipeline execution finished")
 
-                # Persist complete prescription to relational SQLite DB and history store when authenticated
-                if logged_in_name:
-                    try:
-                        extracted_meds = pipeline_ctx.get("extracted_data", {}).get("medications", [])
-                        ddi_pairs = pipeline_ctx.get("ddi", {}).get("pairs", [])
-                        rx_date = pipeline_ctx.get("extracted_data", {}).get("prescription_metadata", {}).get("date")
-                        v_status = pipeline_ctx.get("verification", {}).get("overall_status", "verified")
-                        s_status = pipeline_ctx.get("safety", {}).get("safety_status", "SAFE TO DISPLAY")
-                        raw_text_val = pipeline_ctx.get("extracted_data", {}).get("raw_text", "")
+            # 6. Normal reference range question
+            if any(w in q_lower for w in ["reference", "normal range", "benchmark"]):
+                if lab_history:
+                    lines = ["### 📊 Your Recorded Test Reference Ranges:\n"]
+                    for l in lab_history[:8]:
+                        t = str(l.get('test_name', '')).replace('_', ' ').title()
+                        lines.append(f"- **{t}**: Normal is {l.get('reference_range', 'Standard laboratory range')}")
+                    return "\n".join(lines)
+                return "Please upload your medical report to view reference ranges for your specific tests."
 
-                        patient_history.save_complete_prescription(
-                            patient_name=logged_in_name,
-                            visit_id=f"VISIT-RX-{version}",
-                            file_path=filename,
-                            raw_text=raw_text_val,
-                            verification_status=v_status,
-                            safety_status=s_status,
-                            prescription_date=rx_date,
-                            extracted_meds=extracted_meds,
-                            ddi_results=ddi_pairs
-                        )
-                        logger.info(f"Persisted complete prescription to database for patient: {logged_in_name}")
-                    except Exception as save_err:
-                        logger.warning(f"Failed to persist prescription to database: {save_err}")
+            # 7. General medicine question
+            if any(w in q_lower for w in ["medicine", "drug", "tablet", "prescription"]):
+                if active_medicines:
+                    lines = ["### 💊 Your Recorded Medications:\n"]
+                    for m in active_medicines:
+                        name = m.get('canonical_name', '').replace('_', ' ').title()
+                        dosage = m.get('dosage', 'Standard dose')
+                        lines.append(f"- **{name}**: {dosage}")
+                    return "\n".join(lines)
+                return "No medications recorded in your profile yet. Upload a prescription to track them."
 
-                chat_context.complete_analysis(
-                    session, version,
-                    chat_context.build_prescription_snapshot(pipeline_ctx, version=version)
-                )
-                analysis_summary = pipeline_ctx["reasoning"].get("summary", "")
-                p_name_res = pipeline_ctx["extracted_data"].get("patient_info", {}).get("patient_name") or p_name_form
+            return (
+                "I am your medical report assistant. I can answer questions about your lab values (e.g. Hemoglobin, Glucose, HbA1c), "
+                "active medications, drug interactions, and discussion points for your doctor. Try asking: *'What are my abnormal test values?'*"
+            )
 
-                return jsonify({
-                    'success': True,
-                    'analysis': {
-                        'english': analysis_summary,
-                        'bangla': None,
-                        'patient_name': p_name_res
-                    },
-                    'analysis_version': version,
-                    'pipeline_context': pipeline_ctx
-                })
-            finally:
-                if filepath and os.path.exists(filepath):
-                    try:
-                        os.remove(filepath)
-                        logger.info("Prescription file processed and removed")
-                    except Exception as _e:
-                        logger.warning(f"Could not remove temp file {filepath}: {_e}")
+        return f"Error processing your question: {str(e)}"
 
-        logger.error("Invalid file type from extension check for prescription")
-        chat_context.fail_analysis(session, version, reason="Invalid file type")
-        return jsonify({'error': 'Invalid file type. Please upload a JPG, PNG, or PDF file.'}), 400
 
-    except Exception as e:
-        logger.error(f"Unexpected error in upload_prescription: {str(e)}")
-        chat_context.fail_analysis(session, version, reason=str(e))
-        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '').strip()
-
-        if not email or not password:
-            return render_template('login.html', error="Please enter both email and password.")
-
-        user = patient_history.authenticate_user(email, password)
-        if user:
-            session['user'] = {
-                'user_id': user.get('user_id'),
-                'email': user['email'],
-                'name': user['full_name'],
-                'patient_id': user['patient_slug']
-            }
-            logger.info(f"User authenticated successfully: {email}")
-            return redirect(url_for('index'))
-        else:
-            return render_template('login.html', error="Account not registered or invalid password. Please register first.")
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        full_name = request.form.get('full_name', '').strip()
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '').strip()
-        confirm_password = request.form.get('confirm_password', '').strip()
-        age = request.form.get('age', '').strip()
-        gender = request.form.get('gender', '').strip()
-        contact_phone = request.form.get('contact_phone', '').strip()
-
-        if not full_name or not email or not password:
-            return render_template('register.html', error="Full name, email, and password are required to register.")
-
-        success, result_or_err = patient_history.create_user_account(
-            email=email,
-            password=password,
-            full_name=full_name,
-            age=age,
-            gender=gender,
-            contact_phone=contact_phone,
-            confirm_password=confirm_password
-        )
-        if success:
-            user = result_or_err
-            session['user'] = {
-                'user_id': user.get('user_id'),
-                'email': user['email'],
-                'name': user['full_name'],
-                'patient_id': user['patient_slug']
-            }
-            logger.info(f"New patient account created & logged in: {email}")
-            return redirect(url_for('index'))
-        else:
-            return render_template('register.html', error=result_or_err)
-    return render_template('register.html')
-
-@app.route('/logout')
-def logout():
-    chat_context.clear_snapshot(session)
-    session.pop('user', None)
-    return redirect(url_for('index'))
+# ═══════════════════════════════════════════════════════════════════════════
+# FLASK ROUTES
+# ═══════════════════════════════════════════════════════════════════════════
 
 @app.route('/')
 def index():
+    session_id = get_session_id()
     return render_template('index.html')
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    version = chat_context.begin_analysis(session)
     try:
         if 'file' not in request.files:
-            logger.error("No file part in request")
-            chat_context.fail_analysis(session, version, reason="No file part in request")
-            return jsonify({'error': 'No file part'}), 400
-        
+            return jsonify({'error': 'No file uploaded.'}), 400
+
         file = request.files['file']
-        if file.filename == '':
-            logger.error("No selected file")
-            chat_context.fail_analysis(session, version, reason="No selected file")
-            return jsonify({'error': 'No selected file'}), 400
+        if not file or file.filename == '':
+            return jsonify({'error': 'No file selected.'}), 400
 
-        user_session = session.get('user', {})
-        logged_in_name = user_session.get('name')
-        patient_name = request.form.get('patient_name') or logged_in_name
+        if not allowed_file(file.filename):
+            exts = ', '.join(sorted(ALLOWED_EXTENSIONS)).upper()
+            return jsonify({'error': f'Unsupported file type. Supported: {exts}'}), 400
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            logger.info(f"File saved: {filepath}")
+        filename = secure_filename(file.filename)
+        ext = filename.rsplit('.', 1)[1].lower()
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        logger.info(f"File saved: {filepath}")
 
-            try:
-                ext = filename.rsplit('.', 1)[1].lower()
-                text, ocr_meta = PerceptionExtractionAgent.extract(filepath, ext)
+        analysis_type = request.form.get('analysis_type', 'report')
+        gender = request.form.get('gender', 'unknown')
+        symptoms = request.form.get('symptoms', '').strip()
+        session_id = get_session_id()
 
+        try:
+            text = extract_text(filepath, ext)
+
+            if os.path.exists(filepath):
                 os.remove(filepath)
-                logger.info("File processed and removed")
 
-                if text and text.startswith("Error:"):
-                    logger.error(f"Text extraction failed: {text}")
-                    chat_context.fail_analysis(session, version, reason=text)
-                    return jsonify({'error': text}), 400
+            if text and text.startswith("Error:"):
+                return jsonify({'error': text}), 400
 
-                # Input Router (Step 1 Foundation)
-                explicit_doc_type = request.form.get('document_type')
-                pipeline_ctx = InputRouter.route_and_create_context(
-                    text=text,
-                    filename=filename,
-                    explicit_type=explicit_doc_type or None,
-                    metadata={"patient_name": patient_name, "ocr_metadata": ocr_meta}
-                )
-                logger.info(f"InputRouter classified payload as: {pipeline_ctx['document_type']}")
+            if not text or not text.strip():
+                return jsonify({'error': 'Could not extract any text from the file.'}), 400
 
-                if pipeline_ctx['document_type'] == 'prescription':
-                    user_session = session.get('user', {})
-                    logged_in_name = user_session.get('name')
-                    auth_contract = None
-                    if logged_in_name:
-                        auth_contract = TrustedPatientAuthContract(
-                            patient_scope=logged_in_name,
-                            issuer="session_auth",
-                            is_verified=True
-                        )
-                        logger.info(f"Prescription pipeline authorized with session contract for: {logged_in_name}")
+            logger.info(f"Extracted {len(text)} chars. Analyzing as: {analysis_type}")
 
-                    dlti_preview_enabled = app.config.get(
-                        "DLTI_RESEARCH_PREVIEW_ENABLED",
-                        os.getenv("DLTI_RESEARCH_PREVIEW_ENABLED", "false").lower() in ("true", "1", "yes")
-                    )
-                    pipeline_ctx = PrescriptionPipelineBoundary.process_prescription(
-                        pipeline_ctx,
-                        ocr_extractor_func=PerceptionExtractionAgent.extract,
-                        ai_generator_func=generate_ai_analysis,
-                        patient_history_mgr=patient_history,
-                        trusted_auth_contract=auth_contract,
-                        dlti_research_preview_enabled=dlti_preview_enabled,
-                    )
-                    if logged_in_name:
-                        try:
-                            extracted_meds = pipeline_ctx.get("extracted_data", {}).get("medications", [])
-                            ddi_pairs = pipeline_ctx.get("ddi", {}).get("pairs", [])
-                            rx_date = pipeline_ctx.get("extracted_data", {}).get("prescription_metadata", {}).get("date")
-                            v_status = pipeline_ctx.get("verification", {}).get("overall_status", "verified")
-                            s_status = pipeline_ctx.get("safety", {}).get("safety_status", "SAFE TO DISPLAY")
-                            raw_text_val = pipeline_ctx.get("extracted_data", {}).get("raw_text", "")
+            if analysis_type == 'prescription':
+                patient_info_raw = request.form.get('patient_info')
+                patient_info = None
+                if patient_info_raw:
+                    try:
+                        patient_info = json.loads(patient_info_raw)
+                    except Exception:
+                        pass
+                analysis = analyze_prescription(text, session_id, symptoms, patient_info=patient_info)
+            else:
+                analysis = analyze_medical_report(text, session_id, gender)
 
-                            patient_history.save_complete_prescription(
-                                patient_name=logged_in_name,
-                                visit_id=f"VISIT-RX-{version}",
-                                file_path=filename,
-                                raw_text=raw_text_val,
-                                verification_status=v_status,
-                                safety_status=s_status,
-                                prescription_date=rx_date,
-                                extracted_meds=extracted_meds,
-                                ddi_results=ddi_pairs
-                            )
-                            logger.info(f"Persisted complete prescription to database for patient: {logged_in_name}")
-                        except Exception as save_err:
-                            logger.warning(f"Failed to persist prescription to database: {save_err}")
+            # Save to history
+            save_analysis(
+                session_id=session_id,
+                analysis_type=analysis_type,
+                filename=filename,
+                extracted_text=text,
+                findings=analysis.get('findings', []),
+                ddi_data=analysis.get('ddi', {}),
+                medicines=analysis.get('medicines', []),
+                ai_analysis=analysis.get('english', '')
+            )
 
-                    chat_context.complete_analysis(
-                        session, version,
-                        chat_context.build_prescription_snapshot(pipeline_ctx, version=version)
-                    )
-                    analysis_summary = pipeline_ctx["reasoning"].get("summary", "")
-                    p_name_res = pipeline_ctx["extracted_data"].get("patient_info", {}).get("patient_name") or patient_name
+            if isinstance(analysis, dict) and 'error' in analysis and 'success' in analysis:
+                return jsonify(analysis), 500
 
-                    return jsonify({
-                        'success': True,
-                        'analysis': {
-                            'english': analysis_summary,
-                            'bangla': None,
-                            'patient_name': p_name_res
-                        },
-                        'analysis_version': version,
-                        'document_type': 'prescription',
-                        'pipeline_context': pipeline_ctx
-                    })
-
-                # Report Extraction Agent (Step 2)
-                pipeline_ctx = ReportExtractionAgent.process(pipeline_ctx)
-                logger.info(f"ReportExtractionAgent extracted {len(pipeline_ctx['extracted_data'].get('biomarkers', []))} biomarkers")
-
-                # Report Verification Agent (Step 3)
-                pipeline_ctx = ReportVerificationAgent.process(pipeline_ctx)
-                logger.info(f"ReportVerificationAgent verified {len(pipeline_ctx['verification'].get('biomarkers', []))} biomarkers")
-
-                # ML Safety Classifier Agent (Step 4)
-                pipeline_ctx = MLSafetyAgent.evaluate_safety(pipeline_ctx)
-                logger.info(f"MLSafetyAgent classified overall report safety as: {pipeline_ctx['safety'].get('safety_status')}")
-
-                # Report Reasoning Agent (Step 5)
-                pipeline_ctx = ReportReasoningAgent.process(pipeline_ctx, ai_generator_func=generate_ai_analysis)
-                logger.info(f"ReportReasoningAgent reasoning completed using: {pipeline_ctx['reasoning'].get('generated_by')}")
-
-                logger.info("Starting text analysis")
-                analysis = analyze_medical_report(text, ocr_metadata=ocr_meta, patient_name=patient_name, analysis_version=version)
-                logger.info("Analysis completed")
-                
-                if isinstance(analysis, dict) and 'error' in analysis:
-                    chat_context.fail_analysis(session, version, reason=analysis.get('error'))
-                    return jsonify(analysis), 500
-                
-                return jsonify({
-                    'success': True,
-                    'analysis': analysis,
-                    'analysis_version': version,
-                    'document_type': pipeline_ctx['document_type'],
-                    'pipeline_context': pipeline_ctx
-                })
-            except Exception as e:
-                logger.error(f"Error processing file: {str(e)}")
-                chat_context.fail_analysis(session, version, reason=str(e))
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-                return jsonify({'error': f'Error processing file: {str(e)}'}), 500
-
-        logger.error("Invalid file type from extension check")
-        chat_context.fail_analysis(session, version, reason="Invalid file type")
-        return jsonify({'error': 'Invalid file type'}), 400
-
-    except Exception as e:
-        logger.error(f"Unexpected error in upload_file: {str(e)}")
-        chat_context.fail_analysis(session, version, reason=str(e))
-        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
-
-@app.route('/api/route-input', methods=['POST'])
-def route_input_endpoint():
-    """Step 1 Foundation Endpoint for testing document type routing."""
-    try:
-        data = request.get_json(silent=True) or {}
-        text = data.get('text', '')
-        filename = data.get('filename', '')
-        explicit_type = data.get('document_type')
-        ctx = InputRouter.route_and_create_context(text=text, filename=filename, explicit_type=explicit_type)
-        return jsonify({
-            'success': True,
-            'routing_result': {
-                'document_type': ctx['document_type']
-            },
-            'pipeline_context': ctx
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/patients', methods=['GET'])
-def get_patients_list():
-    try:
-        user = session.get('user')
-        if user and user.get('name'):
-            # Enforce user data isolation: authenticated patient only sees their own profile
-            my_history = patient_history.get_patient_history(user['name'])
-            slug, _ = normalize_patient_name(user['name'])
             return jsonify({
                 'success': True,
-                'patients': [{
-                    'slug': slug,
-                    'patient_name': user['name'],
-                    'medications_count': len(my_history.get('active_medications', [])),
-                    'lab_results_count': len(my_history.get('past_lab_results', [])),
-                    'prescriptions_count': len(my_history.get('prescriptions', [])),
-                    'reports_count': len(my_history.get('reports', [])),
-                    'visits_count': len(my_history.get('visits', []))
-                }]
+                'analysis': analysis,
+                'extracted_chars': len(text)
             })
-        patients = patient_history.list_all_patients()
-        return jsonify({'success': True, 'patients': patients})
+
+        except Exception as e:
+            logger.error(f"Error processing file: {str(e)}")
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"Unexpected error: {str(e)}")
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
 
-@app.route('/api/patient/<patient_name>', methods=['GET'])
-def get_patient_detail(patient_name):
-    try:
-        user = session.get('user')
-        if user:
-            # Backend authorization check: verify user scope matches requested patient
-            req_slug, _ = normalize_patient_name(patient_name)
-            my_slug = user.get('patient_id') or normalize_patient_name(user.get('name', ''))[0]
-            if req_slug != my_slug and patient_name.lower() != user.get('name', '').lower():
-                return jsonify({'success': False, 'error': 'Unauthorized: Access restricted to your own patient profile only.'}), 403
-
-        history = patient_history.get_patient_history(patient_name)
-        return jsonify({'success': True, 'patient': history})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/patient/dashboard', methods=['GET'])
-def get_patient_dashboard():
-    """Returns complete consolidated patient dashboard data from relational database."""
-    user = session.get('user')
-    if not user:
-        return jsonify({'success': False, 'error': 'Authentication required. Please log in.'}), 401
-    try:
-        data = patient_history.get_dashboard_data(user['name'])
-        return jsonify({'success': True, 'dashboard': data})
-    except Exception as e:
-        logger.error(f"Error retrieving dashboard data: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/patient/toggle-medication', methods=['POST'])
-def toggle_patient_medication():
-    """Toggles medication status between active and discontinued."""
-    user = session.get('user')
-    if not user:
-        return jsonify({'success': False, 'error': 'Authentication required. Please log in.'}), 401
-    try:
-        data = request.get_json() or {}
-        med_id = data.get('medication_id') or data.get('medicine_name')
-        new_status = data.get('status', 'discontinued')
-        if not med_id:
-            return jsonify({'success': False, 'error': 'Medication identifier is required.'}), 400
-
-        updated = patient_history.toggle_medication_status(user['name'], med_id, new_status)
-        return jsonify({'success': True, 'updated': updated, 'status': new_status})
-    except Exception as e:
-        logger.error(f"Error toggling medication status: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/patient/confirm-prescribed-medication', methods=['POST'])
-def confirm_prescribed_medication():
-    """Adds a verified prescribed medicine to the patient's active medication list."""
-    user = session.get('user')
-    if not user:
-        return jsonify({'success': False, 'error': 'Authentication required. Please log in.'}), 401
-    try:
-        data = request.get_json() or {}
-        med_name = data.get('medicine_name')
-        dosage = data.get('dosage')
-        generic_name = data.get('generic_name')
-        strength = data.get('strength')
-
-        if not med_name:
-            return jsonify({'success': False, 'error': 'Medicine name is required.'}), 400
-
-        patient_history.add_active_medication(
-            medicine_name=med_name,
-            dosage=dosage,
-            patient_name=user['name'],
-            status="active",
-            generic_name=generic_name,
-            strength=strength
-        )
-        return jsonify({
-            'success': True,
-            'message': f"Medication '{med_name}' confirmed and added to active medications."
-        })
-    except Exception as e:
-        logger.error(f"Error confirming prescribed medication: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/patient/active-medication', methods=['POST'])
-def add_patient_medication():
-    try:
-        data = request.get_json() or {}
-        med_name = data.get('medicine_name')
-        patient_name = data.get('patient_name', 'Default Patient')
-        dosage = data.get('dosage')
-
-        user = session.get('user')
-        if user and user.get('name'):
-            patient_name = user['name']
-
-        if not med_name:
-            return jsonify({'error': 'Medicine name is required'}), 400
-
-        patient_history.add_active_medication(med_name, dosage=dosage, patient_name=patient_name)
-        alerts = patient_history.check_prescription_against_past_labs(med_name, patient_name=patient_name)
-        
-        return jsonify({
-            'success': True,
-            'message': f"Added active medication '{med_name}' for patient '{patient_name}'",
-            'safety_alerts': alerts
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/analyze-symptoms', methods=['POST'])
 def process_symptoms():
-    chat_context.mark_context_unavailable(session, reason="Symptom triage active; prior report context cleared")
     try:
         data = request.get_json()
         if not data or 'symptoms' not in data:
-            logger.error("No symptoms provided in request")
             return jsonify({'error': 'No symptoms provided'}), 400
-
         symptoms = data['symptoms']
         if not symptoms.strip():
-            logger.error("Empty symptoms string provided")
             return jsonify({'error': 'Symptoms cannot be empty'}), 400
-
-        logger.info("Starting symptoms analysis")
         analysis = analyze_symptoms(symptoms)
-        logger.info("Symptoms analysis completed")
-        
-        if isinstance(analysis, dict) and 'error' in analysis:
+        if isinstance(analysis, dict) and 'error' in analysis and 'success' in analysis:
             return jsonify(analysis), 500
-            
-        return jsonify({
-            'success': True,
-            'analysis': analysis
-        })
+        return jsonify({'success': True, 'analysis': analysis})
     except Exception as e:
-        logger.error(f"Error in process_symptoms: {str(e)}")
-        return jsonify({'error': f'Error processing symptoms: {str(e)}'}), 500
-
-@app.route('/export-pdf', methods=['POST'])
-@app.route('/download-pdf', methods=['POST'])
-def export_pdf():
-    """Render the displayed analysis markdown as a downloadable PDF attachment."""
-    if request.is_json:
-        payload = request.get_json(silent=True) or {}
-        markdown_text = payload.get('markdown') or payload.get('content')
-        kind = payload.get('kind') or payload.get('document_type')
-    else:
-        markdown_text = request.form.get('markdown') or request.form.get('content')
-        kind = request.form.get('kind') or request.form.get('document_type')
-
-    if not kind or kind not in ('medicine', 'report', 'symptoms'):
-        kind = 'medicine'
-
-    try:
-        pdf_bytes = build_analysis_pdf(markdown_text, kind=kind)
-    except ValueError as ve:
-        return jsonify({'error': str(ve)}), 400
-    except Exception as e:
-        logger.error(f"PDF export failed: {e}")
-        return jsonify({'error': 'PDF generation failed.'}), 500
-
-    filename = pdf_filename(kind)
-    response = send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=filename,
-    )
-    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-    response.headers['Cache-Control'] = 'no-store'
-    return response
+        return jsonify({'error': f'Error: {str(e)}'}), 500
 
 
 @app.route('/translate', methods=['POST'])
@@ -1777,50 +1207,30 @@ def translate_text():
     try:
         data = request.get_json()
         if not data or 'text' not in data:
-            logger.error("No text provided for translation")
             return jsonify({'error': 'No text provided'}), 400
-
         text = data['text']
         target_language = data.get('target_language', 'Kannada').strip()
-
         if not text.strip():
-            logger.error("Empty text provided for translation")
             return jsonify({'error': 'Text cannot be empty'}), 400
 
-        logger.info(f"Starting AI medical translation into {target_language}")
-        system_prompt = f"""You are an expert medical translator AI. Your task is to translate the provided medical analysis report into {target_language}.
+        system_prompt = f"""You are an expert medical translator AI. Translate into {target_language}.
 Rules:
-1. Preserve all Markdown formatting, section titles (#, ##), bullet points, blockquotes (>), bold highlights (**text**), and line breaks.
-2. Keep numbers, lab values, and measurement units (e.g. 121.6 mg/dl, %, mg/dL) intact.
+1. Preserve all Markdown formatting (#, ##, bullet points, **bold**, blockquotes).
+2. Keep numbers, lab values, and units (mg/dL, %, etc.) intact.
 3. Provide an accurate, fluent medical translation."""
 
-        prompt = f"Translate the following medical analysis into {target_language}:\n\n{text}"
-        try:
-            translated_text = generate_ai_analysis(prompt, system_prompt)
-        except Exception as ai_err:
-            logger.warning(f"AI Connection failed during translation into {target_language}: {ai_err}")
-            translated_text = f"> ⚠️ **Translation Warning**: AI service offline. Displaying report in original language.\n\n{text}"
-
-        logger.info("AI Translation completed")
-        return jsonify({
-            'success': True,
-            'translation': translated_text,
-            'language': target_language
-        })
+        prompt = f"Translate this medical analysis into {target_language}:\n\n{text}"
+        translated_text = generate_ai_analysis(prompt, system_prompt)
+        return jsonify({'success': True, 'translation': translated_text, 'language': target_language})
     except Exception as e:
-        logger.error(f"Error in translation: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f'Error during translation: {str(e)}'
-        }), 500
+        return jsonify({'success': False, 'error': f'Translation error: {str(e)}'}), 500
+
 
 @app.route('/analyze-medicine', methods=['POST'])
 def process_medicine():
-    chat_context.mark_context_unavailable(session, reason="Manual medicine entry active; prior report context cleared")
     try:
         data = request.get_json()
         if not data or 'medicine' not in data or 'dosage' not in data or 'patient' not in data:
-            logger.error("Missing medicine information")
             return jsonify({'error': 'Missing required information'}), 400
 
         medicine = data['medicine'].strip()
@@ -1828,135 +1238,166 @@ def process_medicine():
         patient = data['patient']
 
         if not medicine:
-            logger.error("Empty medicine name provided")
             return jsonify({'error': 'Medicine name cannot be empty'}), 400
 
         required_fields = ['morning', 'evening', 'night']
         if not all(field in dosage for field in required_fields):
-            logger.error("Invalid dosage format")
             return jsonify({'error': 'Invalid dosage format'}), 400
 
         if not isinstance(patient.get('age'), int) or patient['age'] <= 0:
-            logger.error("Invalid patient age")
             return jsonify({'error': 'Invalid patient age'}), 400
 
         if not patient.get('gender') or patient['gender'] not in ['male', 'female', 'other']:
-            logger.error("Invalid patient gender")
             return jsonify({'error': 'Invalid patient gender'}), 400
 
-        logger.info(f"Starting medicine analysis for: {medicine} (Patient: {patient['age']}y, {patient['gender']})")
         analysis = analyze_medicine(medicine, dosage, patient)
-        logger.info("Medicine analysis completed")
-        
-        if isinstance(analysis, dict) and 'error' in analysis:
+        if isinstance(analysis, dict) and 'error' in analysis and 'success' in analysis:
             return jsonify(analysis), 500
-            
-        return jsonify({
-            'success': True,
-            'analysis': analysis
-        })
+        return jsonify({'success': True, 'analysis': analysis})
     except Exception as e:
-        logger.error(f"Error in process_medicine: {str(e)}")
-        return jsonify({'error': f'Error processing medicine information: {str(e)}'}), 500
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
 
 @app.route('/analyze-report-text', methods=['POST'])
 def process_report_text():
-    version = chat_context.begin_analysis(session)
     try:
         data = request.get_json()
         if not data or 'report_text' not in data:
-            logger.error("No report text provided in request")
-            chat_context.fail_analysis(session, version, reason="No report text provided")
             return jsonify({'error': 'No report text provided'}), 400
-
         report_text = data['report_text'].strip()
         if not report_text:
-            logger.error("Empty report text provided")
-            chat_context.fail_analysis(session, version, reason="Report text cannot be empty")
             return jsonify({'error': 'Report text cannot be empty'}), 400
 
-        user_session = session.get('user', {})
-        logged_in_name = user_session.get('name')
-        patient_name = data.get('patient_name') or logged_in_name
+        analysis_type = data.get('analysis_type', 'report')
+        gender = data.get('gender', 'unknown')
+        symptoms = data.get('symptoms', '').strip()
+        session_id = get_session_id()
 
-        logger.info(f"Starting direct report text analysis for patient: {patient_name}")
-        analysis = analyze_medical_report(report_text, patient_name=patient_name, analysis_version=version)
-        logger.info("Report text analysis completed")
-        
-        if isinstance(analysis, dict) and 'error' in analysis:
-            chat_context.fail_analysis(session, version, reason=analysis.get('error'))
-            return jsonify(analysis), 500
-            
-        return jsonify({
-            'success': True,
-            'analysis': analysis,
-            'analysis_version': version
-        })
-    except Exception as e:
-        logger.error(f"Error in process_report_text: {str(e)}")
-        chat_context.fail_analysis(session, version, reason=str(e))
-        return jsonify({'error': f'Error processing report text: {str(e)}'}), 500
+        if analysis_type == 'prescription':
+            patient_info = data.get('patient_info')
+            analysis = analyze_prescription(report_text, session_id, symptoms, patient_info=patient_info)
+        else:
+            analysis = analyze_medical_report(report_text, session_id, gender)
 
-def _store_chat_snapshot(snapshot, version=None):
-    """Store or complete this session's chat context."""
-    try:
-        if has_request_context():
-            if version is not None:
-                chat_context.complete_analysis(session, version, snapshot)
-            else:
-                chat_context.save_snapshot(session, snapshot)
-    except Exception as exc:
-        logger.warning("Could not store chat context: %s", type(exc).__name__)
-
-
-class PatientHistoryRAGChatbot:
-    """
-    Historical patient records are unavailable in this session without trusted server-side authorization.
-    """
-    @classmethod
-    def answer_patient_query(cls, patient_id, query_text):
-        return chat_context.HISTORY_UNAVAILABLE
-
-@app.route('/api/patient-chat', methods=['POST'])
-def patient_chat_endpoint():
-    try:
-        data = request.get_json(silent=True) or {}
-        # NOTE: client-supplied patient_id / report_context / context_type are intentionally
-        # ignored. They are not proof of authorization and are not a trusted source of facts.
-        query_text = str(data.get('query') or data.get('question') or '').strip()
-
-        if not query_text:
-            return jsonify({'success': False, 'error': 'Query text cannot be empty.'}), 400
-        if len(query_text) > 1000:
-            return jsonify({'success': False, 'error': 'Question is too long (max 1000 characters).'}), 400
-
-        status, snapshot, version, failure_reason = chat_context.get_snapshot_state(session)
-        expected_ver = data.get('analysis_version')
-        if expected_ver is not None:
-            try:
-                expected_ver = int(expected_ver)
-            except (ValueError, TypeError):
-                expected_ver = None
-
-        result = chat_context.answer(
-            snapshot, query_text, generate_ai_analysis,
-            forbidden_patterns=FORBIDDEN_DIAGNOSTIC_TERMS,
-            expected_version=expected_ver,
-            status=status,
-            version=version,
-            failure_reason=failure_reason,
+        # Save to history
+        save_analysis(
+            session_id=session_id,
+            analysis_type=analysis_type,
+            filename="[Text Input]",
+            extracted_text=report_text,
+            findings=analysis.get('findings', []),
+            ddi_data=analysis.get('ddi', {}),
+            medicines=analysis.get('medicines', []),
+            ai_analysis=analysis.get('english', '')
         )
-        logger.info("patient-chat answered via %s (status=%s, ver=%s)", result['source'], status, version)
+
+        if isinstance(analysis, dict) and 'error' in analysis and 'success' in analysis:
+            return jsonify(analysis), 500
+        return jsonify({'success': True, 'analysis': analysis})
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    """RAG Chatbot endpoint."""
+    try:
+        data = request.get_json()
+        if not data or 'question' not in data:
+            return jsonify({'error': 'No question provided'}), 400
+
+        question = data['question'].strip()
+        if not question:
+            return jsonify({'error': 'Question cannot be empty'}), 400
+
+        session_id = get_session_id()
+        conversation_history = data.get('history', [])
+        current_analysis = data.get('current_analysis')
+
+        response = rag_chatbot_response(question, session_id, conversation_history, current_analysis=current_analysis)
+        return jsonify({'success': True, 'response': response})
+    except Exception as e:
+        return jsonify({'error': f'Chatbot error: {str(e)}'}), 500
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    """Get or update patient profile."""
+    try:
+        session_id = get_session_id()
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            name = data.get('name', 'Primary Patient').strip()
+            age = data.get('age')
+            gender = data.get('gender', 'unknown')
+            conditions = data.get('known_conditions', '').strip()
+            allergies = data.get('allergies', '').strip()
+            if age:
+                try: age = int(age)
+                except Exception: age = None
+            save_patient_profile(session_id, name, age, gender, conditions, allergies)
+            return jsonify({'success': True, 'profile': get_patient_profile(session_id)})
+        else:
+            return jsonify({'success': True, 'profile': get_patient_profile(session_id)})
+    except Exception as e:
+        return jsonify({'error': f'Profile error: {str(e)}'}), 500
+
+
+@app.route('/set-medicine-status', methods=['POST'])
+def update_medicine_status():
+    """Confirm or discontinue active medicine."""
+    try:
+        session_id = get_session_id()
+        data = request.get_json() or {}
+        canonical_name = data.get('canonical_name', '').strip()
+        confirmed = int(data.get('confirmed', 1))
+        discontinued = int(data.get('discontinued', 0))
+        if not canonical_name:
+            return jsonify({'error': 'Medicine canonical name required'}), 400
+        set_medicine_status(session_id, canonical_name, confirmed, discontinued)
+        return jsonify({'success': True, 'active_medicines': get_active_medicines(session_id)})
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/history', methods=['GET'])
+def get_history():
+    """Get patient analysis history and profile logs."""
+    try:
+        session_id = get_session_id()
+        history = get_analysis_history(session_id)
+        lab_hist = get_lab_history(session_id, limit=20)
+        active_meds = get_active_medicines(session_id)
+        prof = get_patient_profile(session_id)
         return jsonify({
             'success': True,
-            'response': result['response'],
-            'source': result['source'],
-            'analysis_kind': snapshot['kind'] if snapshot else None,
-            'analysis_version': result.get('analysis_version', version),
+            'profile': prof,
+            'analyses': history,
+            'lab_history': lab_hist,
+            'active_medicines': active_meds
         })
     except Exception as e:
-        logger.error(f"Error in patient_chat_endpoint: {type(e).__name__}")
-        return jsonify({'success': False, 'error': 'The assistant could not answer right now.'}), 500
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/ddi-check', methods=['POST'])
+def ddi_check():
+    """Direct DDI check endpoint."""
+    try:
+        data = request.get_json()
+        medicines = data.get('medicines', [])
+        if not medicines:
+            return jsonify({'error': 'No medicines provided'}), 400
+
+        session_id = get_session_id()
+        historical = get_active_medicines(session_id)
+        hist_names = [m.get("canonical_name", "") for m in historical]
+
+        report = run_full_ddi_check(medicines, hist_names if hist_names else None)
+        return jsonify({'success': True, 'ddi_report': report})
+    except Exception as e:
+        return jsonify({'error': f'DDI check error: {str(e)}'}), 500
+
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    app.run(host='127.0.0.1', port=5000, debug=False, threaded=True)

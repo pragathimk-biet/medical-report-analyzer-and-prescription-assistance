@@ -1,12 +1,8 @@
 # Virtual Environment
 venv/
-venv311/
 env/
 .env/
 .venv/
-.pytest_cache/
-scratch/
-*.db
 
 # Python
 __pycache__/
@@ -50,3 +46,12 @@ uploads/
 # System Files
 .DS_Store
 Thumbs.db 
+# Local and temporary files
+.env
+.env.local
+__pycache__/
+.pytest_cache/
+.venv/
+scratch/
+uploads/
+medical_analyzer.db

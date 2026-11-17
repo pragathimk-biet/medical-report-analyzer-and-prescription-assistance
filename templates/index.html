@@ -3,529 +3,530 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Report Analyzer</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Medical Report Analyzer — AI-Powered Clinical Diagnostics</title>
+    <meta name="description" content="AI-powered medical report analyzer with OCR, DDI checking, biomarker analysis, and RAG chatbot.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-    <!-- Header Navbar -->
-    <header class="bg-white shadow-md rounded-xl p-6 my-6 max-w-5xl mx-auto border border-gray-100 w-full">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="flex items-center space-x-3 mb-4 md:mb-0">
-                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center">
-                        Medical Report Analyzer
-                        <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Agentic AI v2.0</span>
-                    </h1>
-                    <p class="text-xs text-gray-500 font-medium">AI-Powered Lab Report Analysis & Health Insights System</p>
+                    <h1 class="brand-title">Medical Report Analyzer <span class="badge">Agentic AI v3.0</span></h1>
+                    <p class="brand-sub">AI-Powered Clinical Diagnostics, DDI Safety Engine & Health Insights</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2 text-xs">
-                <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 font-medium">
-                    <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                    NVIDIA NIM / RapidOCR Active
-                </span>
-
-                {% if session.get('user') %}
-                <div class="flex items-center space-x-2">
-                    <button id="open-dashboard-btn" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition-colors flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <span>Patient Records</span>
-                    </button>
-                    <div class="flex items-center space-x-2 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg text-blue-800 font-semibold">
-                        <span>👤 {{ session['user']['name'] }}</span>
-                        <a href="/logout" class="text-xs text-red-600 hover:underline ml-1">Logout</a>
-                    </div>
-                </div>
-                {% else %}
-                <a href="/login" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition-colors flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                    <span>Login</span>
-                </a>
-                <a href="/register" class="px-3.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold border border-gray-300 transition-colors">
-                    Register
-                </a>
-                {% endif %}
+            <div class="header-status">
+                <span class="status-dot"></span>
+                NVIDIA NIM &amp; RapidOCR Active
             </div>
         </div>
     </header>
 
-    <!-- Patient Records & History Dashboard Modal / Panel -->
-    <div id="patient-dashboard-modal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 overflow-y-auto flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100 animate-fadeIn">
-            <!-- Modal Header -->
-            <div class="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center flex-shrink-0">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">
-                        📋
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold tracking-tight" id="dash-patient-name">Patient Health Records</h3>
-                        <p class="text-xs text-blue-100" id="dash-patient-subtitle">Longitudinal History, Stored Medications & DDI Analytics</p>
-                    </div>
-                </div>
-                <button id="close-dashboard-btn" class="text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <!-- Profile Summary Bar -->
-            <div class="px-6 py-3 bg-blue-50/60 border-b border-blue-100 flex flex-wrap gap-4 text-xs text-gray-700 flex-shrink-0 items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <span><strong>Email:</strong> <span id="dash-email" class="text-gray-900">-</span></span>
-                    <span><strong>Age:</strong> <span id="dash-age" class="text-gray-900">-</span></span>
-                    <span><strong>Gender:</strong> <span id="dash-gender" class="text-gray-900">-</span></span>
-                </div>
-                <div>
-                    <span class="bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded text-[11px] font-semibold" id="dash-slug">ID: -</span>
-                </div>
-            </div>
-
-            <!-- Dashboard Sub-Tabs -->
-            <div class="px-6 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-                <div class="flex space-x-4 text-xs font-semibold">
-                    <button id="dash-tab-meds" class="py-3 border-b-2 border-blue-600 text-blue-600">Active Medications</button>
-                    <button id="dash-tab-discontinued" class="py-3 text-gray-500 hover:text-blue-600">Discontinued Medications</button>
-                    <button id="dash-tab-prescriptions" class="py-3 text-gray-500 hover:text-blue-600">Prescription History</button>
-                    <button id="dash-tab-labs" class="py-3 text-gray-500 hover:text-blue-600">Lab Reports</button>
-                    <button id="dash-tab-ddi" class="py-3 text-gray-500 hover:text-blue-600">DDI History Table</button>
-                </div>
-            </div>
-
-            <!-- Modal Body Scrollable Area -->
-            <div class="p-6 overflow-y-auto flex-grow space-y-4">
-                <!-- Section 1: Active Medications -->
-                <div id="dash-sec-meds" class="space-y-3">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-sm font-bold text-gray-800">Current Active Medications</h4>
-                        <span class="text-xs text-gray-500">Meds currently included in automatic DDI and safety checks</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
-                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
-                                <tr>
-                                    <th class="px-3 py-2 border-b">Medicine</th>
-                                    <th class="px-3 py-2 border-b">Strength / Dose</th>
-                                    <th class="px-3 py-2 border-b">Class</th>
-                                    <th class="px-3 py-2 border-b">Added Date</th>
-                                    <th class="px-3 py-2 border-b text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dash-active-meds-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">Loading active medications...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Section 2: Discontinued Medications -->
-                <div id="dash-sec-discontinued" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-sm font-bold text-gray-800">Past & Discontinued Medications</h4>
-                        <span class="text-xs text-gray-500">Excluded from active DDI checking</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
-                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
-                                <tr>
-                                    <th class="px-3 py-2 border-b">Medicine</th>
-                                    <th class="px-3 py-2 border-b">Strength / Dose</th>
-                                    <th class="px-3 py-2 border-b">Class</th>
-                                    <th class="px-3 py-2 border-b">Status</th>
-                                    <th class="px-3 py-2 border-b text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dash-discontinued-meds-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No discontinued medications recorded.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Section 3: Prescriptions History -->
-                <div id="dash-sec-prescriptions" class="space-y-3 hidden">
-                    <h4 class="text-sm font-bold text-gray-800 mb-2">Prescription Uploads & Extracted Medicines</h4>
-                    <div id="dash-prescriptions-list" class="space-y-3">
-                        <p class="text-xs text-gray-400 text-center py-4">Loading prescription records...</p>
-                    </div>
-                </div>
-
-                <!-- Section 4: Lab Reports -->
-                <div id="dash-sec-labs" class="space-y-3 hidden">
-                    <h4 class="text-sm font-bold text-gray-800 mb-2">Laboratory Measurement History</h4>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
-                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
-                                <tr>
-                                    <th class="px-3 py-2 border-b">Parameter</th>
-                                    <th class="px-3 py-2 border-b">Value</th>
-                                    <th class="px-3 py-2 border-b">Unit</th>
-                                    <th class="px-3 py-2 border-b">Status</th>
-                                    <th class="px-3 py-2 border-b">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dash-labs-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">Loading lab history...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Section 5: DDI History Table -->
-                <div id="dash-sec-ddi" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-sm font-bold text-gray-800">Drug-Drug Interaction Analysis History</h4>
-                        <span class="text-xs text-gray-500">Persistent across sessions</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-xs text-left border border-gray-200 rounded-lg">
-                            <thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-[10px] tracking-wider">
-                                <tr>
-                                    <th class="px-3 py-2 border-b">Medicine A</th>
-                                    <th class="px-3 py-2 border-b">Medicine B</th>
-                                    <th class="px-3 py-2 border-b">Source</th>
-                                    <th class="px-3 py-2 border-b">Severity</th>
-                                    <th class="px-3 py-2 border-b">Interaction Details</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dash-ddi-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No interaction records found.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs flex-shrink-0">
-                <span class="text-gray-500">Records isolated to your secure patient profile.</span>
-                <button id="close-dashboard-btn-2" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold text-gray-700 transition-colors">
-                    Close Dashboard
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="w-full max-w-5xl mx-auto px-4 flex-grow">
+    <main class="app-main">
         <!-- Tab Navigation -->
-        <div class="w-full mb-6">
-            <div class="flex border-b border-gray-200">
-                <button id="report-tab" class="px-6 py-2.5 font-semibold text-blue-600 border-b-2 border-blue-600 text-sm">Report Analysis</button>
-                <button id="symptoms-tab" class="px-6 py-2.5 font-semibold text-gray-500 hover:text-blue-600 text-sm">AI Analysis</button>
-                <button id="medicine-tab" class="px-6 py-2.5 font-semibold text-gray-500 hover:text-blue-600 text-sm">Medicine Info</button>
-            </div>
-        </div>
+        <nav class="tab-nav" role="tablist">
+            <button id="report-tab" class="tab-btn active" role="tab" aria-selected="true">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Report Analysis
+            </button>
+            <button id="prescription-tab" class="tab-btn" role="tab">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Prescription, DDI, Symptoms &amp; Medicine Info
+            </button>
+            <button id="symptoms-tab" class="tab-btn" role="tab">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                AI Symptom Check
+            </button>
+            <button id="chatbot-tab" class="tab-btn" role="tab">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                AI Chatbot
+            </button>
+            <button id="history-tab" class="tab-btn" role="tab">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Patient Profile &amp; History
+            </button>
+        </nav>
 
-        <div class="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
-            <!-- Report Analysis Section -->
-            <div id="report-section">
-                <div class="upload-container mb-6">
-                    <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition-colors">
-                        <div class="mb-3">
-                            <svg class="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <p class="text-gray-600 mb-2">Drag and drop your report file here or</p>
-                        <label class="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors inline-block">
-                            Browse Files
-                            <input type="file" id="file-input" class="hidden" accept=".jpg,.jpeg,.png,.pdf">
-                        </label>
-                        <p class="text-sm text-gray-500 mt-2">Supported formats: JPG, PNG, PDF</p>
-                    </div>
+        <div class="card">
+
+            <!-- ═══════════ REPORT ANALYSIS SECTION ═══════════ -->
+            <section id="report-section" class="tab-panel active">
+                <div class="info-banner">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Upload a blood test, lab report, or any medical document. AI extracts and classifies all biomarker values automatically.
                 </div>
 
-                <div class="relative flex py-2 items-center mb-4">
-                    <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink mx-4 text-gray-400 font-medium text-xs tracking-wider">OR PASTE REPORT TEXT DIRECTLY</span>
-                    <div class="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                <div class="mb-4">
-                    <textarea id="report-text-input" rows="4" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Paste your medical test report text here (e.g. Hemoglobin: 14.2 g/dL, Fasting Blood Sugar: 95 mg/dL)..."></textarea>
-                </div>
-                <button id="analyze-report-text-btn" class="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium transition-colors mb-4">
-                    Analyze Report Text
-                </button>
-            </div>
-
-            <!-- Symptoms Analysis Section -->
-            <div id="symptoms-section" class="hidden">
-                <div class="mb-6">
-                    <label for="symptoms-input" class="block text-gray-700 text-sm font-bold mb-2">Describe Your Symptoms</label>
-                    <textarea id="symptoms-input" rows="6" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Please describe your symptoms in detail. For example: I've been experiencing severe headache for the past 3 days, along with fever and fatigue..."></textarea>
-                </div>
-                <button id="analyze-symptoms" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                    Analyze Symptoms
-                </button>
-            </div>
-
-            <!-- Medicine Information Section -->
-            <div id="medicine-section" class="hidden">
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Prescription Assistance & Medicine Info</label>
-                    
-                    <div class="space-y-4">
-                        <!-- Patient Information -->
-                        <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3.5 rounded-lg border border-gray-100 mb-4">
-                            <div>
-                                <label class="block text-gray-600 text-xs font-semibold mb-1">Patient Age (Optional)</label>
-                                <input type="number" id="patient-age" min="0" max="150" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white" placeholder="Enter age (e.g. 45)">
-                            </div>
-                            <div>
-                                <label class="block text-gray-600 text-xs font-semibold mb-1">Patient Gender (Optional)</label>
-                                <select id="patient-gender" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
-                                    <option value="">Select gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Current Laboratory Measurement (Optional — DLTI Screening) -->
-                        <div class="bg-gray-50 p-3.5 rounded-lg border border-gray-200 mb-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-gray-700 text-xs font-bold uppercase tracking-wider text-blue-800">
-                                    Current Laboratory Measurement (Optional — DLTI Screening)
-                                </label>
-                                <span class="text-xs text-gray-500 italic">Verified via Clinical Rule Engine</span>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                <div>
-                                    <label class="block text-gray-600 text-xs font-semibold mb-1">Lab Analyte</label>
-                                    <input type="text" id="lab-analyte" class="w-full px-3 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white" placeholder="e.g. Glucose, Potassium">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-600 text-xs font-semibold mb-1">Measured Value</label>
-                                    <input type="number" step="any" id="lab-value" class="w-full px-3 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white" placeholder="e.g. 180">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-600 text-xs font-semibold mb-1">Unit</label>
-                                    <input type="text" id="lab-unit" class="w-full px-3 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white" placeholder="e.g. mg/dL, mmol/L">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-600 text-xs font-semibold mb-1">Timing / Context</label>
-                                    <select id="lab-timing" class="w-full px-3 py-1.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
-                                        <option value="fasting">Fasting (≥8 hrs)</option>
-                                        <option value="random">Random / Casual</option>
-                                        <option value="2h_postprandial">2h Postprandial</option>
-                                        <option value="unspecified">Unspecified / Unknown</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Option A: Upload Prescription Document -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-xs font-bold uppercase tracking-wider mb-2 text-blue-700 flex items-center">
-                                <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                Option A: Upload Prescription Document (JPG, PNG, PDF)
-                            </label>
-                            <div id="prescription-drop-zone" class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg p-5 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-100 transition-colors">
-                                <div class="mb-2">
-                                    <svg class="mx-auto h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                    </svg>
-                                </div>
-                                <p class="text-xs text-gray-700 font-medium mb-1">Drag and drop your prescription image/PDF here or</p>
-                                <label class="bg-blue-600 text-white px-3.5 py-1.5 rounded-md text-xs cursor-pointer hover:bg-blue-700 transition-colors inline-block font-medium shadow-sm">
-                                    Browse Prescription File
-                                    <input type="file" id="prescription-file-input" class="hidden" accept=".jpg,.jpeg,.png,.pdf">
-                                </label>
-                                <p class="text-xs text-gray-500 mt-1.5">Supported formats: JPG, PNG, PDF</p>
-                            </div>
-                            <div id="selected-file-container" class="mt-2 hidden p-2.5 bg-blue-100 rounded-lg border border-blue-200 text-xs text-blue-900 flex items-center justify-between">
-                                <div class="flex items-center space-x-2 truncate">
-                                    <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    <span id="selected-file-label" class="font-medium truncate">No file selected</span>
-                                </div>
-                                <button type="button" id="clear-selected-file" class="text-blue-700 hover:text-red-600 font-bold ml-2 px-1 text-sm" title="Remove file">&times;</button>
-                            </div>
-                            <button id="analyze-prescription-btn" class="w-full mt-3 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium transition-colors shadow flex items-center justify-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                Upload & Analyze Prescription Document
-                            </button>
-                        </div>
-
-                        <!-- OR Divider -->
-                        <div class="relative flex py-1 items-center my-3">
-                            <div class="flex-grow border-t border-gray-200"></div>
-                            <span class="flex-shrink mx-4 text-gray-400 font-medium text-xs tracking-wider">OR ENTER MEDICINE & DOSAGE MANUALLY</span>
-                            <div class="flex-grow border-t border-gray-200"></div>
-                        </div>
-                        
-                        <!-- Option B: Manual Medicine Entry -->
-                        <div>
-                            <label class="block text-gray-600 text-sm mb-1 font-medium">Medicine Name</label>
-                            <input type="text" id="medicine-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Enter medicine name (e.g. Paracetamol, Metformin)">
-                        </div>
-
-                        <!-- Dosage Schedule -->
-                        <div>
-                            <label class="block text-gray-600 text-sm mb-1 font-medium">Dosage Schedule</label>
-                            <div class="grid grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-gray-500 text-xs mb-1">Morning (M)</label>
-                                    <input type="number" id="dosage-morning" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-500 text-xs mb-1">Evening (E)</label>
-                                    <input type="number" id="dosage-evening" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-500 text-xs mb-1">Night (N)</label>
-                                    <input type="number" id="dosage-night" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button id="analyze-medicine" class="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium transition-colors">
-                    Analyze Manual Medicine Entry
-                </button>
-            </div>
-
-            <div id="loading" class="hidden">
-                <div class="flex items-center justify-center py-6">
-                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-                    <p class="ml-3 text-gray-600 font-medium">Analyzing with NVIDIA Nemotron AI...</p>
-                </div>
-            </div>
-
-            <div id="result" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-semibold text-gray-800">Analysis Results</h2>
-                    <div class="flex items-center space-x-2">
-                        <button id="download-pdf-btn" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center shadow font-medium text-xs">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Download PDF
-                        </button>
-                        <select id="language-select" class="px-2 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                            <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
-                            <option value="Hindi">हिंदी (Hindi)</option>
-                            <option value="Bengali">বাংলা (Bengali)</option>
-                            <option value="Spanish">Español (Spanish)</option>
-                            <option value="French">Français (French)</option>
-                            <option value="German">Deutsch (German)</option>
+                <!-- Gender selection for accurate ranges -->
+                <div class="form-grid-2" style="margin-bottom:1rem;">
+                    <div class="form-group">
+                        <label class="form-label-sm">Patient Gender (for reference ranges)</label>
+                        <select id="report-gender" class="form-input">
+                            <option value="unknown">Not specified</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
                         </select>
-                        <button id="translate-btn" class="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-xs font-medium shadow flex items-center">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                    </div>
+                </div>
+
+                <div class="upload-area" id="drop-zone-report" data-analysis="report">
+                    <div class="upload-icon">
+                        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <p class="upload-title">Drop your medical report here</p>
+                    <p class="upload-sub">or click to browse files</p>
+                    <label class="upload-btn" id="upload-btn-report">
+                        Browse Files
+                        <input type="file" id="file-input-report" class="hidden-input"
+                               accept=".jpg,.jpeg,.png,.bmp,.tiff,.tif,.webp,.pdf,.docx,.doc,.txt">
+                    </label>
+                    <div class="format-tags">
+                        <span class="format-tag">JPG</span><span class="format-tag">PNG</span>
+                        <span class="format-tag">PDF</span><span class="format-tag">DOCX</span>
+                        <span class="format-tag">BMP</span><span class="format-tag">TIFF</span>
+                        <span class="format-tag">WEBP</span><span class="format-tag">TXT</span>
+                    </div>
+                    <div id="file-name-report" class="file-name-display hidden"></div>
+                </div>
+
+                <div class="divider"><span>OR PASTE REPORT TEXT DIRECTLY</span></div>
+
+                <textarea id="report-text-input" class="text-area" rows="4"
+                    placeholder="Paste your medical test report text here (e.g. Hemoglobin: 11.2 g/dL, Fasting Blood Sugar: 145 mg/dL, HbA1c: 7.2%)..."></textarea>
+
+                <button id="analyze-report-text-btn" class="btn btn-primary btn-full">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    Analyze Report with AI + Biomarker Extraction
+                </button>
+            </section>
+
+            <!-- ═══════════ PRESCRIPTION OCR + DDI SECTION ═══════════ -->
+            <section id="prescription-section" class="tab-panel hidden">
+                <div class="info-banner info-banner-purple">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Upload prescription photo or scan. AI extracts medicines, checks Drug-Drug Interactions (DDI) against your history, and flags duplicate ingredients.
+                </div>
+
+                <div class="ddi-features-grid">
+                    <div class="ddi-feature-card">
+                        <span class="ddi-icon">🔴</span>
+                        <strong>New vs New DDI</strong>
+                        <p>Checks interactions within this prescription</p>
+                    </div>
+                    <div class="ddi-feature-card">
+                        <span class="ddi-icon">🟡</span>
+                        <strong>New vs Historical DDI</strong>
+                        <p>Checks against your previous medicines</p>
+                    </div>
+                    <div class="ddi-feature-card">
+                        <span class="ddi-icon">⚠️</span>
+                        <strong>Duplicate Detection</strong>
+                        <p>Finds same ingredients in different medicines</p>
+                    </div>
+                </div>
+
+                <div class="upload-area" id="drop-zone-prescription" data-analysis="prescription">
+                    <div class="upload-icon prescription-icon">
+                        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                        </svg>
+                    </div>
+                    <p class="upload-title">Drop your prescription here</p>
+                    <p class="upload-sub">Photo, scan or digital — handwritten &amp; printed supported</p>
+                    <label class="upload-btn upload-btn-purple" id="upload-btn-prescription">
+                        Browse Prescription
+                        <input type="file" id="file-input-prescription" class="hidden-input"
+                               accept=".jpg,.jpeg,.png,.bmp,.tiff,.tif,.webp,.pdf,.docx,.doc,.txt">
+                    </label>
+                    <div class="format-tags">
+                        <span class="format-tag">JPG / PNG</span><span class="format-tag">PDF</span>
+                        <span class="format-tag">DOCX</span><span class="format-tag">TIFF / BMP</span>
+                        <span class="format-tag">TXT</span>
+                    </div>
+                    <div id="file-name-prescription" class="file-name-display hidden"></div>
+                </div>
+
+                <div class="divider"><span>OR PASTE PRESCRIPTION TEXT DIRECTLY</span></div>
+
+                <textarea id="prescription-text-input" class="text-area" rows="4"
+                    placeholder="Paste prescription text here (e.g. Tab. Metformin 500mg - 1-0-1 for 30 days, Cap. Atorvastatin 10mg - 0-0-1, Tab. Warfarin 5mg - 1-0-0)..."></textarea>
+
+                <div class="divider"><span>AND / OR SPECIFY MEDICINE &amp; DOSAGE DETAILS</span></div>
+
+                <div class="card-inner-box">
+                    <h4 class="form-subheading">💊 Medicine Details &amp; Dosage Schedule</h4>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label-sm">Patient Age</label>
+                            <input type="number" id="rx-patient-age" min="0" max="150" class="form-input" placeholder="e.g. 45">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-sm">Patient Gender</label>
+                            <select id="rx-patient-gender" class="form-input">
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label-sm">Specific Medicine Name (Optional manual addition)</label>
+                        <input type="text" id="rx-medicine-name" class="form-input" placeholder="e.g. Metformin, Atorvastatin, Warfarin, Aspirin">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label-sm">Dosage Schedule (tablets per session)</label>
+                        <div class="form-grid-3">
+                            <div>
+                                <label class="form-label-xs">🌅 Morning</label>
+                                <input type="number" id="rx-dosage-morning" min="0" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label-xs">🌆 Evening</label>
+                                <input type="number" id="rx-dosage-evening" min="0" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label-xs">🌙 Night</label>
+                                <input type="number" id="rx-dosage-night" min="0" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:1rem;margin-bottom:1rem;">
+                    <label class="form-label-sm" style="color:var(--purple-dark);font-weight:700;">
+                        🩺 Current Symptoms (Combined Check — AI correlates medications with your symptoms):
+                    </label>
+                    <textarea id="prescription-symptoms-input" class="text-area" rows="2"
+                        placeholder="Optional: Describe symptoms (e.g. dry cough, dizziness, stomach pain, muscle aches). AI will check if they are related to prescribed drugs or indicate drug interactions..."></textarea>
+                </div>
+
+                <button id="analyze-prescription-text-btn" class="btn btn-purple btn-full">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Analyze Prescription + DDI, Medicine Info &amp; Symptoms
+                </button>
+            </section>
+
+            <!-- ═══════════ SYMPTOMS SECTION ═══════════ -->
+            <section id="symptoms-section" class="tab-panel hidden">
+                <div class="info-banner">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    Describe your symptoms in detail. AI evaluates possible conditions, urgency level, and recommended actions.
+                </div>
+                <label class="form-label">Describe Your Symptoms</label>
+                <textarea id="symptoms-input" class="text-area" rows="6"
+                    placeholder="Describe your symptoms in detail. For example: I've been experiencing a severe headache for 3 days, along with high fever (103°F), fatigue, and sensitivity to light. I also have nausea and muscle aches..."></textarea>
+                <button id="analyze-symptoms" class="btn btn-primary btn-full">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    Analyze Symptoms with AI
+                </button>
+            </section>
+
+            <!-- ═══════════ MEDICINE SECTION ═══════════ -->
+            <section id="medicine-section" class="tab-panel hidden">
+                <label class="form-label">Medicine Details</label>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label-sm">Patient Age</label>
+                        <input type="number" id="patient-age" min="0" max="150" class="form-input" placeholder="Enter age">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label-sm">Patient Gender</label>
+                        <select id="patient-gender" class="form-input">
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label-sm">Medicine Name</label>
+                    <input type="text" id="medicine-name" class="form-input" placeholder="Enter medicine name (e.g. Metformin, Paracetamol, Atorvastatin)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label-sm">Dosage Schedule (tablets per session)</label>
+                    <div class="form-grid-3">
+                        <div>
+                            <label class="form-label-xs">🌅 Morning</label>
+                            <input type="number" id="dosage-morning" min="0" class="form-input" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="form-label-xs">🌆 Evening</label>
+                            <input type="number" id="dosage-evening" min="0" class="form-input" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="form-label-xs">🌙 Night</label>
+                            <input type="number" id="dosage-night" min="0" class="form-input" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+                <button id="analyze-medicine" class="btn btn-primary btn-full">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    Analyze Medicine
+                </button>
+            </section>
+
+            <!-- ═══════════ CHATBOT SECTION ═══════════ -->
+            <section id="chatbot-section" class="tab-panel hidden">
+                <div class="info-banner info-banner-green">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                    Ask questions about your medical report, test values, or medicines. The AI answers using your session's verified data.
+                </div>
+
+                <div class="chatbot-suggestions">
+                    <p class="suggestions-label">Try asking:</p>
+                    <div class="suggestion-chips">
+                        <button class="suggestion-chip" data-q="What are my abnormal test values?">What are my abnormal values?</button>
+                        <button class="suggestion-chip" data-q="Why is my hemoglobin low?">Why is hemoglobin low?</button>
+                        <button class="suggestion-chip" data-q="What does my HbA1c value mean?">What does HbA1c mean?</button>
+                        <button class="suggestion-chip" data-q="Which of my medicines interact?">Medicine interactions?</button>
+                        <button class="suggestion-chip" data-q="What precautions should I discuss with my doctor?">Doctor precautions?</button>
+                        <button class="suggestion-chip" data-q="What is my normal reference range?">My reference ranges?</button>
+                    </div>
+                </div>
+
+                <div id="chatbot-messages" class="chatbot-messages">
+                    <div class="chat-message assistant-message">
+                        <div class="chat-avatar">🤖</div>
+                        <div class="chat-bubble">
+                            Hello! I'm your medical AI assistant. Upload a report or prescription first, then ask me anything about your results, medicines, or health values. I'll answer based on your actual data.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chatbot-input-row">
+                    <input type="text" id="chatbot-input" class="form-input chatbot-input"
+                           placeholder="Ask about your report, test values, or medicines...">
+                    <button id="chatbot-send" class="btn btn-primary chatbot-send-btn">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                        Send
+                    </button>
+                </div>
+            </section>
+
+            <!-- ═══════════ HISTORY SECTION ═══════════ -->
+            <section id="history-section" class="tab-panel hidden">
+                <div class="info-banner">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Your patient profile and analysis history. Lab values and active medicines are stored for DDI checking and clinical cross-check.
+                </div>
+
+                <!-- Patient Medical Profile Card -->
+                <div class="patient-profile-card">
+                    <h3 class="history-section-title">👤 Patient Medical Profile &amp; History Logs</h3>
+                    <p style="font-size:0.8rem;color:var(--gray-600);margin-bottom:0.75rem;">
+                        Save your medical profile so AI automatically cross-checks new prescriptions and lab reports against your known chronic conditions, allergies, and prior test results.
+                    </p>
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label class="form-label-xs">Full Name / Identifier</label>
+                            <input type="text" id="prof-name" class="form-input" placeholder="e.g. John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-xs">Age</label>
+                            <input type="number" id="prof-age" min="0" max="150" class="form-input" placeholder="Age">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-xs">Gender</label>
+                            <select id="prof-gender" class="form-input">
+                                <option value="unknown">Not specified</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-2" style="margin-top:0.5rem;">
+                        <div class="form-group">
+                            <label class="form-label-xs">Known Chronic Conditions (comma separated)</label>
+                            <input type="text" id="prof-conditions" class="form-input" placeholder="e.g. Type 2 Diabetes, Hypertension, CKD">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-xs">Known Drug Allergies</label>
+                            <input type="text" id="prof-allergies" class="form-input" placeholder="e.g. Penicillin, Sulfa, Aspirin">
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;">
+                        <span id="profile-status-msg" class="profile-msg hidden"></span>
+                        <button id="save-profile-btn" class="btn btn-sm btn-primary">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Save Patient Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;margin-top:1.25rem;">
+                    <button id="refresh-history" class="btn btn-sm btn-outline">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Refresh History Logs
+                    </button>
+                </div>
+
+                <div id="history-content">
+                    <div id="active-medicines-section">
+                        <h3 class="history-section-title">💊 Active Medicines Log (for DDI &amp; Lab Cross-Check)</h3>
+                        <div id="active-medicines-list" class="history-list">
+                            <p class="history-empty">No medicines recorded yet. Upload a prescription to add medicines.</p>
+                        </div>
+                    </div>
+                    <div id="lab-history-section" style="margin-top:1.5rem;">
+                        <h3 class="history-section-title">🧪 Lab Test History Log</h3>
+                        <div id="lab-history-list" class="history-list">
+                            <p class="history-empty">No lab results yet. Upload a medical report to track values.</p>
+                        </div>
+                    </div>
+                    <div id="analysis-history-section" style="margin-top:1.5rem;">
+                        <h3 class="history-section-title">📋 Analysis History Log</h3>
+                        <div id="analysis-history-list" class="history-list">
+                            <p class="history-empty">No analyses yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════ LOADING STATE ═══════════ -->
+            <div id="loading" class="loading-state hidden">
+                <div class="spinner"></div>
+                <div>
+                    <p class="loading-title" id="loading-title">Analyzing with AI...</p>
+                    <p class="loading-sub" id="loading-sub">Extracting text &amp; running clinical analysis</p>
+                </div>
+            </div>
+
+            <!-- ═══════════ RESULT SECTION ═══════════ -->
+            <div id="result" class="result-section hidden">
+                <div class="result-header">
+                    <h2 class="result-title">Analysis Results</h2>
+                    <div class="result-actions">
+                        <select id="language-select" class="form-input-sm">
+                            <option value="Kannada">ಕನ್ನಡ Kannada</option>
+                            <option value="Hindi">हिंदी Hindi</option>
+                            <option value="Bengali">বাংলা Bengali</option>
+                            <option value="Tamil">தமிழ் Tamil</option>
+                            <option value="Telugu">తెలుగు Telugu</option>
+                            <option value="Spanish">Español Spanish</option>
+                            <option value="French">Français French</option>
+                            <option value="German">Deutsch German</option>
+                            <option value="Arabic">عربي Arabic</option>
+                        </select>
+                        <button id="translate-btn" class="btn btn-sm btn-green">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
                             Translate
                         </button>
-                        <button id="english-btn" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-xs font-medium shadow">English</button>
-                        <button id="bangla-btn" class="px-3 py-1.5 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors hidden text-xs font-medium">Translated</button>
+                        <button id="english-btn" class="btn btn-sm btn-primary">English</button>
+                        <button id="bangla-btn" class="btn btn-sm btn-outline hidden">Translated</button>
+                        <button id="download-pdf-btn" class="btn btn-sm btn-indigo">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            PDF
+                        </button>
                     </div>
                 </div>
-                <div id="english-content" class="prose max-w-none">
-                    <!-- English analysis content will be inserted here -->
-                </div>
-                <div id="bangla-content" class="prose max-w-none hidden">
-                    <!-- Bangla analysis content will be inserted here -->
-                </div>
+                <div id="english-content" class="prose-content"></div>
+                <div id="bangla-content" class="prose-content hidden"></div>
 
-                <!-- Ask Follow-Up Questions (Patient RAG Assistant) Inline Chatbot -->
-                <div id="patient-rag-chatbot-card" class="bg-white border border-blue-200 rounded-2xl p-5 shadow-sm mt-8 mb-4 w-full">
-                    <div class="flex items-center space-x-3 mb-2">
-                        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-base shadow-sm">
-                            🤖
-                        </div>
-                        <div>
-                            <h3 class="text-base font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                                Ask Follow-Up Questions (Patient RAG Assistant)
-                            </h3>
-                            <p class="text-xs text-gray-500 font-medium">Ask questions regarding your lab findings, dietary guidelines, or prescribed medicine interactions.</p>
+                <!-- ═══════════ CONTEXTUAL FOLLOW-UP RAG CHATBOT ═══════════ -->
+                <div id="followup-chat-container" class="followup-chat-container">
+                    <div class="followup-chat-header">
+                        <div class="followup-chat-title">
+                            <span class="chat-icon">💬</span>
+                            <div>
+                                <h3>Ask AI Follow-Up About This Result</h3>
+                                <p>Answers directly based on your current lab/prescription findings, medicine interactions, and patient profile history.</p>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Chat Messages Scroll Container -->
-                    <div id="chat-history" class="max-h-80 overflow-y-auto space-y-3 p-3.5 bg-gray-50/70 rounded-xl mb-4 border border-gray-100 min-h-[120px]">
-                        <div class="bg-blue-50 border border-blue-100 text-blue-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm font-medium">
-                            👋 Hello! I am your Patient AI Assistant. I can answer questions about the analysis shown above. Patient medication history is not loaded in this session. Ask me any questions!
+                    <div class="chatbot-suggestions followup-suggestions">
+                        <p class="suggestions-label">Suggested follow-up questions:</p>
+                        <div class="suggestion-chips followup-chips">
+                            <button class="suggestion-chip followup-chip" data-q="Explain my abnormal findings in simple terms.">Explain abnormal findings</button>
+                            <button class="suggestion-chip followup-chip" data-q="What dietary changes or foods should I avoid based on these results?">Foods to avoid</button>
+                            <button class="suggestion-chip followup-chip" data-q="Do any of my medications conflict with my health conditions or lab values?">Check conflicts &amp; DDI</button>
+                            <button class="suggestion-chip followup-chip" data-q="What specific questions should I ask my doctor about this report?">Questions for doctor</button>
                         </div>
                     </div>
-
-                    <!-- Chat Input Form -->
-                    <div class="flex items-center space-x-2">
-                        <input type="text" id="chat-input" class="flex-grow px-4 py-3 border-2 border-blue-400 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white placeholder-gray-400 shadow-sm" placeholder="Type your medical report question (e.g. What should I eat for high blood sugar?)...">
-                        <button id="send-chat-btn" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl text-sm transition-colors flex items-center justify-center shadow-md min-w-[140px] space-x-1.5 flex-shrink-0">
-                            <svg class="w-4 h-4 transform rotate-90" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
-                            </svg>
-                            <span>Send Question</span>
+                    <div id="followup-messages" class="chatbot-messages followup-messages">
+                        <div class="chat-message assistant-message">
+                            <div class="chat-avatar">🤖</div>
+                            <div class="chat-bubble">
+                                I'm ready to answer any questions about the analysis above. You can ask about your specific biomarker values, prescription dosages, drug interactions, or what precautions to take.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chatbot-input-row followup-input-row">
+                        <input type="text" id="followup-input" class="form-input chatbot-input"
+                               placeholder="Ask a question about this result...">
+                        <button id="followup-send" class="btn btn-primary chatbot-send-btn">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                            Ask AI
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div id="error" class="hidden mt-4">
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-                    <p id="error-message"></p>
-                </div>
+            <!-- ═══════════ ERROR STATE ═══════════ -->
+            <div id="error" class="error-box hidden">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="error-message"></span>
             </div>
-        </div>
-    </div>
+
+        </div><!-- .card -->
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-16 py-10 shadow-inner w-full">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <!-- Column 1: Brand & Purpose -->
+    <footer class="app-footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
                 <div>
-                    <div class="flex items-center space-x-2 mb-3">
-                        <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <div class="footer-brand">
+                        <div class="footer-icon">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
-                        <span class="font-bold text-gray-900 text-sm">Medical Report Analyzer</span>
+                        <span class="footer-brand-name">Medical Report Analyzer</span>
                     </div>
-                    <p class="text-xs text-gray-500 leading-relaxed">
-                        An intelligent Agentic AI diagnostic engine designed to convert complex lab report parameters into clear health summaries, clinical benchmarks, and actionable dietary guidelines.
-                    </p>
+                    <p class="footer-desc">Agentic AI diagnostic engine with OCR extraction, deterministic biomarker analysis, DDI safety engine, and RAG chatbot.</p>
                 </div>
-
-                <!-- Column 2: Core Capabilities -->
                 <div>
-                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Core Capabilities</h4>
-                    <ul class="space-y-1.5 text-xs text-gray-600">
-                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> Multi-Engine OCR (PyPDF & RapidOCR)</li>
-                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> Reference Benchmark Mapping</li>
-                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> Symptoms & Medication Analysis</li>
-                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span> PDF Export & Multilingual Output</li>
-                    </ul>
+                    <h4 class="footer-heading">AI Features</h4>
+                    <div class="footer-tags">
+                        <span class="footer-tag">Biomarker Extraction</span>
+                        <span class="footer-tag">DDI Checking</span>
+                        <span class="footer-tag">Symptom Analysis</span>
+                        <span class="footer-tag">RAG Chatbot</span>
+                        <span class="footer-tag">Multi-language</span>
+                    </div>
                 </div>
-
-                <!-- Column 3: Tech Stack & System Status -->
                 <div>
-                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Tech Stack</h4>
-                    <div class="flex flex-wrap gap-1 mb-3">
-                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">Python 3.13</span>
-                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">Flask 2.3</span>
-                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">Llama 3.1 8B</span>
-                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">RapidOCR</span>
+                    <h4 class="footer-heading">Tech Stack</h4>
+                    <div class="footer-tags">
+                        <span class="footer-tag">Python 3.12</span>
+                        <span class="footer-tag">Flask 3.1</span>
+                        <span class="footer-tag">NVIDIA NIM</span>
+                        <span class="footer-tag">RapidOCR</span>
+                        <span class="footer-tag">SQLite</span>
+                        <span class="footer-tag">OpenCV</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Disclaimer & Copyright Bar -->
-            <div class="border-t border-gray-100 pt-6 text-center">
-                <p class="text-xs text-gray-400 mb-2">
-                    <strong>Medical Disclaimer:</strong> This application is an AI-assisted analytical system intended solely for educational and informational purposes. It is not a substitute for professional clinical advice or diagnosis. Always consult a certified physician for official health decisions.
-                </p>
-                <p class="text-xs text-gray-500 font-medium">
-                    © 2026 Medical Report Analyzer AI System • Agentic Architecture v2.0 • All Rights Reserved
-                </p>
+            <div class="footer-bottom">
+                <p><strong>Medical Disclaimer:</strong> This application is an AI-assisted tool for educational purposes only. It is not a substitute for professional clinical advice. Always consult a certified physician.</p>
+                <p class="footer-copy">© 2026 Medical Report Analyzer AI System • Agentic Architecture v3.0</p>
             </div>
         </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20261016_3"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
-</html> 
+</html>

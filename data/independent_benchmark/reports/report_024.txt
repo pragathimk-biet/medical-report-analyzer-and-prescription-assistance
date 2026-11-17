@@ -1,2 +1,0 @@
-HAEMATOLOGY ASSAY
-Platelet Count: 85000.0 /uL (150000.0 - 450000.0)

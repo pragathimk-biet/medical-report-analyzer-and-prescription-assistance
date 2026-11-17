@@ -1,1175 +1,808 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching functionality
-    const reportTab = document.getElementById('report-tab');
-    const symptomsTab = document.getElementById('symptoms-tab');
-    const medicineTab = document.getElementById('medicine-tab');
-    const reportSection = document.getElementById('report-section');
-    const symptomsSection = document.getElementById('symptoms-section');
-    const medicineSection = document.getElementById('medicine-section');
-    const translateBtn = document.getElementById('translate-btn');
-    
-    // Per-tab analysis state tracking
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── State ──────────────────────────────────────────────────────────────
     let activeTab = 'report';
-    const tabResults = {
-        report: null,
-        symptoms: null,
-        medicine: null
+    const tabResults = { report: null, prescription: null, symptoms: null, medicine: null };
+    let chatHistory = []; // RAG chatbot conversation history
+
+    const ALLOWED_MIME = new Set([
+        'image/jpeg', 'image/png', 'image/bmp', 'image/tiff', 'image/webp',
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword',
+        'text/plain'
+    ]);
+    const ALLOWED_EXT = new Set(['jpg','jpeg','png','bmp','tiff','tif','webp','pdf','docx','doc','txt']);
+
+    // ── Element References ─────────────────────────────────────────────────
+    const loading         = document.getElementById('loading');
+    const loadingTitle    = document.getElementById('loading-title');
+    const loadingSub      = document.getElementById('loading-sub');
+    const result          = document.getElementById('result');
+    const error           = document.getElementById('error');
+    const errorMessage    = document.getElementById('error-message');
+    const englishBtn      = document.getElementById('english-btn');
+    const banglaBtn       = document.getElementById('bangla-btn');
+    const englishContent  = document.getElementById('english-content');
+    const banglaContent   = document.getElementById('bangla-content');
+    const translateBtn    = document.getElementById('translate-btn');
+    const languageSelect  = document.getElementById('language-select');
+    const downloadPdfBtn  = document.getElementById('download-pdf-btn');
+
+    // ── Tab Switching ───────────────────────────────────────────────────────
+    const tabs = {
+        report:       { btn: document.getElementById('report-tab'),       section: document.getElementById('report-section') },
+        prescription: { btn: document.getElementById('prescription-tab'), section: document.getElementById('prescription-section') },
+        symptoms:     { btn: document.getElementById('symptoms-tab'),     section: document.getElementById('symptoms-section') },
+        chatbot:      { btn: document.getElementById('chatbot-tab'),      section: document.getElementById('chatbot-section') },
+        history:      { btn: document.getElementById('history-tab'),      section: document.getElementById('history-section') },
     };
 
-    function switchTab(tabName) {
-        activeTab = tabName;
-
-        // Reset all tab styling
-        [reportTab, symptomsTab, medicineTab].forEach(btn => {
-            btn.classList.remove('active', 'text-blue-600', 'font-bold');
-            btn.classList.add('text-gray-500', 'font-semibold');
+    function switchTab(name) {
+        activeTab = name;
+        Object.entries(tabs).forEach(([key, tab]) => {
+            if (!tab || !tab.btn || !tab.section) return;
+            const isActive = key === name;
+            tab.btn.classList.toggle('active', isActive);
+            tab.section.classList.toggle('active', isActive);
+            tab.section.classList.toggle('hidden', !isActive);
         });
 
-        reportSection.classList.add('hidden');
-        symptomsSection.classList.add('hidden');
-        medicineSection.classList.add('hidden');
-
-        if (tabName === 'report') {
-            reportTab.classList.add('active', 'text-blue-600', 'font-bold');
-            reportTab.classList.remove('text-gray-500');
-            reportSection.classList.remove('hidden');
-        } else if (tabName === 'symptoms') {
-            symptomsTab.classList.add('active', 'text-blue-600', 'font-bold');
-            symptomsTab.classList.remove('text-gray-500');
-            symptomsSection.classList.remove('hidden');
-        } else if (tabName === 'medicine') {
-            medicineTab.classList.add('active', 'text-blue-600', 'font-bold');
-            medicineTab.classList.remove('text-gray-500');
-            medicineSection.classList.remove('hidden');
+        // Hide result/loading/error when switching away from result-producing tabs
+        const resultTabs = ['report','prescription','symptoms'];
+        if (!resultTabs.includes(name)) {
+            loading.classList.add('hidden');
+            error.classList.add('hidden');
+            result.classList.add('hidden');
+        } else {
+            loading.classList.add('hidden');
+            error.classList.add('hidden');
+            renderTabResult();
         }
 
-        // Hide loading and error on tab switch
-        loading.classList.add('hidden');
-        error.classList.add('hidden');
-
-        // Render result for the selected active tab only
-        renderTabResult();
+        // Auto-load history when switching to history tab
+        if (name === 'history') {
+            loadHistory();
+        }
     }
 
-    reportTab.addEventListener('click', () => switchTab('report'));
-    symptomsTab.addEventListener('click', () => switchTab('symptoms'));
-    medicineTab.addEventListener('click', () => switchTab('medicine'));
-
-    // File upload functionality
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const loading = document.getElementById('loading');
-    const result = document.getElementById('result');
-    const error = document.getElementById('error');
-    const errorMessage = document.getElementById('error-message');
-    const englishBtn = document.getElementById('english-btn');
-    const banglaBtn = document.getElementById('bangla-btn');
-    const englishContent = document.getElementById('english-content');
-    const banglaContent = document.getElementById('bangla-content');
-
-    // Drag and drop handlers
-    if (dropZone) {
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.add('dragover');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.remove('dragover');
-            }, false);
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            handleFile(file);
-        });
-
-        dropZone.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'INPUT') {
-                fileInput.click();
-            }
-        });
-    }
-
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        handleFile(file);
+    Object.entries(tabs).forEach(([name, tab]) => {
+        if (tab && tab.btn) {
+            tab.btn.addEventListener('click', () => switchTab(name));
+        }
     });
 
-    function handleFile(file) {
-        if (!file) return;
-
-        // Check file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    // ── File Validation ────────────────────────────────────────────────────
+    function isFileAllowed(file) {
         const ext = file.name.split('.').pop().toLowerCase();
-        if (!allowedTypes.includes(file.type) && !['jpg', 'jpeg', 'png', 'pdf'].includes(ext)) {
-            showError('Please upload a valid JPG, PNG, or PDF file.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        showLoading('Analyzing Medical Document with AI...');
-        console.log('Uploading file:', file.name);
-
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Response data:', data);
-            handleResponse(data);
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            handleError(err);
-        });
+        if (ALLOWED_EXT.has(ext)) return true;
+        if (ALLOWED_MIME.has(file.type)) return true;
+        return false;
     }
 
-    // Direct Report Text Analysis functionality
-    const reportTextInput = document.getElementById('report-text-input');
-    const analyzeReportTextBtn = document.getElementById('analyze-report-text-btn');
-
-    if (analyzeReportTextBtn && reportTextInput) {
-        analyzeReportTextBtn.addEventListener('click', () => {
-            const text = reportTextInput.value.trim();
-            if (!text) {
-                showError('Please paste your medical report text first.');
-                return;
-            }
-
-            showLoading('Analyzing Medical Report Text...');
-            console.log('Analyzing report text directly');
-
-            fetch('/analyze-report-text', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ report_text: text })
-            })
-            .then(response => response.json())
-            .then(data => handleResponse(data))
-            .catch(err => handleError(err));
-        });
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
     }
 
-    // Symptoms analysis functionality
-    const symptomsInput = document.getElementById('symptoms-input');
-    const analyzeButton = document.getElementById('analyze-symptoms');
+    // ── Generic Drop Zone Setup ────────────────────────────────────────────
+    function setupDropZone(zoneId, inputId, fileNameId, analysisType) {
+        const zone      = document.getElementById(zoneId);
+        const input     = document.getElementById(inputId);
+        const fileLabel = document.getElementById(fileNameId);
+        if (!zone || !input) return;
 
-    if (analyzeButton && symptomsInput) {
-        analyzeButton.addEventListener('click', () => {
-            const symptoms = symptomsInput.value.trim();
-            if (!symptoms) {
-                showError('Please describe your symptoms in detail');
-                return;
-            }
-
-            showLoading('Evaluating Symptoms against Clinical Benchmarks...');
-            console.log('Analyzing symptoms');
-
-            fetch('/analyze-symptoms', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ symptoms: symptoms })
-            })
-            .then(response => response.json())
-            .then(data => handleResponse(data))
-            .catch(err => handleError(err));
-        });
-    }
-
-    // Medicine analysis functionality
-    const medicineName = document.getElementById('medicine-name');
-    const dosageMorning = document.getElementById('dosage-morning');
-    const dosageEvening = document.getElementById('dosage-evening');
-    const dosageNight = document.getElementById('dosage-night');
-    const patientAge = document.getElementById('patient-age');
-    const patientGender = document.getElementById('patient-gender');
-    const analyzeMedicineBtn = document.getElementById('analyze-medicine');
-
-    if (analyzeMedicineBtn) {
-        analyzeMedicineBtn.addEventListener('click', () => {
-            const medicine = medicineName.value.trim();
-            const age = patientAge.value.trim();
-            const gender = patientGender.value;
-
-            // Validate inputs
-            if (!medicine) {
-                showError('Please enter a medicine name');
-                return;
-            }
-
-            const dosage = {
-                morning: parseInt(dosageMorning.value) || 0,
-                evening: parseInt(dosageEvening.value) || 0,
-                night: parseInt(dosageNight.value) || 0
-            };
-
-            if (dosage.morning === 0 && dosage.evening === 0 && dosage.night === 0) {
-                showError('Please enter at least one dosage value');
-                return;
-            }
-
-            showLoading('Checking Medication Safety & Historical Contraindications...');
-
-            fetch('/analyze-medicine', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    medicine: medicine,
-                    dosage: dosage,
-                    patient: {
-                        age: age ? parseInt(age) : null,
-                        gender: gender || null
-                    }
-                })
-            })
-            .then(response => response.json())
-            .then(data => handleResponse(data))
-            .catch(err => handleError(err));
-        });
-    }
-
-    // Prescription File Upload functionality
-    const prescriptionDropZone = document.getElementById('prescription-drop-zone');
-    const prescriptionFileInput = document.getElementById('prescription-file-input');
-    const selectedFileContainer = document.getElementById('selected-file-container');
-    const selectedFileLabel = document.getElementById('selected-file-label');
-    const clearSelectedFileBtn = document.getElementById('clear-selected-file');
-    const analyzePrescriptionBtn = document.getElementById('analyze-prescription-btn');
-    let stagedPrescriptionFile = null;
-
-    function stagePrescriptionFile(file) {
-        if (!file) return;
-        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-        const ext = file.name.split('.').pop().toLowerCase();
-        if (!allowedTypes.includes(file.type) && !['jpg', 'jpeg', 'png', 'pdf'].includes(ext)) {
-            showError('Please upload a valid JPG, PNG, or PDF prescription document');
-            return;
-        }
-        stagedPrescriptionFile = file;
-        if (selectedFileContainer && selectedFileLabel) {
-            const sizeKb = (file.size / 1024).toFixed(1);
-            selectedFileLabel.textContent = `${file.name} (${sizeKb} KB) — Ready to analyze`;
-            selectedFileContainer.classList.remove('hidden');
-        }
-    }
-
-    function clearStagedPrescriptionFile() {
-        stagedPrescriptionFile = null;
-        if (prescriptionFileInput) prescriptionFileInput.value = '';
-        if (selectedFileContainer && selectedFileLabel) {
-            selectedFileLabel.textContent = 'No file selected';
-            selectedFileContainer.classList.add('hidden');
-        }
-    }
-
-    if (clearSelectedFileBtn) {
-        clearSelectedFileBtn.addEventListener('click', (e) => {
+        zone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            clearStagedPrescriptionFile();
+            zone.classList.add('drag-over');
         });
-    }
-
-    if (prescriptionDropZone && prescriptionFileInput) {
-        ['dragenter', 'dragover'].forEach(eventName => {
-            prescriptionDropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                prescriptionDropZone.classList.add('bg-blue-100');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            prescriptionDropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                prescriptionDropZone.classList.remove('bg-blue-100');
-            }, false);
-        });
-
-        prescriptionDropZone.addEventListener('drop', (e) => {
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            stagePrescriptionFile(file);
+            if (file) handleFileUpload(file, fileLabel, analysisType);
         });
-
-        prescriptionDropZone.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-                prescriptionFileInput.click();
-            }
+        zone.addEventListener('click', (e) => {
+            if (!e.target.closest('label')) input.click();
         });
-
-        prescriptionFileInput.addEventListener('change', (e) => {
+        input.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            stagePrescriptionFile(file);
+            if (file) handleFileUpload(file, fileLabel, analysisType);
+            input.value = '';
         });
     }
 
-    if (analyzePrescriptionBtn) {
-        analyzePrescriptionBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (!stagedPrescriptionFile) {
-                showError('Please select or browse a prescription file first.');
-                if (prescriptionFileInput) prescriptionFileInput.click();
-                return;
-            }
-            handlePrescriptionFile(stagedPrescriptionFile);
-        });
-    }
+    setupDropZone('drop-zone-report',        'file-input-report',        'file-name-report',        'report');
+    setupDropZone('drop-zone-prescription',  'file-input-prescription',  'file-name-prescription',  'prescription');
 
-    function handlePrescriptionFile(file) {
-        if (!file) return;
-
-        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-        const ext = file.name.split('.').pop().toLowerCase();
-        if (!allowedTypes.includes(file.type) && !['jpg', 'jpeg', 'png', 'pdf'].includes(ext)) {
-            showError('Please upload a valid JPG, PNG, or PDF prescription document');
+    // ── File Upload Handler ────────────────────────────────────────────────
+    function handleFileUpload(file, fileLabel, analysisType) {
+        if (!isFileAllowed(file)) {
+            showError(`Unsupported file type: "${file.name}". Please upload JPG, PNG, PDF, DOCX, BMP, TIFF, WEBP, or TXT.`);
             return;
+        }
+        if (file.size > 32 * 1024 * 1024) {
+            showError(`File too large (${formatFileSize(file.size)}). Maximum allowed size is 32 MB.`);
+            return;
+        }
+
+        if (fileLabel) {
+            fileLabel.textContent = `📎 ${file.name} (${formatFileSize(file.size)})`;
+            fileLabel.classList.remove('hidden');
         }
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('analysis_type', analysisType);
 
-        const age = patientAge ? patientAge.value.trim() : '';
-        const gender = patientGender ? patientGender.value : '';
-        if (age) formData.append('age', age);
-        if (gender) formData.append('gender', gender);
+        // Include gender for report analysis
+        if (analysisType === 'report') {
+            const gender = document.getElementById('report-gender')?.value || 'unknown';
+            formData.append('gender', gender);
+        }
 
-        const labAnalyteEl = document.getElementById('lab-analyte');
-        const labValueEl = document.getElementById('lab-value');
-        const labUnitEl = document.getElementById('lab-unit');
-        const labTimingEl = document.getElementById('lab-timing');
-        if (labAnalyteEl && labAnalyteEl.value.trim()) {
-            formData.append('current_lab_analyte', labAnalyteEl.value.trim());
-            if (labValueEl && labValueEl.value.trim()) {
-                formData.append('current_lab_value', labValueEl.value.trim());
-            }
-            if (labUnitEl && labUnitEl.value.trim()) {
-                formData.append('current_lab_unit', labUnitEl.value.trim());
-            }
-            if (labTimingEl && labTimingEl.value) {
-                formData.append('current_lab_timing', labTimingEl.value);
+        // Include symptoms & medicine info for prescription analysis
+        if (analysisType === 'prescription') {
+            const symptoms = document.getElementById('prescription-symptoms-input')?.value?.trim() || '';
+            formData.append('symptoms', symptoms);
+            const rxAge = document.getElementById('rx-patient-age')?.value?.trim() || '';
+            const rxGender = document.getElementById('rx-patient-gender')?.value || '';
+            const rxMed = document.getElementById('rx-medicine-name')?.value?.trim() || '';
+            const dM = parseInt(document.getElementById('rx-dosage-morning')?.value) || 0;
+            const dE = parseInt(document.getElementById('rx-dosage-evening')?.value) || 0;
+            const dN = parseInt(document.getElementById('rx-dosage-night')?.value) || 0;
+
+            if (rxAge || rxGender || rxMed || (dM + dE + dN > 0)) {
+                formData.append('patient_info', JSON.stringify({
+                    age: rxAge ? parseInt(rxAge) : null,
+                    gender: rxGender || 'unknown',
+                    additional_medicine: rxMed,
+                    dosage: { morning: dM, evening: dE, night: dN }
+                }));
             }
         }
 
-        showLoading('Analyzing Prescription with Model 2 Handwriting Cross-Check...');
+        const loadMsg = analysisType === 'prescription'
+            ? 'Extracting prescription + DDI &amp; Symptom check...'
+            : 'Extracting report + analyzing biomarkers...';
+        const subMsg = analysisType === 'prescription'
+            ? 'OCR → Medicine extraction → DDI check → Symptom correlation → AI analysis'
+            : 'OCR → Biomarker extraction → Reference classification → AI analysis';
 
-        fetch('/upload-prescription', {
+        setLoadingState(loadMsg, subMsg);
+
+        fetch('/upload', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => handleResponse(data))
+            .catch(err => handleError(err));
+    }
+
+    // ── Report Text Analyze ────────────────────────────────────────────────
+    document.getElementById('analyze-report-text-btn').addEventListener('click', () => {
+        const text = document.getElementById('report-text-input').value.trim();
+        if (!text) { showError('Please paste your medical report text first.'); return; }
+        const gender = document.getElementById('report-gender')?.value || 'unknown';
+        setLoadingState('Analyzing report text + extracting biomarkers...', 'Biomarker extraction → AI clinical analysis');
+        fetch('/analyze-report-text', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ report_text: text, analysis_type: 'report', gender })
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => handleResponse(data))
-        .catch(err => {
-            console.error('Prescription Upload Error:', err);
-            handleError(err);
+        .catch(err => handleError(err));
+    });
+
+    // ── Prescription Text Analyze (Integrated with Dosage & Symptoms) ────
+    document.getElementById('analyze-prescription-text-btn').addEventListener('click', () => {
+        let text = document.getElementById('prescription-text-input')?.value?.trim() || '';
+        const symptoms = document.getElementById('prescription-symptoms-input')?.value?.trim() || '';
+        const rxAge = document.getElementById('rx-patient-age')?.value?.trim() || '';
+        const rxGender = document.getElementById('rx-patient-gender')?.value || '';
+        const rxMed = document.getElementById('rx-medicine-name')?.value?.trim() || '';
+        const dM = parseInt(document.getElementById('rx-dosage-morning')?.value) || 0;
+        const dE = parseInt(document.getElementById('rx-dosage-evening')?.value) || 0;
+        const dN = parseInt(document.getElementById('rx-dosage-night')?.value) || 0;
+
+        let manualMedClause = '';
+        if (rxMed) {
+            manualMedClause = `Tab. ${rxMed}`;
+            if (dM > 0 || dE > 0 || dN > 0) {
+                manualMedClause += ` ${dM}-${dE}-${dN}`;
+            }
+        }
+
+        if (manualMedClause) {
+            if (text) {
+                text += `\n${manualMedClause}`;
+            } else {
+                text = manualMedClause;
+            }
+        }
+
+        if (!text && !symptoms) {
+            showError('Please paste prescription text or enter a medicine name or describe your symptoms.');
+            return;
+        }
+
+        let patientInfo = null;
+        if (rxAge || rxGender || (dM + dE + dN > 0)) {
+            patientInfo = {
+                age: rxAge ? parseInt(rxAge) : null,
+                gender: rxGender || 'unknown',
+                dosage: { morning: dM, evening: dE, night: dN }
+            };
+        }
+
+        setLoadingState('Analyzing prescription + DDI, Medicine Info & Symptom check...', 'Medicine extraction → DDI verification → Symptom correlation → AI analysis');
+        fetch('/analyze-report-text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                report_text: text || `Reported Symptoms: ${symptoms}`,
+                analysis_type: 'prescription',
+                symptoms: symptoms,
+                patient_info: patientInfo
+            })
+        })
+        .then(r => r.json())
+        .then(data => handleResponse(data))
+        .catch(err => handleError(err));
+    });
+
+    // ── Symptoms Analyze ───────────────────────────────────────────────────
+    document.getElementById('analyze-symptoms').addEventListener('click', () => {
+        const symptoms = document.getElementById('symptoms-input').value.trim();
+        if (!symptoms) { showError('Please describe your symptoms first.'); return; }
+        setLoadingState('Analyzing symptoms...', 'AI is evaluating possible conditions');
+        fetch('/analyze-symptoms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symptoms })
+        })
+        .then(r => r.json())
+        .then(data => handleResponse(data))
+        .catch(err => handleError(err));
+    });
+
+    // ── Medicine Analyze ───────────────────────────────────────────────────
+    document.getElementById('analyze-medicine').addEventListener('click', () => {
+        const medicine = document.getElementById('medicine-name').value.trim();
+        const age      = document.getElementById('patient-age').value.trim();
+        const gender   = document.getElementById('patient-gender').value;
+
+        if (!medicine) { showError('Please enter a medicine name.'); return; }
+        if (!age || parseInt(age) <= 0) { showError('Please enter a valid patient age.'); return; }
+        if (!gender) { showError('Please select patient gender.'); return; }
+
+        const dosage = {
+            morning: parseInt(document.getElementById('dosage-morning').value) || 0,
+            evening: parseInt(document.getElementById('dosage-evening').value) || 0,
+            night:   parseInt(document.getElementById('dosage-night').value)   || 0,
+        };
+        if (dosage.morning === 0 && dosage.evening === 0 && dosage.night === 0) {
+            showError('Please enter at least one dosage value.');
+            return;
+        }
+
+        setLoadingState('Analyzing medicine...', 'Looking up dosage, side effects & interactions');
+        fetch('/analyze-medicine', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ medicine, dosage, patient: { age: parseInt(age), gender } })
+        })
+        .then(r => r.json())
+        .then(data => handleResponse(data))
+        .catch(err => handleError(err));
+    });
+
+    // ── Translation ────────────────────────────────────────────────────────
+    translateBtn.addEventListener('click', async () => {
+        const current = tabResults[activeTab];
+        if (!current || !current.english) { showError('No content to translate.'); return; }
+
+        const lang = languageSelect.value;
+        translateBtn.disabled = true;
+        translateBtn.innerHTML = `<svg class="spinner-sm" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="40" stroke-dashoffset="10"/></svg> Translating…`;
+
+        try {
+            const res  = await fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: current.english, target_language: lang })
+            });
+            const data = await res.json();
+
+            if (data.success && data.translation) {
+                current.bangla = data.translation;
+                banglaContent.innerHTML = safeMarkdown(data.translation);
+                banglaBtn.textContent = lang;
+                banglaBtn.classList.remove('hidden');
+                banglaBtn.click();
+            } else {
+                showError(data.error || 'Translation failed.');
+            }
+        } catch (e) {
+            showError('Translation request failed. Please try again.');
+        } finally {
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg> Translate`;
+        }
+    });
+
+    // ── Language Toggles ───────────────────────────────────────────────────
+    englishBtn.addEventListener('click', () => {
+        englishBtn.classList.remove('btn-outline'); englishBtn.classList.add('btn-primary');
+        banglaBtn.classList.remove('btn-primary');  banglaBtn.classList.add('btn-outline');
+        englishContent.classList.remove('hidden');
+        banglaContent.classList.add('hidden');
+    });
+    banglaBtn.addEventListener('click', () => {
+        const cur = tabResults[activeTab];
+        if (!cur || !cur.bangla) return;
+        banglaBtn.classList.remove('btn-outline'); banglaBtn.classList.add('btn-primary');
+        englishBtn.classList.remove('btn-primary'); englishBtn.classList.add('btn-outline');
+        banglaContent.classList.remove('hidden');
+        englishContent.classList.add('hidden');
+    });
+
+    // ── PDF Download ───────────────────────────────────────────────────────
+    if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener('click', () => {
+            const cur = tabResults[activeTab];
+            if (!cur || !cur.english) { showError('No analysis to download.'); return; }
+
+            const resultEl  = document.getElementById('result');
+            const actionBar = resultEl.querySelector('.result-actions');
+            const followupEl = document.getElementById('followup-chat-container');
+            if (actionBar) actionBar.style.display = 'none';
+            if (followupEl) followupEl.style.display = 'none';
+
+            const headerEl = document.createElement('div');
+            headerEl.id = 'pdf-header';
+            headerEl.style.cssText = 'border-bottom:2px solid #2563eb;padding-bottom:12px;margin-bottom:20px;';
+            headerEl.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <h1 style="color:#1d4ed8;font-size:22px;font-weight:800;margin:0;">Medical Report Analyzer</h1>
+                        <p style="color:#2563eb;font-size:11px;font-weight:700;text-transform:uppercase;margin-top:3px;">AI Clinical Summary — ${activeTab.toUpperCase()} ANALYSIS</p>
+                    </div>
+                    <div style="text-align:right;font-size:10px;color:#6b7280;">
+                        <div style="background:#eff6ff;color:#1d4ed8;padding:3px 10px;border-radius:12px;border:1px solid #bfdbfe;font-weight:700;margin-bottom:4px;">NVIDIA NIM Active</div>
+                        ${new Date().toLocaleString()}
+                    </div>
+                </div>`;
+
+            const footerEl = document.createElement('div');
+            footerEl.id = 'pdf-footer';
+            footerEl.style.cssText = 'border-top:2px solid #e5e7eb;padding-top:12px;margin-top:25px;font-size:9.5px;color:#6b7280;text-align:center;';
+            footerEl.innerHTML = `<strong>Disclaimer:</strong> AI-assisted for informational purposes only. Consult a certified physician for medical decisions.<br><span>© 2026 Medical Report Analyzer AI System • v3.0</span>`;
+
+            resultEl.insertBefore(headerEl, resultEl.firstChild);
+            resultEl.appendChild(footerEl);
+
+            html2pdf().set({
+                margin:      [0.4, 0.4, 0.4, 0.4],
+                filename:    `Medical_Analysis_${activeTab}_${Date.now()}.pdf`,
+                image:       { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF:       { unit: 'in', format: 'letter', orientation: 'portrait' }
+            }).from(resultEl).save().then(() => {
+                document.getElementById('pdf-header')?.remove();
+                document.getElementById('pdf-footer')?.remove();
+                if (actionBar) actionBar.style.display = '';
+                if (followupEl) followupEl.style.display = '';
+            }).catch(() => {
+                document.getElementById('pdf-header')?.remove();
+                document.getElementById('pdf-footer')?.remove();
+                if (actionBar) actionBar.style.display = '';
+                if (followupEl) followupEl.style.display = '';
+                showError('PDF generation failed. Please try again.');
+            });
         });
     }
 
-    // PDF Report Export: server-generated PDF, saved directly (no print dialog).
-    const downloadPdfBtn = document.getElementById('download-pdf-btn');
-    if (downloadPdfBtn) {
-        downloadPdfBtn.addEventListener('click', async () => {
-            const currentAnalysis = tabResults[activeTab];
-            if (!currentAnalysis || !currentAnalysis.english) {
-                showError('No generated analysis results available to download.');
-                return;
+    // ── RAG CHATBOT ───────────────────────────────────────────────────────
+    const chatbotInput  = document.getElementById('chatbot-input');
+    const chatbotSend   = document.getElementById('chatbot-send');
+    const chatbotMsgs   = document.getElementById('chatbot-messages');
+
+    function appendChatMessage(role, content) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+        const avatar = document.createElement('div');
+        avatar.className = 'chat-avatar';
+        avatar.textContent = role === 'user' ? '👤' : '🤖';
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.innerHTML = safeMarkdown(content);
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
+        chatbotMsgs.appendChild(msgDiv);
+        chatbotMsgs.scrollTop = chatbotMsgs.scrollHeight;
+    }
+
+    function sendChatMessage() {
+        const q = chatbotInput.value.trim();
+        if (!q) return;
+
+        appendChatMessage('user', q);
+        chatHistory.push({ role: 'user', content: q });
+        chatbotInput.value = '';
+        chatbotSend.disabled = true;
+        chatbotSend.textContent = '…';
+
+        // Add typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-message assistant-message';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = `<div class="chat-avatar">🤖</div><div class="chat-bubble" style="color:#9ca3af;font-style:italic;">Thinking...</div>`;
+        chatbotMsgs.appendChild(typingDiv);
+        chatbotMsgs.scrollTop = chatbotMsgs.scrollHeight;
+
+        fetch('/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: q, history: chatHistory.slice(-6) })
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('typing-indicator')?.remove();
+            if (data.success && data.response) {
+                appendChatMessage('assistant', data.response);
+                chatHistory.push({ role: 'assistant', content: data.response });
+            } else {
+                appendChatMessage('assistant', data.error || 'Sorry, I could not process that. Please try again.');
             }
+        })
+        .catch(err => {
+            document.getElementById('typing-indicator')?.remove();
+            appendChatMessage('assistant', 'Network error. Please check your connection and try again.');
+        })
+        .finally(() => {
+            chatbotSend.disabled = false;
+            chatbotSend.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Send`;
+        });
+    }
 
-            const prefixes = { medicine: 'Prescription_Analysis', report: 'Lab_Report_Analysis', symptoms: 'Symptom_Analysis' };
-            const now = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-            const filename = `${prefixes[activeTab] || 'Analysis'}_${dateStr}.pdf`;
+    chatbotSend.addEventListener('click', sendChatMessage);
+    chatbotInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
 
-            const originalLabel = downloadPdfBtn.innerHTML;
-            downloadPdfBtn.disabled = true;
-            try {
-                // Only the analysis markdown is sent: buttons, language
-                // dropdowns and the chatbot are never part of the export.
-                const response = await fetch('/export-pdf', {
+    // Suggestion chips
+    document.querySelectorAll('.suggestion-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            chatbotInput.value = chip.dataset.q;
+            sendChatMessage();
+        });
+    });
+
+    // ── CONTEXTUAL FOLLOW-UP RAG CHATBOT IN RESULT ───────────────────────
+    const followupInput = document.getElementById('followup-input');
+    const followupSend  = document.getElementById('followup-send');
+    const followupMsgs  = document.getElementById('followup-messages');
+    let followupHistory = [];
+
+    function appendFollowupMessage(role, content) {
+        if (!followupMsgs) return;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+        const avatar = document.createElement('div');
+        avatar.className = 'chat-avatar';
+        avatar.textContent = role === 'user' ? '👤' : '🤖';
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.innerHTML = safeMarkdown(content);
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
+        followupMsgs.appendChild(msgDiv);
+        followupMsgs.scrollTop = followupMsgs.scrollHeight;
+    }
+
+    function sendFollowupMessage() {
+        if (!followupInput) return;
+        const q = followupInput.value.trim();
+        if (!q) return;
+
+        appendFollowupMessage('user', q);
+        followupHistory.push({ role: 'user', content: q });
+        followupInput.value = '';
+        if (followupSend) {
+            followupSend.disabled = true;
+            followupSend.textContent = '…';
+        }
+
+        const curResult = tabResults[activeTab];
+        const currentAnalysisText = curResult ? (curResult.english || '') : '';
+
+        // Add typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-message assistant-message';
+        typingDiv.id = 'followup-typing-indicator';
+        typingDiv.innerHTML = `<div class="chat-avatar">🤖</div><div class="chat-bubble" style="color:#9ca3af;font-style:italic;">Analyzing result context & answering...</div>`;
+        followupMsgs.appendChild(typingDiv);
+        followupMsgs.scrollTop = followupMsgs.scrollHeight;
+
+        fetch('/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: q,
+                history: followupHistory.slice(-6),
+                current_analysis: currentAnalysisText
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('followup-typing-indicator')?.remove();
+            if (data.success && data.response) {
+                appendFollowupMessage('assistant', data.response);
+                followupHistory.push({ role: 'assistant', content: data.response });
+            } else {
+                appendFollowupMessage('assistant', data.error || 'Sorry, I could not process that. Please try again.');
+            }
+        })
+        .catch(err => {
+            document.getElementById('followup-typing-indicator')?.remove();
+            appendFollowupMessage('assistant', 'Network error. Please check your connection and try again.');
+        })
+        .finally(() => {
+            if (followupSend) {
+                followupSend.disabled = false;
+                followupSend.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Ask AI`;
+            }
+        });
+    }
+
+    if (followupSend) followupSend.addEventListener('click', sendFollowupMessage);
+    if (followupInput) {
+        followupInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFollowupMessage();
+            }
+        });
+    }
+
+    // Follow-up suggestion chips
+    document.querySelectorAll('.followup-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            if (followupInput) {
+                followupInput.value = chip.dataset.q;
+                sendFollowupMessage();
+            }
+        });
+    });
+
+    // ── PATIENT PROFILE & HISTORY ─────────────────────────────────────────
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+    const profileStatusMsg = document.getElementById('profile-status-msg');
+
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', saveProfile);
+    }
+
+    function loadProfile() {
+        fetch('/profile')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.profile) {
+                    const p = data.profile;
+                    const nameEl = document.getElementById('prof-name');
+                    const ageEl = document.getElementById('prof-age');
+                    const genderEl = document.getElementById('prof-gender');
+                    const condEl = document.getElementById('prof-conditions');
+                    const allergEl = document.getElementById('prof-allergies');
+                    if (nameEl && p.name) nameEl.value = p.name;
+                    if (ageEl && p.age) ageEl.value = p.age;
+                    if (genderEl && p.gender) genderEl.value = p.gender;
+                    if (condEl && p.known_conditions) condEl.value = p.known_conditions;
+                    if (allergEl && p.allergies) allergEl.value = p.allergies;
+                }
+            })
+            .catch(err => console.error('Error loading profile:', err));
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('prof-name')?.value?.trim() || 'Primary Patient';
+        const age = document.getElementById('prof-age')?.value?.trim() || null;
+        const gender = document.getElementById('prof-gender')?.value || 'unknown';
+        const conditions = document.getElementById('prof-conditions')?.value?.trim() || '';
+        const allergies = document.getElementById('prof-allergies')?.value?.trim() || '';
+
+        if (saveProfileBtn) saveProfileBtn.disabled = true;
+
+        fetch('/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                age: age ? parseInt(age) : null,
+                gender,
+                known_conditions: conditions,
+                allergies
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (profileStatusMsg) {
+                profileStatusMsg.textContent = '✅ Profile saved successfully!';
+                profileStatusMsg.classList.remove('hidden');
+                setTimeout(() => profileStatusMsg.classList.add('hidden'), 3500);
+            }
+        })
+        .catch(err => {
+            if (profileStatusMsg) {
+                profileStatusMsg.textContent = '❌ Failed to save profile.';
+                profileStatusMsg.classList.remove('hidden');
+            }
+        })
+        .finally(() => {
+            if (saveProfileBtn) saveProfileBtn.disabled = false;
+        });
+    }
+
+    document.getElementById('refresh-history')?.addEventListener('click', loadHistory);
+
+    function loadHistory() {
+        loadProfile();
+        fetch('/history')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) return;
+                renderActiveMedicines(data.active_medicines || []);
+                renderLabHistory(data.lab_history || []);
+                renderAnalysisHistory(data.analyses || []);
+            })
+            .catch(err => console.error('History load error:', err));
+    }
+
+    function renderActiveMedicines(meds) {
+        const container = document.getElementById('active-medicines-list');
+        if (!container) return;
+        if (!meds.length) {
+            container.innerHTML = '<p class="history-empty">No active medicines recorded yet. Upload a prescription to track medicines.</p>';
+            return;
+        }
+        container.innerHTML = meds.map(m => {
+            const name = (m.canonical_name || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const brand = m.brand_name ? ` (${m.brand_name})` : '';
+            const dosage = m.dosage ? ` | ${m.dosage}` : '';
+            const freq = m.frequency ? ` | ${m.frequency}` : '';
+            const canName = m.canonical_name || '';
+            return `<div class="history-item">
+                <span class="history-badge badge-medicine">💊 Medicine</span>
+                <span style="flex:1;"><strong>${name}</strong>${brand}${dosage}${freq}</span>
+                <button class="btn-action-sm btn-action-discontinue" data-med="${canName}">Discontinue</button>
+            </div>`;
+        }).join('');
+
+        container.querySelectorAll('.btn-action-discontinue').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const medName = btn.dataset.med;
+                if (!medName) return;
+                fetch('/set-medicine-status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ markdown: currentAnalysis.english, kind: activeTab })
-                });
-
-                const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
-                if (!response.ok || !contentType.includes('application/pdf')) {
-                    let message = 'Failed to generate PDF. Please try again.';
-                    try {
-                        const errBody = await response.json();
-                        if (errBody && errBody.error) message = errBody.error;
-                    } catch (_) { /* non-JSON error body: keep generic message */ }
-                    showError(message);   // never save a failed response as a PDF
-                    return;
-                }
-
-                const blob = await response.blob();
-                const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-                const url = URL.createObjectURL(pdfBlob);
-                const link = document.createElement('a');
-                link.style.display = 'none';
-                link.href = url;
-                link.setAttribute('download', filename);
-                link.download = filename; // explicit filename, ends in .pdf
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    if (link.parentNode) {
-                        link.parentNode.removeChild(link);
-                    }
-                    URL.revokeObjectURL(url);
-                }, 30000);
-            } catch (err) {
-                console.error('PDF download error:', err);
-                showError('Failed to download PDF. Please check your connection and try again.');
-            } finally {
-                downloadPdfBtn.disabled = false;
-                downloadPdfBtn.innerHTML = originalLabel;
-            }
+                    body: JSON.stringify({ canonical_name: medName, confirmed: 0, discontinued: 1 })
+                })
+                .then(r => r.json())
+                .then(() => loadHistory())
+                .catch(err => console.error('Error discontinuing medicine:', err));
+            });
         });
     }
 
-    // Translation handling
-    const languageSelect = document.getElementById('language-select');
-    if (translateBtn) {
-        translateBtn.addEventListener('click', async () => {
-            const currentAnalysis = tabResults[activeTab];
-            if (!currentAnalysis || !currentAnalysis.english) {
-                showError('No content available to translate');
-                return;
-            }
-
-            const selectedLanguage = languageSelect ? languageSelect.value : 'Kannada';
-
-            // Show loading state
-            translateBtn.disabled = true;
-            translateBtn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-white inline" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Translating...
-            `;
-            
-            try {
-                const response = await fetch('/translate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        text: currentAnalysis.english,
-                        target_language: selectedLanguage
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success && data.translation) {
-                    currentAnalysis.bangla = data.translation;
-                    
-                    try {
-                        banglaContent.innerHTML = formatPatientFriendlyHTML(data.translation);
-                    } catch (err) {
-                        console.error('Error parsing markdown:', err);
-                        banglaContent.textContent = data.translation;
-                    }
-
-                    banglaBtn.textContent = `${selectedLanguage}`;
-                    banglaBtn.classList.remove('hidden');
-                    banglaBtn.click();
-                } else {
-                    showError(data.error || 'Translation failed');
-                }
-            } catch (err) {
-                console.error('Translation error:', err);
-                showError('Failed to translate content');
-            } finally {
-                translateBtn.disabled = false;
-                translateBtn.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
-                    Translate
-                `;
-            }
-        });
+    function renderLabHistory(labs) {
+        const container = document.getElementById('lab-history-list');
+        if (!container) return;
+        if (!labs.length) {
+            container.innerHTML = '<p class="history-empty">No lab results yet. Upload a medical report to track values.</p>';
+            return;
+        }
+        container.innerHTML = labs.map(l => {
+            const name = (l.test_name || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const status = l.status || 'UNKNOWN';
+            const badgeClass = status === 'NORMAL' ? 'badge-normal'
+                : (status === 'HIGH' || status === 'DEFICIENT') ? 'badge-high'
+                : status === 'LOW' ? 'badge-low'
+                : 'badge-prediabetes';
+            return `<div class="history-item">
+                <span class="history-badge ${badgeClass}">${status}</span>
+                <span><strong>${name}</strong>: ${l.value} ${l.unit || ''}</span>
+                <span style="color:#6b7280;font-size:.75rem;">Ref: ${l.reference_range || ''}</span>
+                ${l.test_date ? `<span style="color:#9ca3af;font-size:.72rem;">${l.test_date}</span>` : ''}
+            </div>`;
+        }).join('');
     }
 
-    // Language switching
-    if (englishBtn) {
-        englishBtn.addEventListener('click', () => {
-            const currentAnalysis = tabResults[activeTab];
-            if (!currentAnalysis) return;
-            
-            englishBtn.classList.add('bg-blue-600', 'text-white');
-            englishBtn.classList.remove('bg-gray-200', 'text-gray-700');
-            banglaBtn.classList.add('bg-gray-200', 'text-gray-700');
-            banglaBtn.classList.remove('bg-blue-600', 'text-white');
-            englishContent.classList.remove('hidden');
-            banglaContent.classList.add('hidden');
-        });
+    function renderAnalysisHistory(analyses) {
+        const container = document.getElementById('analysis-history-list');
+        if (!container) return;
+        if (!analyses.length) {
+            container.innerHTML = '<p class="history-empty">No analyses yet.</p>';
+            return;
+        }
+        container.innerHTML = analyses.map(a => {
+            const type = (a.analysis_type || '').toUpperCase();
+            const file = a.filename || 'Text Input';
+            const date = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+            return `<div class="history-item">
+                <span class="history-badge badge-medicine">${type}</span>
+                <span><strong>${file}</strong></span>
+                <span style="color:#9ca3af;font-size:.72rem;">${date}</span>
+            </div>`;
+        }).join('');
     }
 
-    if (banglaBtn) {
-        banglaBtn.addEventListener('click', () => {
-            const currentAnalysis = tabResults[activeTab];
-            if (!currentAnalysis || !currentAnalysis.bangla) return;
-            
-            banglaBtn.classList.add('bg-blue-600', 'text-white');
-            banglaBtn.classList.remove('bg-gray-200', 'text-gray-700');
-            englishBtn.classList.add('bg-gray-200', 'text-gray-700');
-            englishBtn.classList.remove('bg-blue-600', 'text-white');
-            banglaContent.classList.remove('hidden');
-            englishContent.classList.add('hidden');
-        });
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function safeMarkdown(text) {
+        try { return marked.parse(text); }
+        catch (e) { return `<pre>${text}</pre>`; }
     }
 
-    function showLoading(msg) {
+    function setLoadingState(title, sub) {
         loading.classList.remove('hidden');
         result.classList.add('hidden');
         error.classList.add('hidden');
-        const loadingTitle = loading.querySelector('p');
-        if (loadingTitle) {
-            loadingTitle.textContent = msg || 'Analyzing Medical Data with AI...';
-        }
-        if (typeof onAnalysisStarted === 'function') {
-            onAnalysisStarted();
-        }
+        if (loadingTitle) loadingTitle.innerHTML = title;
+        if (loadingSub)   loadingSub.textContent = sub;
     }
-
-    // State tracking for active patient and report context
-    let currentPatientName = 'default_patient';
-    let currentReportMarkdown = '';
 
     function handleResponse(data) {
         loading.classList.add('hidden');
-        console.log('Handling response for active tab:', activeTab, data);
-        
         if (data.success && data.analysis) {
             tabResults[activeTab] = data.analysis;
-            if (typeof onAnalysisSucceeded === 'function') {
-                onAnalysisSucceeded(data);
-            }
-            if (data.analysis.patient_name) {
-                currentPatientName = data.analysis.patient_name;
-            }
-            if (data.analysis.english) {
-                currentReportMarkdown = data.analysis.english;
-            }
             renderTabResult();
         } else {
-            showError(data.error || 'An unexpected error occurred while processing.');
+            showError(data.error || 'An unexpected error occurred. Please try again.');
         }
-    }
-
-    function formatPatientFriendlyHTML(markdownText) {
-        if (!markdownText) return '';
-        let rawHtml = marked.parse(markdownText);
-
-        // Highlight Overall Summary as a distinct patient-friendly card
-        rawHtml = rawHtml.replace(
-            /<h2>Overall Summary<\/h2>\s*([\s\S]*?)(?=<h2>|$)/gi,
-            `<div class="overall-summary-card">
-                <div class="flex items-center mb-2">
-                    <span class="text-blue-700 font-bold text-base sm:text-lg flex items-center gap-2">
-                        <svg class="w-5 h-5 inline-block text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 9 0 0118 0z"></path></svg>
-                        Overall Summary
-                    </span>
-                </div>
-                <div class="text-gray-800 text-xs sm:text-sm font-medium leading-relaxed">$1</div>
-            </div>`
-        );
-
-        // Highlight Possible Health Finding as a distinct observation card
-        rawHtml = rawHtml.replace(
-            /<h2>Possible Health Finding<\/h2>\s*([\s\S]*?)(?=<h2>|$)/gi,
-            `<div class="possible-finding-card">
-                <div class="flex items-center mb-2">
-                    <span class="text-amber-800 font-bold text-base sm:text-lg flex items-center gap-2">
-                        <svg class="w-5 h-5 inline-block text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        Possible Health Finding
-                    </span>
-                </div>
-                <div class="text-gray-800 text-xs sm:text-sm font-medium leading-relaxed">$1</div>
-            </div>`
-        );
-
-        // Highlight Possible Medication-Lab Safety Alert as a distinct high-visibility card
-        rawHtml = rawHtml.replace(
-            /<h2>Possible Medication[–\-]?Lab Safety Alert<\/h2>\s*([\s\S]*?)(?=<h2>|$)/gi,
-            `<div class="safety-alert-card">
-                <div class="flex items-center mb-2">
-                    <span class="text-red-800 font-bold text-base sm:text-lg flex items-center gap-2">
-                        <svg class="w-5 h-5 inline-block text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 9 0 0118 0z"></path></svg>
-                        Possible Medication–Lab Safety Alert
-                    </span>
-                </div>
-                <div class="text-gray-800 text-xs sm:text-sm font-medium leading-relaxed">$1</div>
-            </div>`
-        );
-
-        // Wrap markdown tables in responsive scroll wrapper
-        rawHtml = rawHtml.replace(
-            /<table([\s\S]*?)<\/table>/gi,
-            '<div class="table-responsive-wrapper"><table$1</table></div>'
-        );
-
-        // Make Technical Details and Evidence section collapsible on screen
-        rawHtml = rawHtml.replace(
-            /(?:<hr>\s*)?<h2>(?:🔬\s*)?Technical Details and Evidence<\/h2>\s*([\s\S]*)$/i,
-            `<details class="technical-details-card mt-8 border border-gray-200 rounded-xl p-4 bg-gray-50/70 shadow-sm" open>
-                <summary class="cursor-pointer font-bold text-lg text-blue-900 flex items-center justify-between py-1 select-none">
-                    <span class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-blue-600 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        🔬 Technical Details and Evidence
-                    </span>
-                    <span class="text-xs text-blue-600 font-medium hover:underline bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
-                        Click to collapse/expand
-                    </span>
-                </summary>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    $1
-                </div>
-            </details>`
-        );
-
-        // === Status Badge Post-Processing ===
-        // Convert emoji+status text in <td> cells into styled pill badges
-
-        // Clinical status badges
-        rawHtml = rawHtml.replace(/🟢\s*NORMAL/g,
-            '<span class="status-badge status-normal">✓ Normal</span>');
-        rawHtml = rawHtml.replace(/🔴\s*HIGH/g,
-            '<span class="status-badge status-high">↑ High</span>');
-        rawHtml = rawHtml.replace(/🔵\s*LOW/g,
-            '<span class="status-badge status-low">↓ Low</span>');
-        rawHtml = rawHtml.replace(/🟡\s*BORDERLINE/g,
-            '<span class="status-badge status-borderline">~ Borderline</span>');
-        rawHtml = rawHtml.replace(/⚠️\s*BORDERLINE/g,
-            '<span class="status-badge status-borderline">⚠ Borderline</span>');
-        rawHtml = rawHtml.replace(/🟠\s*CRITICAL/g,
-            '<span class="status-badge status-critical">!! Critical</span>');
-        rawHtml = rawHtml.replace(/❌\s*CRITICAL/g,
-            '<span class="status-badge status-critical">!! Critical</span>');
-        rawHtml = rawHtml.replace(/❓\s*UNKNOWN/g,
-            '<span class="status-badge status-unknown">? Unknown</span>');
-
-        // Validation status badges
-        rawHtml = rawHtml.replace(/🟢\s*VALIDATED/g,
-            '<span class="status-badge status-validated">✓ Validated</span>');
-        rawHtml = rawHtml.replace(/🔴\s*INVALID/g,
-            '<span class="status-badge status-invalid">✗ Invalid</span>');
-        rawHtml = rawHtml.replace(/🟡\s*NEEDS REVIEW/g,
-            '<span class="status-badge status-borderline">⚠ Review</span>');
-
-        // Rule ID code chips — wrap REPORT_INLINE_* or any all-caps_underscored token in <td>
-        rawHtml = rawHtml.replace(
-            /(<td[^>]*>)\s*([A-Z][A-Z0-9_]{5,})\s*(<\/td>)/g,
-            '$1<code class="rule-id-chip">$2</code>$3'
-        );
-
-        return rawHtml;
-    }
-
-    function renderTabResult() {
-        const currentAnalysis = tabResults[activeTab];
-        if (!currentAnalysis || !currentAnalysis.english) {
-            result.classList.add('hidden');
-            return;
-        }
-
-        result.classList.remove('hidden');
-        
-        // Show English content
-        try {
-            englishContent.innerHTML = formatPatientFriendlyHTML(currentAnalysis.english);
-        } catch (err) {
-            console.error('Error parsing markdown:', err);
-            englishContent.textContent = currentAnalysis.english;
-        }
-
-        // Translation toggle setup
-        if (currentAnalysis.bangla) {
-            banglaContent.innerHTML = formatPatientFriendlyHTML(currentAnalysis.bangla);
-            banglaBtn.classList.remove('hidden');
-        } else {
-            banglaBtn.classList.add('hidden');
-        }
-        
-        // Show English view by default
-        englishContent.classList.remove('hidden');
-        banglaContent.classList.add('hidden');
-        
-        // Update button states
-        englishBtn.classList.add('bg-blue-600', 'text-white');
-        englishBtn.classList.remove('bg-gray-200', 'text-gray-700');
-    }
-
-    // === Floating Action Button (FAB) RAG Chatbot Lifecycle & State ===
-    const toggleChatBtn  = document.getElementById('toggle-chat-btn');
-    const chatPopup      = document.getElementById('chat-popup');
-    const chatCloseBtn   = document.getElementById('chat-close-btn');
-    const chatFabIconOpen  = document.getElementById('chat-fab-icon-open');
-    const chatFabIconClose = document.getElementById('chat-fab-icon-close');
-    const chatFabBadge   = document.getElementById('chat-fab-badge');
-    const chatInput      = document.getElementById('chat-input');
-    const chatSendBtn    = document.getElementById('send-chat-btn');
-    const chatMessages   = document.getElementById('chat-history');
-    const chatSubtitle   = document.getElementById('chat-fab-subtitle');
-
-    let clientAnalysisGeneration = 0;
-    let activeAnalysisVersion = 0;
-    let isAnalysisPending = false;
-
-    function onAnalysisStarted() {
-        clientAnalysisGeneration++;
-        isAnalysisPending = true;
-        activeAnalysisVersion = 0;
-        if (chatInput) chatInput.disabled = true;
-        if (chatSendBtn) chatSendBtn.disabled = true;
-        if (chatMessages) {
-            chatMessages.textContent = '';
-            const pendingNotice = document.createElement('div');
-            pendingNotice.className = 'bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm font-medium';
-            pendingNotice.textContent = 'A new analysis is processing. Prior context has been retired. Chat will be enabled once analysis completes.';
-            chatMessages.appendChild(pendingNotice);
-        }
-    }
-
-    function onAnalysisSucceeded(data) {
-        isAnalysisPending = false;
-        if (data && typeof data.analysis_version === 'number') {
-            activeAnalysisVersion = data.analysis_version;
-        }
-        if (chatInput) chatInput.disabled = false;
-        if (chatSendBtn) chatSendBtn.disabled = false;
-        if (chatMessages) {
-            chatMessages.textContent = '';
-            const readyNotice = document.createElement('div');
-            readyNotice.className = 'bg-blue-50 border border-blue-100 text-blue-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm font-medium';
-            readyNotice.textContent = 'Analysis loaded (v' + (activeAnalysisVersion || 1) + '). You can ask questions about the current report findings and recommendations above.';
-            chatMessages.appendChild(readyNotice);
-        }
-    }
-
-    function onAnalysisFailed(reason) {
-        isAnalysisPending = false;
-        activeAnalysisVersion = 0;
-        if (chatInput) chatInput.disabled = true;
-        if (chatSendBtn) chatSendBtn.disabled = true;
-        if (chatMessages) {
-            chatMessages.textContent = '';
-            const failNotice = document.createElement('div');
-            failNotice.className = 'bg-red-50 border border-red-200 text-red-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm font-medium';
-            failNotice.textContent = reason || 'No current analysis is available. The previous analysis was retired, and the new analysis failed or was invalid.';
-            chatMessages.appendChild(failNotice);
-        }
-    }
-
-    function resetChatPanel() {
-        onAnalysisStarted();
-    }
-
-    // Context config for each tab
-    const chatContextConfig = {
-        report: {
-            subtitle: 'Lab Report Grounded AI',
-            placeholder: 'Ask about your lab results, diet, normal ranges...',
-            typingMsg: 'Analyzing your lab report context...'
-        },
-        medicine: {
-            subtitle: 'Prescription Pharmacist AI',
-            placeholder: 'Ask about your medications, side effects, interactions...',
-            typingMsg: 'Analyzing your prescription context...'
-        },
-        symptoms: {
-            subtitle: 'Symptom Triage AI',
-            placeholder: 'Ask about your symptoms, urgency, or next steps...',
-            typingMsg: 'Analyzing your symptom context...'
-        }
-    };
-
-    function updateChatContext() {
-        const cfg = chatContextConfig[activeTab] || chatContextConfig.report;
-        if (chatInput)    chatInput.placeholder = cfg.placeholder;
-        if (chatSubtitle) chatSubtitle.textContent = cfg.subtitle;
-    }
-
-    function openChatPopup() {
-        if (!chatPopup) return;
-        chatPopup.classList.remove('hidden');
-        if (chatFabIconOpen)  chatFabIconOpen.classList.add('hidden');
-        if (chatFabIconClose) chatFabIconClose.classList.remove('hidden');
-        if (chatFabBadge)     chatFabBadge.style.display = 'none';
-        updateChatContext();
-        setTimeout(() => { if (chatInput && !chatInput.disabled) chatInput.focus(); }, 120);
-    }
-
-    function closeChatPopup() {
-        if (!chatPopup) return;
-        chatPopup.classList.add('hidden');
-        if (chatFabIconOpen)  chatFabIconOpen.classList.remove('hidden');
-        if (chatFabIconClose) chatFabIconClose.classList.add('hidden');
-    }
-
-    if (toggleChatBtn) {
-        toggleChatBtn.addEventListener('click', () => {
-            const isOpen = !chatPopup.classList.contains('hidden');
-            isOpen ? closeChatPopup() : openChatPopup();
-        });
-    }
-
-    if (chatCloseBtn) {
-        chatCloseBtn.addEventListener('click', closeChatPopup);
-    }
-
-    if (chatSendBtn && chatInput && chatMessages) {
-        async function handleSendQuery() {
-            const query = chatInput.value.trim();
-            if (!query) return;
-
-            if (isAnalysisPending) {
-                const bubble = document.createElement('div');
-                bubble.className = 'bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm font-medium';
-                bubble.textContent = 'Analysis is still in progress. Please wait until results are ready before asking questions.';
-                chatMessages.appendChild(bubble);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                return;
-            }
-
-            openChatPopup();
-
-            const thisGen = clientAnalysisGeneration;
-            const thisVer = activeAnalysisVersion;
-
-            const userBubble = document.createElement('div');
-            userBubble.className = 'ml-auto bg-blue-600 text-white rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm whitespace-pre-wrap';
-            userBubble.textContent = query;
-            chatMessages.appendChild(userBubble);
-            chatInput.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            const aiBubble = document.createElement('div');
-            aiBubble.className = 'bg-white border border-gray-200 text-gray-800 rounded-2xl px-4 py-2.5 max-w-[85%] text-xs shadow-sm whitespace-pre-wrap';
-            aiBubble.textContent = 'Analyzing current report context...';
-            chatMessages.appendChild(aiBubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            try {
-                const res = await fetch('/api/patient-chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        query: query,
-                        analysis_version: thisVer
-                    })
-                });
-                const data = await res.json();
-
-                // If user started a new analysis while this request was in flight, ignore stale reply
-                if (thisGen !== clientAnalysisGeneration) {
-                    aiBubble.remove();
-                    return;
-                }
-
-                if (data.success && data.response) {
-                    aiBubble.textContent = data.response;
-                } else if (data.source === 'pending') {
-                    aiBubble.textContent = 'Analysis is still in progress. Please wait for completion.';
-                } else if (data.source === 'unavailable' || data.source === 'failed' || data.source === 'expired') {
-                    aiBubble.textContent = data.error || 'No active analysis available. Please upload or analyze a new report.';
-                } else {
-                    aiBubble.textContent = data.error || "I could not retrieve an answer at this time. Please consult your physician.";
-                }
-            } catch (e) {
-                if (thisGen !== clientAnalysisGeneration) {
-                    aiBubble.remove();
-                    return;
-                }
-                console.error("Chat error:", e);
-                aiBubble.textContent = "Network error while connecting to Patient Assistant AI.";
-            }
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        chatSendBtn.addEventListener('click', handleSendQuery);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSendQuery();
-        });
-    }
-
-    // Update chat context dynamically when user switches tabs (without falsely clearing or resetting context)
-    [reportTab, symptomsTab, medicineTab].forEach(btn => {
-        if (btn) btn.addEventListener('click', () => setTimeout(updateChatContext, 50));
-    });
-
-    // =========================================================================
-    // Patient Records Dashboard Management
-    // =========================================================================
-    const openDashboardBtn = document.getElementById('open-dashboard-btn');
-    const closeDashboardBtn = document.getElementById('close-dashboard-btn');
-    const closeDashboardBtn2 = document.getElementById('close-dashboard-btn2');
-    const dashboardModal = document.getElementById('patient-dashboard-modal');
-
-    // Dashboard Sub-Tabs
-    const dashTabMeds = document.getElementById('dash-tab-meds');
-    const dashTabDiscontinued = document.getElementById('dash-tab-discontinued');
-    const dashTabPrescriptions = document.getElementById('dash-tab-prescriptions');
-    const dashTabLabs = document.getElementById('dash-tab-labs');
-    const dashTabDdi = document.getElementById('dash-tab-ddi');
-
-    const dashSecMeds = document.getElementById('dash-sec-meds');
-    const dashSecDiscontinued = document.getElementById('dash-sec-discontinued');
-    const dashSecPrescriptions = document.getElementById('dash-sec-prescriptions');
-    const dashSecLabs = document.getElementById('dash-sec-labs');
-    const dashSecDdi = document.getElementById('dash-sec-ddi');
-
-    function switchDashTab(activeBtn, activeSec) {
-        [dashTabMeds, dashTabDiscontinued, dashTabPrescriptions, dashTabLabs, dashTabDdi].forEach(btn => {
-            if (btn) {
-                btn.className = "py-3 text-gray-500 hover:text-blue-600 font-semibold";
-            }
-        });
-        if (activeBtn) {
-            activeBtn.className = "py-3 border-b-2 border-blue-600 text-blue-600 font-semibold";
-        }
-        [dashSecMeds, dashSecDiscontinued, dashSecPrescriptions, dashSecLabs, dashSecDdi].forEach(sec => {
-            if (sec) sec.classList.add('hidden');
-        });
-        if (activeSec) {
-            activeSec.classList.remove('hidden');
-        }
-    }
-
-    if (dashTabMeds) dashTabMeds.addEventListener('click', () => switchDashTab(dashTabMeds, dashSecMeds));
-    if (dashTabDiscontinued) dashTabDiscontinued.addEventListener('click', () => switchDashTab(dashTabDiscontinued, dashSecDiscontinued));
-    if (dashTabPrescriptions) dashTabPrescriptions.addEventListener('click', () => switchDashTab(dashTabPrescriptions, dashSecPrescriptions));
-    if (dashTabLabs) dashTabLabs.addEventListener('click', () => switchDashTab(dashTabLabs, dashSecLabs));
-    if (dashTabDdi) dashTabDdi.addEventListener('click', () => switchDashTab(dashTabDdi, dashSecDdi));
-
-    function loadPatientDashboard() {
-        fetch('/api/patient/dashboard')
-            .then(res => res.json())
-            .then(data => {
-                if (!data.success) {
-                    console.warn("Failed to load dashboard data:", data.error);
-                    return;
-                }
-                const dash = data.dashboard || {};
-                const profile = dash.profile || {};
-                
-                // Populate profile
-                const pNameEl = document.getElementById('dash-patient-name');
-                if (pNameEl) pNameEl.textContent = profile.patient_name || 'Patient Records';
-                const pEmailEl = document.getElementById('dash-email');
-                if (pEmailEl) pEmailEl.textContent = profile.email || 'N/A';
-                const pAgeEl = document.getElementById('dash-age');
-                if (pAgeEl) pAgeEl.textContent = profile.age ? `${profile.age} yrs` : 'Not specified';
-                const pGenEl = document.getElementById('dash-gender');
-                if (pGenEl) pGenEl.textContent = profile.gender || 'Not specified';
-                const pSlugEl = document.getElementById('dash-slug');
-                if (pSlugEl) pSlugEl.textContent = `ID: ${profile.slug || '-'}`;
-
-                // Populate Active Medications
-                const activeBody = document.getElementById('dash-active-meds-body');
-                if (activeBody) {
-                    const activeMeds = dash.active_medications || [];
-                    if (activeMeds.length === 0) {
-                        activeBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No active medications currently recorded.</td></tr>';
-                    } else {
-                        activeBody.innerHTML = activeMeds.map(m => `
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-2.5 font-bold text-gray-900">${m.medicine_name || m.name}</td>
-                                <td class="px-3 py-2.5 text-gray-600">${m.strength || m.dosage || '–'}</td>
-                                <td class="px-3 py-2.5"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-medium text-[11px]">${m.med_class || 'Unclassified'}</span></td>
-                                <td class="px-3 py-2.5 text-gray-500">${(m.added_at || '').substring(0, 10)}</td>
-                                <td class="px-3 py-2.5 text-right">
-                                    <button onclick="toggleMedStatus('${m.id || m.medicine_name}', 'discontinued')" class="px-2.5 py-1 text-[11px] font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors">
-                                        Discontinue
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('');
-                    }
-                }
-
-                // Populate Discontinued Medications
-                const disBody = document.getElementById('dash-discontinued-meds-body');
-                if (disBody) {
-                    const disMeds = dash.discontinued_medications || [];
-                    if (disMeds.length === 0) {
-                        disBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No discontinued medications recorded.</td></tr>';
-                    } else {
-                        disBody.innerHTML = disMeds.map(m => `
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-2.5 font-bold text-gray-700 line-through">${m.medicine_name || m.name}</td>
-                                <td class="px-3 py-2.5 text-gray-500">${m.strength || m.dosage || '–'}</td>
-                                <td class="px-3 py-2.5 text-gray-500 text-[11px]">${m.med_class || 'Unclassified'}</td>
-                                <td class="px-3 py-2.5 text-gray-400"><span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[11px]">Discontinued</span></td>
-                                <td class="px-3 py-2.5 text-right">
-                                    <button onclick="toggleMedStatus('${m.id || m.medicine_name}', 'active')" class="px-2.5 py-1 text-[11px] font-semibold text-green-700 hover:text-green-900 bg-green-50 hover:bg-green-100 rounded border border-green-200 transition-colors">
-                                        Reactivate
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('');
-                    }
-                }
-
-                // Populate Prescriptions
-                const rxList = document.getElementById('dash-prescriptions-list');
-                if (rxList) {
-                    const rxs = dash.prescriptions || [];
-                    if (rxs.length === 0) {
-                        rxList.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">No uploaded prescriptions found.</p>';
-                    } else {
-                        rxList.innerHTML = rxs.map(rx => `
-                            <div class="p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs space-y-1.5">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-gray-900">Prescription #${rx.id || rx.visit_id} • ${(rx.timestamp || '').substring(0, 10)}</span>
-                                    <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded text-[10px] font-semibold">${rx.verification_status || 'VERIFIED'}</span>
-                                </div>
-                                <p class="text-gray-700"><strong>Summary:</strong> ${rx.medicine_name || 'Prescription items'}</p>
-                                ${rx.medicines && rx.medicines.length ? `
-                                    <div class="mt-1 pt-1 border-t border-gray-200 flex flex-wrap gap-1">
-                                        ${rx.medicines.map(m => `<span class="px-2 py-0.5 bg-white border border-gray-200 rounded text-[11px] font-medium text-gray-800">${m.medicine_name} ${m.strength || ''}</span>`).join('')}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `).join('');
-                    }
-                }
-
-                // Populate Labs
-                const labsBody = document.getElementById('dash-labs-body');
-                if (labsBody) {
-                    const labs = dash.lab_results || [];
-                    if (labs.length === 0) {
-                        labsBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No laboratory measurements recorded yet.</td></tr>';
-                    } else {
-                        labsBody.innerHTML = labs.map(l => {
-                            const isAbn = ['HIGH', 'VERY_HIGH', 'LOW', 'POSITIVE'].includes((l.status || '').toUpperCase());
-                            const badgeClass = isAbn ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
-                            return `
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-3 py-2 font-semibold text-gray-800">${l.parameter}</td>
-                                    <td class="px-3 py-2 font-mono font-bold">${l.value}</td>
-                                    <td class="px-3 py-2 text-gray-500">${l.unit || '–'}</td>
-                                    <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${l.status}</span></td>
-                                    <td class="px-3 py-2 text-gray-400">${(l.evaluated_at || '').substring(0, 10)}</td>
-                                </tr>
-                            `;
-                        }).join('');
-                    }
-                }
-
-                // Populate DDI History Table
-                const ddiBody = document.getElementById('dash-ddi-body');
-                if (ddiBody) {
-                    const ddis = dash.ddi_history || [];
-                    if (ddis.length === 0) {
-                        ddiBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">No interaction records found.</td></tr>';
-                    } else {
-                        ddiBody.innerHTML = ddis.map(d => {
-                            const sev = (d.severity || '').toUpperCase();
-                            const sevClass = (sev === 'CRITICAL' || sev === 'MAJOR') ? 'bg-red-100 text-red-800' : (sev === 'MODERATE' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800');
-                            return `
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-3 py-2.5 font-bold text-gray-900">${d.medicine_a}</td>
-                                    <td class="px-3 py-2.5 font-bold text-gray-900">${d.medicine_b}</td>
-                                    <td class="px-3 py-2.5 text-gray-600 font-mono text-[10px]">${d.source_a || 'NEW'} ↔ ${d.source_b || 'HIST'}</td>
-                                    <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${sevClass}">${d.severity}</span></td>
-                                    <td class="px-3 py-2.5 text-gray-600 text-[11px] max-w-xs">${d.interaction_description || '–'}</td>
-                                </tr>
-                            `;
-                        }).join('');
-                    }
-                }
-            })
-            .catch(err => console.error("Error loading patient dashboard:", err));
-    }
-
-    window.toggleMedStatus = function(medId, newStatus) {
-        fetch('/api/patient/toggle-medication', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ medication_id: medId, status: newStatus })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                loadPatientDashboard();
-            } else {
-                alert('Could not update medication status: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(err => console.error('Error toggling medication:', err));
-    };
-
-    window.confirmPrescriptionMed = function(name, dosage, genericName, strength) {
-        fetch('/api/patient/confirm-prescribed-medication', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ medicine_name: name, dosage: dosage, generic_name: genericName, strength: strength })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert(`Medication '${name}' confirmed and saved to your active medications!`);
-                loadPatientDashboard();
-            } else {
-                alert('Could not add medication: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(err => console.error('Error confirming medication:', err));
-    };
-
-    if (openDashboardBtn && dashboardModal) {
-        openDashboardBtn.addEventListener('click', () => {
-            dashboardModal.classList.remove('hidden');
-            loadPatientDashboard();
-        });
-    }
-
-    if (closeDashboardBtn && dashboardModal) {
-        closeDashboardBtn.addEventListener('click', () => dashboardModal.classList.add('hidden'));
-    }
-
-    if (closeDashboardBtn2 && dashboardModal) {
-        closeDashboardBtn2.addEventListener('click', () => dashboardModal.classList.add('hidden'));
     }
 
     function handleError(err) {
-        console.error('Error details:', err);
+        console.error('Request error:', err);
         loading.classList.add('hidden');
-        showError('An error occurred while processing your request. Please try again.');
+        showError('Could not reach the server. Please check your connection and try again.');
     }
 
-    function showError(message) {
+    function showError(msg) {
         error.classList.remove('hidden');
         result.classList.add('hidden');
-        errorMessage.textContent = message;
-        if (isAnalysisPending) {
-            onAnalysisFailed('Analysis failed: ' + message);
-        }
+        loading.classList.add('hidden');
+        errorMessage.textContent = msg;
     }
+
+    function renderTabResult() {
+        const cur = tabResults[activeTab];
+        if (!cur || !cur.english) {
+            result.classList.add('hidden');
+            return;
+        }
+        result.classList.remove('hidden');
+        englishContent.innerHTML = safeMarkdown(cur.english);
+
+        if (cur.bangla) {
+            banglaContent.innerHTML = safeMarkdown(cur.bangla);
+            banglaBtn.classList.remove('hidden');
+            translateBtn.classList.add('hidden');
+        } else {
+            translateBtn.classList.remove('hidden');
+            banglaBtn.classList.add('hidden');
+        }
+
+        // Always show English by default
+        englishContent.classList.remove('hidden');
+        banglaContent.classList.add('hidden');
+        englishBtn.classList.add('btn-primary'); englishBtn.classList.remove('btn-outline');
+        banglaBtn.classList.remove('btn-primary'); banglaBtn.classList.add('btn-outline');
+    }
+
+    // Initial render
+    switchTab('report');
 });
